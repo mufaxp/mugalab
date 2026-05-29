@@ -1,11 +1,11 @@
 -- Database dan user
-CREATE DATABASE IF NOT EXISTS lab_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER IF NOT EXISTS 'labuser'@'localhost' IDENTIFIED BY '@Mufa_1998';
-GRANT ALL PRIVILEGES ON lab_db.* TO 'labuser'@'localhost';
+CREATE DATABASE IF NOT EXISTS `lab-db` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER IF NOT EXISTS 'mufaxp'@'localhost' IDENTIFIED BY '@Mufa_1998';
+GRANT ALL PRIVILEGES ON `lab-db`.* TO 'mufaxp'@'localhost';
 FLUSH PRIVILEGES;
 
 -- Tabel users
-USE lab_db;
+USE `lab-db`;
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,

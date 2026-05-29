@@ -1,5 +1,19 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Ambil semua item sidebar dan panel
+    // proteksi sederhana
+    const nama = localStorage.getItem('nama');
+    if (!nama) {
+        // jika belum login, redirect ke laman login
+        window.location.href = '/login';
+        return;
+    }
+
+    // tampilkan nama di header
+    const userNameDisplay = document.getElementById('userNameDisplay');
+    if (userNameDisplay) {
+        userNameDisplay.textContent = nama;
+    }
+
+    // navigasi sidebar
     const sidebarItems = document.querySelectorAll('.sidebar-item');
     const panels = document.querySelectorAll('.panel');
 
@@ -30,9 +44,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function() {
-            alert('Logout ditekan (dummy)');
-            // Nanti arahkan ke halaman login
-            // window.location.href = '/login';
+            // hapus data login dan redirect ke login
+            localStorage.removeItem('nama');
+            window.location.href = '/login'
         });
     }
 });

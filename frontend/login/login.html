@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Masuk - Laboratorium IPA</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="login-card">
+        <h2 class="login-title">Selamat Datang</h2>
+        <form id="loginForm" action="#" method="POST">
+            <div class="input-group">
+                <label for="username" style="display:none;">Username</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    class="login-input" 
+                    placeholder="Username" 
+                    required 
+                    autocomplete="username"
+                >
+            </div>
+            <div class="input-group">
+                <label for="password" style="display:none;">Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    class="login-input" 
+                    placeholder="Password" 
+                    required 
+                    autocomplete="current-password"
+                >
+            </div>
+            <button type="submit" class="login-button">Masuk</button>
+        </form>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

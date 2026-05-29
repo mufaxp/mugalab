@@ -1,0 +1,88 @@
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+html, body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+body {
+    background-color: #B3D9FF;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+}
+.card {
+    width: 100%;
+    height: 100%;
+    background-color: #FFFFFF;
+    border-radius: 16px;
+    padding: 10px 5px 5px 5px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 5px 8px 5px;
+    flex-shrink: 0;
+}
+.card-title {
+    font-size: clamp(12px, 2vw, 18px);
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1.2;
+}
+.btn-ajukan {
+    background-color: #25D366;
+    color: #FFFFFF;
+    padding: 6px 14px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: clamp(10px, 1.5vw, 14px);
+    font-weight: 600;
+    white-space: nowrap;
+}
+.btn-ajukan:hover {
+    background-color: #1da851;
+}
+.table-wrapper {
+    flex-grow: 1;
+    overflow: hidden;
+    padding: 0 5px 5px 5px;
+}
+table {
+    width: 100%;
+    height: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+th, td {
+    border: 1px solid #cccccc;
+    text-align: center;
+    vertical-align: middle;
+    font-size: clamp(9px, 1.3vw, 14px);
+    padding: 2px;
+}
+th {
+    background-color: #E8F4FD;
+    font-weight: 700;
+}
+th:first-child, td:first-child {
+    width: 12%;
+    background-color: #E8F4FD;
+    font-weight: 600;
+}
+td {
+    background-color: #FAFAFA;
+}
+td:not(:first-child)::after {
+    content: "—";
+    color: #d0d0d0;
+}

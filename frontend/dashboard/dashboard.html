@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Dashboard - Laboratorium IPA</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- ========== TOP BAR ========== -->
+    <header class="top-bar">
+        <h1 class="top-bar-title">
+            Selamat Datang, <span class="user-name">Mufadilah</span>
+        </h1>
+        <button class="logout-button" id="logoutBtn">Keluar</button>
+    </header>
+
+    <!-- ========== AREA UTAMA: SIDEBAR + KONTEN ========== -->
+    <div class="main-area">
+        <!-- SIDEBAR -->
+        <nav class="sidebar">
+            <ul class="sidebar-menu">
+                <li><a class="sidebar-item active" data-panel="jadwal">📅 Jadwal</a></li>
+                <li><a class="sidebar-item" data-panel="inventaris">🧪 Inventaris</a></li>
+                <li><a class="sidebar-item" data-panel="laporan">⚠️ Laporan Kerusakan Alat</a></li>
+            </ul>
+        </nav>
+
+        <!-- PANEL KONTEN -->
+        <main class="content-panel">
+            <!-- Panel Jadwal -->
+            <div id="jadwal" class="panel active">
+                <h2>📅 Jadwal Kegiatan Lab</h2>
+                <p>Di sini Anda dapat menambah, mengedit, dan menghapus jadwal penggunaan laboratorium.</p>
+                <!-- Nanti bisa diisi tabel atau form -->
+            </div>
+
+            <!-- Panel Inventaris -->
+            <div id="inventaris" class="panel">
+                <h2>🧪 Inventaris Alat & Bahan</h2>
+                <p>Kelola data inventaris: cek stok, tambah barang baru, kurangi jumlah, dan perbarui kondisi alat.</p>
+                <!-- Nanti bisa diisi tabel atau form -->
+            </div>
+
+            <!-- Panel Laporan Kerusakan -->
+            <div id="laporan" class="panel">
+                <h2>⚠️ Laporan Kerusakan Alat</h2>
+                <p>Laporkan alat yang rusak atau memerlukan perbaikan. Riwayat laporan dan status perbaikan akan ditampilkan di sini.</p>
+                <!-- Nanti bisa diisi form laporan -->
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

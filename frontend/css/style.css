@@ -86,3 +86,96 @@ td:not(:first-child)::after {
     content: "—";
     color: #d0d0d0;
 }
+
+/* Responsive adjustments: tablet */
+@media (max-width: 1024px) {
+    body {
+        padding: 8px;
+    }
+    .card {
+        border-radius: 12px;
+    }
+    .card-title {
+        font-size: 16px;
+    }
+    .btn-ajukan {
+        font-size: 12px;
+        padding: 4px 10px;
+    }
+}
+
+/* Responsive adjustments: smartphone */
+@media (max-width: 640px) {
+    body {
+        padding: 3px;
+    }
+
+    .card {
+        border-radius: 12px;
+        padding: 6px 4px 4px 4px;
+    }
+
+    .card-header {
+        padding: 0 2px 4px 2px;
+    }
+
+    .card-title {
+        font-size: 11px;
+    }
+
+    .btn-ajukan {
+        font-size: 10px;
+        padding: 4px 8px;
+        border-radius: 14px;
+    }
+
+    /* tabel */
+    .table-wrapper {
+        overflow: hidden;
+        padding: 0 2px 2px 2px;
+    }
+
+    table {
+        width: 100%;
+        height: 100%;
+        table-layout: fixed;
+    }
+
+    th, td {
+        padding: 1px 0;
+        font-size: 8px;                
+        border: 1px solid #cccccc;
+    }
+
+    th {
+        font-size: 7.5px;
+    }
+
+    th:first-child, td:first-child {
+        width: 6%;                     
+    }
+
+    td:not(:first-child)::after {
+        font-size: 7px;
+    }
+}
+
+/* responsive adjustments: smartphone kecil */
+@media (max-width: 400px) {
+    .card-title {
+        font-size: 10px;
+    }
+
+    .btn-ajukan {
+        font-size: 9px;
+        padding: 3px 6px;
+    }
+
+    th, td {
+        font-size: 7px;
+    }
+
+    th {
+        font-size: 6.5px;
+    }
+}

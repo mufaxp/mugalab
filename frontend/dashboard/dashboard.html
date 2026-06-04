@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/dashboard/style.css">
 </head>
 <body>
-    <!-- ========== TOP BAR ========== -->
+    <!-- top bar -->
     <header class="top-bar">
         <h1 class="top-bar-title">
             Selamat Datang, <span class="user-name" id="userNameDisplay">Mufadilah</span>
@@ -15,7 +15,7 @@
         <button class="logout-button" id="logoutBtn">Keluar</button>
     </header>
 
-    <!-- ========== AREA UTAMA: SIDEBAR + KONTEN ========== -->
+    <!-- area utama - sidebar + konten -->
     <div class="main-area">
         <!-- SIDEBAR -->
         <nav class="sidebar">
@@ -26,13 +26,16 @@
             </ul>
         </nav>
 
-        <!-- PANEL KONTEN -->
+        <!-- panel konten -->
         <main class="content-panel">
             <!-- Panel Jadwal -->
             <div id="jadwal" class="panel active">
                 <h2>📅 Jadwal Kegiatan Lab</h2>
                 <p>Di sini Anda dapat menambah, mengedit, dan menghapus jadwal penggunaan laboratorium.</p>
-                <!-- Nanti bisa diisi tabel atau form -->
+                <div id="jadwalList" class="jadwal-list">
+                    <p style="color:#999; text-align: center; padding:20px;">Memuat data jadwal...</p>
+                </div>
+                
             </div>
 
             <!-- Panel Inventaris -->

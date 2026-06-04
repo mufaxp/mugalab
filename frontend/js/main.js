@@ -1,57 +1,54 @@
 document.addEventListener('DOMContentLoaded', function() {
     const weekSelect = document.getElementById('weekSelect');
+    const tbody = document.querySelector('tbody');
 
+    // fungsi untuk mendapatkan tanggal Ahad (Minggu) dari sebuah tanggal
     function getSundayOfWeek(date) {
         const day = date.getDay();
-        const diff = date.getDate() - day; //mundur ke Ahad
+        const diff = date.getDate() - day;
         const sunday = new Date(date);
         sunday.setDate(diff);
-        sunday.setHours(0, 0, 0, 0); // set ke awal hari
+        sunday.setHours(0, 0, 0, 0);
         return sunday;
     }
 
-    // Format tanggal DD/MM
     function formatDate(date) {
         const day = String(date.getDate()).padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0');
         return `${day}/${month}`;
     }
 
-    // Hitung rentang Ahad - Sabtu
+    function formatDateISO(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
     function getWeekRange(sunday) {
         const saturday = new Date(sunday);
         saturday.setDate(sunday.getDate() + 6);
-        return {
-            start: formatDate(sunday),
-            end: formatDate(saturday)
-        };
+        return { start: formatDate(sunday), end: formatDate(saturday) };
     }
 
-    // Hitung tanggal untuk 3 pekan
+    // hitung tanggal pekan lalu, ini, dan depan
     const today = new Date();
-    // pekan ini
     const currentSunday = getSundayOfWeek(today);
-
-    // pekan lalu
-    const prevSunday = new Date(currentSunday);
-    prevSunday.setDate(currentSunday.getDate() - 7);
-
-    // pekan depan
-    const nextSunday = new Date(currentSunday);
-    nextSunday.setDate(currentSunday.getDate() + 7);
+    const prevSunday = new Date(currentSunday); prevSunday.setDate(currentSunday.getDate() - 7);
+    const nextSunday = new Date(currentSunday); nextSunday.setDate(currentSunday.getDate() + 7);
 
     const prevRange = getWeekRange(prevSunday);
     const currentRange = getWeekRange(currentSunday);
     const nextRange = getWeekRange(nextSunday);
 
-    // perbarui teks dropdown
+    // isi dropdown dengan rentang tanggal
     const options = weekSelect.options;
-    options[0].textContent = `Pekan Lalu (${prevRange.start} - ${prevRange.end})`;
-    options[1].textContent = `Pekan Ini (${currentRange.start} - ${currentRange.end})`;
-    options[2].textContent = `Pekan Depan (${nextRange.start} - ${nextRange.end})`;
-    weekSelect.value = 'current'; // set default ke pekan ini
+    options[0].text = `Pekan Lalu (${prevRange.start} - ${prevRange.end})`;
+    options[1].text = `Pekan Ini (${currentRange.start} - ${currentRange.end})`;
+    options[2].text = `Pekan Depan (${nextRange.start} - ${nextRange.end})`;
+    weekSelect.value = 'current';
 
-    // ambil data jadwal dari API
+    // ambil data jadwal dari backend
     async function loadJadwal(mingguMulai) {
         try {
             const response = await fetch(`/api/jadwal?minggu_mulai=${mingguMulai}`);
@@ -62,34 +59,39 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // render card di tabel
+    // render card jadwal ke tabel
     function renderJadwal(jadwalList) {
+        // Reset semua sel (kecuali kolom Jam)
         const semuaSel = tbody.querySelectorAll('td:not(:first-child)');
         semuaSel.forEach(td => {
             td.innerHTML = '';
             td.style.position = 'relative';
         });
 
-        // Hari ke- indeks kolom
+        // Hari ke indeks kolom (Ahad=0, Senin=1, ..., Sabtu=6)
         const hariKeKolom = {
-            'Ahad': 0, 'Senin': 1, 'Selasa': 2, 'Rabu': 3, 'Kamis': 4, 'Jumat': 5, 'Sabtu': 6
+            'Ahad': 0, 'Senin': 1, 'Selasa': 2, 'Rabu': 3,
+            'Kamis': 4, 'Jumat': 5, 'Sabtu': 6
         };
 
         jadwalList.forEach(item => {
             const tanggal = new Date(item.tanggal);
-            const hari = tanggal.toLocaleDateString('id-ID, { weekday: "long" }');
-            const hariKapital = hari.charAt(0).toUpperCase() + hari.slice(1);
-            const kolomIndex = hariKeKolom[hariKapital] + 1;
+            const hari = tanggal.toLocaleDateString('id-ID', { weekday: 'long' });
+            const hariKapital = hari.charAt(0).toUpperCase() + hari.slice(1); // Ahad, Senin, dll
+            const kolomIndex = hariKeKolom[hariKapital] + 1; // +1 karena kolom pertama Jam
 
             const jamMulai = item.jam_mulai;
             const jamSelesai = item.jam_selesai;
             const rentang = jamSelesai - jamMulai + 1;
 
-            // cari baris jam_mulai
-            const barisMulai = tbody.querySelectorAll('tr')[jamMulai -1];
-            if (!barisMulai) return; // jika jam_mulai di luar 1-10, abaikan
+            // Cari baris jam_mulai
+            const barisMulai = tbody.querySelectorAll('tr')[jamMulai - 1];
+            if (!barisMulai) return;
 
-            // buat card
+            const selTarget = barisMulai.querySelectorAll('td')[kolomIndex];
+            if (!selTarget) return;
+
+            // Buat card
             const card = document.createElement('div');
             card.className = 'jadwal-card';
             card.style.cssText = `
@@ -105,21 +107,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 overflow: hidden;
                 z-index: 5;
                 box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                `;
+            `;
+
             card.innerHTML = `
                 <strong>${item.kelas !== '-' ? item.kelas : ''}</strong>
-                <div style="font-weight: 500;">${item.kegiatan}</div>
-                <div style="color:#555; font-size: 0.9em;">${item.penanggung_jawab}</div>
-                `;
+                <div style="font-weight:500;">${item.kegiatan}</div>
+                <div style="color:#555; font-size:0.9em;">${item.penanggung_jawab}</div>
+            `;
 
-            // hapus placeholder
+            // Hapus placeholder "—"
             selTarget.innerHTML = '';
-            setTarget.style.position = 'relative';
+            selTarget.style.position = 'relative';
             selTarget.appendChild(card);
         });
     }
 
-    // load data saat halaman dibuka (pekan ini)
+    // load data pekan ini saat pertama kali halaman dimuat
     loadJadwal(formatDateISO(currentSunday));
 
     // event: dropdown berubah
@@ -131,10 +134,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
         loadJadwal(formatDateISO(selectedSunday));
     });
-    // event listener untuk perubahan pilihan pekan
-    // weekSelect.addEventListener('change', function() {
-    //     const selectedValue = this.value;
-    //     console.log('Pekan dipilih:', selectedValue);
-    //     alert(`menampikan jadwal untuk: ${this.options[this.selectedIndex].textContent }`);
-    // })
 });

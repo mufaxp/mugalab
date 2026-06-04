@@ -63,24 +63,25 @@ app.get('/', (req, res) => {
 });
 
 // API Jadwal
-app.get('/api/jadwal/', async (req, res) => {
+app.get('/api/jadwal', async (req, res) => {
     const { minggu_mulai } = req.query;
 
     if (!minggu_mulai) {
-        return res.status(400).json({ message: 'Parameter minggu_mulai diperlukan'});
+        return res.status(400).json({ message: 'Parameter minggu_mulai diperlukan' });
     }
 
     try {
-        // hitung akhir pekan (ahad + 6 hari = sabtu)
+        // Hitung akhir pekan (Ahad + 6 hari = Sabtu)
         const [rows] = await pool.query(
             `SELECT * FROM jadwal 
              WHERE tanggal >= ? AND tanggal <= DATE_ADD(?, INTERVAL 6 DAY)
              ORDER BY tanggal, jam_mulai`,
             [minggu_mulai, minggu_mulai]
         );
+        return res.status(200).json(rows);
     } catch (error) {
         console.error('Error fetching jadwal:', error);
-        return res.status(500).json({ message: 'Gagal mengambil data jadwal'})
+        return res.status(500).json({ message: 'Gagal mengambil data jadwal' });
     }
 });
 

@@ -126,54 +126,80 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     async function loadDashboardJadwal() {
-        const jadwalListElement = document.getElementById('jadwalList');
-        if (!jadwalListElement) return;
+        const pekanIniEl = document.getElementById('jadwalPekanIni');
+        const pekanDepanEl = document.getElementById('jadwalPekanDepan');
+        
+        if (!pekanIniEl || !pekanDepanEl) return;
 
         try {
-            // ambil tanggal ahad pekan ini
+            // Hitung Ahad pekan ini
             const today = new Date();
             const day = today.getDay();
-            const diff = today.getDate() -day;
-            const sunday = new Date(today);
-            sunday.setDate(diff);
-            const mingguMulai = sunday.toISOString().split('T')[0];
+            const diff = today.getDate() - day;
+            const sundayIni = new Date(today);
+            sundayIni.setDate(diff);
+            const mingguMulaiIni = sundayIni.toISOString().split('T')[0];
 
-            const response = await fetch(`/api/jadwal?minggu_mulai=${mingguMulai}`);
-            const data = await response.json();
+            // Hitung Ahad pekan depan
+            const sundayDepan = new Date(sundayIni);
+            sundayDepan.setDate(sundayIni.getDate() + 7);
+            const mingguMulaiDepan = sundayDepan.toISOString().split('T')[0];
 
-            if (data.length === 0) {
-                jadwalListElement.innerHTML = '<p style="color:#999; text-align:center: padding:20px;">Belum ada jadwal untuk pekan ini.</p>';
-                return;
-            }
+            // Fetch kedua pekan sekaligus
+            const [resIni, resDepan] = await Promise.all([
+                fetch(`/api/jadwal?minggu_mulai=${mingguMulaiIni}`),
+                fetch(`/api/jadwal?minggu_mulai=${mingguMulaiDepan}`)
+            ]);
 
-            // render card
-            jadwalListElement.innerHTML = '';
-            data.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'jadwal-card-item';
-                card.setAttribute('data-id', item.id);
-                card.innerHTML = `
-                    <div class='jadwal-card-body'>
-                        <div class="jadwal-card-kegiatan">${item.kegiatan}</div>
-                        <div class="jadwal-card-pj">${item.penanggung_jawab} | ${item.kelas !== '-' ? item.kelas : 'Umum'} | ${formatTanggal(item.tanggal)} | Jam ke-${item.jam_mulai} - ${item.jam_selesai}</div>
-                    </div>
-                    <div class="jadwal-card-actions">
-                        <button class="btn-edit">Edit</button>
-                        <button class="btn-delete">Hapus</button>
-                    </div>
-                `;
-                // event listener untuk tombol hapus
-                const btnDelete = card.querySelector('.btn-delete');
-                btnDelete.addEventListener('click', function() {
-                    hapusJadwal(item.id, card);
-                });
+            const dataIni = await resIni.json();
+            const dataDepan = await resDepan.json();
 
-                jadwalListElement.appendChild(card);
-            });
+            // Render pekan ini
+            renderJadwalSection(pekanIniEl, dataIni, 'pekan ini');
+            
+            // Render pekan depan
+            renderJadwalSection(pekanDepanEl, dataDepan, 'pekan depan');
+
         } catch (error) {
             console.error('Gagal memuat jadwal dashboard:', error);
-            jadwalListElement.innerHTML = '<p style="color:#c62828; text-align: center; padding:20px">Gagal memuat data jadwal.</p>';
+            pekanIniEl.innerHTML = '<p style="color:#c62828; text-align:center; padding:20px;">Gagal memuat data jadwal.</p>';
+            pekanDepanEl.innerHTML = '<p style="color:#c62828; text-align:center; padding:20px;">Gagal memuat data jadwal.</p>';
         }
+    }
+
+    // fungsi render card per section
+    function renderJadwalSection(containerElement, data, label) {
+        if (!containerElement) return;
+
+        if (data.length === 0) {
+            containerElement.innerHTML = `<p style="color:#999; text-align:center; padding:20px;">Belum ada jadwal untuk ${label}.</p>`;
+            return;
+        }
+
+        containerElement.innerHTML = '';
+        data.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'jadwal-card-item';
+            card.setAttribute('data-id', item.id);
+            card.innerHTML = `
+                <div class="jadwal-card-body">
+                    <div class="jadwal-card-kegiatan">${item.kegiatan}</div>
+                    <div class="jadwal-card-pj">${item.penanggung_jawab} | ${item.kelas !== '-' ? item.kelas : 'Umum'} | ${formatTanggal(item.tanggal)} | Jam ke-${item.jam_mulai} - ${item.jam_selesai}</div>
+                </div>
+                <div class="jadwal-card-actions">
+                    <button class="btn-edit">Edit</button>
+                    <button class="btn-delete" data-id="${item.id}">Hapus</button>
+                </div>
+            `;
+
+            // Event listener untuk tombol Hapus
+            const btnDelete = card.querySelector('.btn-delete');
+            btnDelete.addEventListener('click', function() {
+                hapusJadwal(item.id, card);
+            });
+
+            containerElement.appendChild(card);
+        });
     }
 
     // fungsi hapus jadwal

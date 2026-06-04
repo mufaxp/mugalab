@@ -184,6 +184,24 @@ body {
     min-width: 0;           /* agar teks bisa memendek */
 }
 
+/* section judul pekan */
+.jadwal-section {
+    margin-bottom: 20px;
+}
+
+.jadwal-section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1E88E5;
+    border-bottom: 2px solid #E0E0E0;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+}
+
+.jadwal-section-content {
+    min-height: 40px;
+}
+
 .jadwal-card-kegiatan {
     font-size: 16px;
     font-weight: 600;

@@ -102,11 +102,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 border-left: 4px solid #1E88E5;
                 border-radius: 6px;
                 padding: 4px 6px;
-                font-size: clamp(6px, 0.8vw, 10px);
+                font-size: clamp(8px, 1vw, 13px);
                 line-height: 1.3;
                 overflow: hidden;
                 z-index: 5;
                 box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                text-align: left;
             `;
 
             card.innerHTML = `

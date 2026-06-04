@@ -1,4 +1,4 @@
-/* ========== RESET & BASE ========== */
+/* base */
 *, *::before, *::after {
     margin: 0;
     padding: 0;
@@ -16,7 +16,7 @@ body {
     flex-direction: column;
 }
 
-/* ========== TOP BAR ========== */
+/* top bar */
 .top-bar {
     width: 100%;
     background-color: #FFFFFF;
@@ -56,7 +56,7 @@ body {
     transform: scale(0.97);
 }
 
-/* ========== MAIN AREA ========== */
+/* main area */
 .main-area {
     flex-grow: 1;
     display: flex;
@@ -64,7 +64,7 @@ body {
     overflow: hidden;
 }
 
-/* ========== SIDEBAR ========== */
+/* sidebar */
 .sidebar {
     width: 260px;
     background-color: #F9FBFC;
@@ -100,7 +100,7 @@ body {
     box-shadow: 0 2px 8px rgba(30,136,229,0.2);
 }
 
-/* ========== CONTENT PANEL ========== */
+/* panel konten */
 .content-panel {
     flex-grow: 1;
     padding: 24px;
@@ -238,9 +238,118 @@ body {
     background-color: #FFCDD2;
 }
 
+/* pop up tambah jadwal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+.modal-content {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    padding: 24px;
+    width: 90%;
+    max-width: 520px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+.modal-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* form di dalam popup */
+.form-group {
+    margin-bottom: 14px;
+}
+.form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555555;
+    margin-bottom: 4px;
+}
+.form-input {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid #cccccc;
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    font-family: inherit;
+}
+.form-input:focus {
+    border-color: #1E88E5;
+    box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.1);
+}
+.form-row {
+    display: flex;
+    gap: 12px;
+}
+.form-group-half {
+    flex: 1;
+}
+
+/* tombol aksi popup */
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+.btn-simpan {
+    background-color: #1E88E5;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+.btn-simpan:hover {
+    background-color: #1565C0;
+}
+.btn-batal {
+    background-color: #F5F5F5;
+    color: #666666;
+    border: 1px solid #CCCCCC;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+.btn-batal:hover {
+    background-color: #E0E0E0;
+}
+
 /* responsif */
 @media (max-width: 640px) {
     .sidebar {
         width: 200px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        padding: 16px;
+    }
+    .form-row {
+        flex-direction: column;
+        gap: 0;
     }
 }

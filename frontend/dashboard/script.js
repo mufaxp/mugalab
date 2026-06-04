@@ -17,6 +17,91 @@ document.addEventListener('DOMContentLoaded', function() {
     const sidebarItems = document.querySelectorAll('.sidebar-item');
     const panels = document.querySelectorAll('.panel');
 
+    // pop up tambah jadwal
+    const btnTambah = document.querySelector('.btn-tambah');
+    const modalTambah = document.getElementById('modalTambah');
+    const btnBatalTambah = document.getElementById('btnBatalTambah');
+    const formTambahJadwal = document.getElementById('formTambahJadwal');
+
+    // buka popup
+    if (btnTambah) {
+        btnTambah.addEventListener('click', function() {
+            modalTambah.style.display = 'flex';
+            // Reset form
+            formTambahJadwal.reset();
+            // Set tanggal default ke hari ini
+            document.getElementById('tanggal').valueAsDate = new Date();
+        });
+    }
+
+    // Tutup pop up (tombol batal)
+    if (btnBatalTambah) {
+        btnBatalTambah.addEventListener('click', function() {
+            modalTambah.style.display = 'none';
+        });
+    }
+
+    // tutup pop up (klik di luar pop up)
+    window.addEventListener('click', function(e) {
+        if (e.target === modalTambah) {
+            modalTambah.style.display = 'none';
+        }
+    });
+    
+    // Submit form tambah jadwal
+    if (formTambahJadwal) {
+        formTambahJadwal.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const penanggung_jawab = document.getElementById('penanggung_jawab').value.trim();
+            const kegiatan = document.getElementById('kegiatan').value.trim();
+            const kelas = document.getElementById('kelas').value.trim() || '-';
+            const tanggal = document.getElementById('tanggal').value;
+            const jam_mulai = parseInt(document.getElementById('jam_mulai').value);
+            const jam_selesai = parseInt(document.getElementById('jam_selesai').value);
+
+            // Validasi
+            if (!penanggung_jawab || !kegiatan || !tanggal || !jam_mulai || !jam_selesai) {
+                alert('Semua field wajib diisi!');
+                return;
+            }
+
+            if (jam_selesai < jam_mulai) {
+                alert('Jam selesai harus lebih besar atau sama dengan jam mulai!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/jadwal', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        penanggung_jawab,
+                        kegiatan,
+                        kelas,
+                        tanggal,
+                        jam_mulai,
+                        jam_selesai
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Jadwal berhasil ditambahkan!');
+                    modalTambah.style.display = 'none';
+                    // Refresh daftar jadwal
+                    loadDashboardJadwal();
+                } else {
+                    alert(data.message || 'Gagal menambahkan jadwal');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Gagal terhubung ke server');
+            }
+        });
+    }
+    
     // Fungsi untuk mengaktifkan panel berdasarkan ID
     function activatePanel(panelId) {
         // Sembunyikan semua panel
@@ -116,6 +201,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Gagal terhubung ke server');
         }
     }
+
     // helper untuk format tanggal
     function formatTanggal(dateStr) {
         const date = new Date(dateStr);
@@ -125,6 +211,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return `${day}/${month}/${year}`;
     }
     loadDashboardJadwal();
+
     // Tombol logout (sementara dummy)
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {

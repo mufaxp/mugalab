@@ -57,7 +57,68 @@
             </div>
         </main>
     </div>
-
+    <!-- tambah jadwal -->
+     <div id="modalTambah" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3 class="modal-title">Tambah jadwal Baru</h3>
+            <form id="formTambahJadwal">
+                <div class="form-group">
+                    <label for="penanggung_jawab">Nama Penanggung Jawab</label>
+                    <input type="text" id="penanggung_jawab" class="form-input" placeholder="Tulis nama anda." required>
+                </div>
+                <div class="form-group">
+                    <label for="kegiatan">Nama kegiatan</label>
+                    <input type="text" id="kegiatan" class="form-input" placeholder="Isi nama kegiatan anda." required>
+                </div>
+                <div class="form-group">
+                    <label for="kelas">Kelas</label>
+                    <input type="text" id="kelas" class="form-input" placeholder="Tulis kelas anda atau isi (-) untuk umum">
+                </div>
+                <div class="form-group">
+                    <label for="tanggal">Tanggal</label>
+                    <input type="date" id="tanggal" class="form-input" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group form-group-half">
+                        <label for="jam_mulai">Jam Mulai</label>
+                        <select id="jam_mulai" class="form-input" required>
+                            <option value="">Pilih</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                        </select>
+                    </div>
+                    <div class="form-group form-group-half">
+                        <label for="jam_selesai">Jam Selesai</label>
+                        <select id="jam_selesai" class="form-input" required>
+                            <option value="">Pilih</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-simpan">Simpan</button>
+                    <button type="button" class="btn-batal" id="btnBatalTambah">Batal</button>
+                </div>
+            </form>
+        </div>
+     </div>
     <script src="/dashboard/script.js"></script>
 </body>
 </html>

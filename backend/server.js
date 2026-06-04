@@ -85,6 +85,35 @@ app.get('/api/jadwal', async (req, res) => {
     }
 });
 
+// tambah jadwal
+app.post('/api/jadwal', async (req, res) => {
+    const { penanggung_jawab, kegiatan, kelas, tanggal, jam_mulai, jam_selesai } = req.body;
+
+    // Validasi
+    if (!penanggung_jawab || !kegiatan || !tanggal || !jam_mulai || !jam_selesai) {
+        return res.status(400).json({ message: 'Semua field wajib diisi' });
+    }
+
+    if (jam_selesai < jam_mulai) {
+        return res.status(400).json({ message: 'Jam selesai harus lebih dari atau sama dengan jam mulai' });
+    }
+
+    try {
+        const [result] = await pool.query(
+            'INSERT INTO jadwal (penanggung_jawab, kegiatan, kelas, tanggal, jam_mulai, jam_selesai) VALUES (?, ?, ?, ?, ?, ?)',
+            [penanggung_jawab, kegiatan, kelas || '-', tanggal, jam_mulai, jam_selesai]
+        );
+
+        return res.status(201).json({
+            message: 'Jadwal berhasil ditambahkan',
+            id: result.insertId
+        });
+    } catch (error) {
+        console.error('Error menambahkan jadwal:', error);
+        return res.status(500).json({ message: 'Gagal menambahkan jadwal' });
+    }
+});
+
 // delete jadwal
 app.delete('/api/jadwal/:id', async (req, res) => {
     const { id } = req.params;

@@ -87,6 +87,34 @@ td:not(:first-child)::after {
     color: #d0d0d0;
 }
 
+.week-selector {
+    flex-shrink: 0;
+    margin-left: auto;
+    margin-right: 10px;
+}
+
+.week-dropdown {
+    padding: 6px 12px;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    font-size: clamp(10px, 1.5vw, 14px);
+    font-family: inherit;
+    background-color: #ffffff;
+    color: #333333;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2 ease;
+    min-width: 140px;
+}
+
+.week-dropdown:focus {
+    border-color: #1E88E5;
+    box-shadow: 0 0 0 2px rgba(30, 136, 229, 0.15);
+}
+
+.week-dropdown option {
+    padding: 8px;
+}
 /* Responsive adjustments: tablet */
 @media (max-width: 1024px) {
     body {
@@ -157,6 +185,12 @@ td:not(:first-child)::after {
 
     td:not(:first-child)::after {
         font-size: 7px;
+    }
+
+    .week-dropdown {
+        font-size: 9px;
+        padding: 4px 8px;
+        min-width: 120px;
     }
 }
 

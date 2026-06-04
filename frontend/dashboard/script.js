@@ -66,16 +66,23 @@ document.addEventListener('DOMContentLoaded', function() {
             data.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'jadwal-card-item';
+                card.setAttribute('data-id', item.id);
                 card.innerHTML = `
                     <div class='jadwal-card-body';
                         <div class="jadwal-card-kegiatan">${item.kegiatan}</div>
-                        <div class="jadwal-card-pj">${item.penanggung_jawab} | ${item.kelas !== '-' ? item.kelas : 'Umum'} | $${formatTanggal(item.tanggal)} | Jam ke-${item.jam_mulai} - ${item.jam_selesai}</div>
+                        <div class="jadwal-card-pj">${item.penanggung_jawab} | ${item.kelas !== '-' ? item.kelas : 'Umum'} | ${formatTanggal(item.tanggal)} | Jam ke-${item.jam_mulai} - ${item.jam_selesai}</div>
                     </div>
                     <div class="jadwal-card-actions">
                         <button class="btn-edit">Edit</button>
                         <button class="btn-delete">Hapus</button>
                     </div>
                 `;
+                // event listener untuk tombol hapus
+                const btnDelete = card.querySelector('.btn-delete');
+                btnDelete.addEventListener('click', function() {
+                    hapusJadwal(item.id, card);
+                });
+
                 jadwalListElement.appendChild(card);
             });
         } catch (error) {
@@ -84,6 +91,31 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // fungsi hapus jadwal
+    async function hapusJadwal(id, cardElement) {
+        // konfirmasi
+        if(!confirm('Apakah anda yakin ingin menghapus jadwal ini?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/jadwal/${id}`, {
+                method: 'DELETE'
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                // hapus card dari tampilan
+                cardElement.remove();
+                alert('Jadwal berhasil dihapus');
+            } else {
+                alert(data.message || 'Gagal menghapus jadwal');
+            }
+        } catch {
+            console.error('Error', error);
+            alert('Gagal terhubung ke server');
+        }
+    }
     // helper untuk format tanggal
     function formatTanggal(dateStr) {
         const date = new Date(dateStr);

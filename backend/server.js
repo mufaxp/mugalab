@@ -85,6 +85,24 @@ app.get('/api/jadwal', async (req, res) => {
     }
 });
 
+// delete jadwal
+app.delete('api/jadwal/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const [result] = await pool.query('DELETE FROM jadwal WHERE id = ?', [id]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Jadwal tidak ditemukan' });
+        }
+
+        return res.status(200).json({ message: 'Jadwal berhasil dihapus' });
+    } catch (error) {
+        console.error('Error hapus jadwal:', error);
+        return res.status(500).json({ message: 'Gagal menghapus jadwal' });
+    }
+});
+
 // 404 handler (harus diletakkan paling bawah)
 app.use((req, res) => {
     res.status(404).json({ error: 'Route tidak ditemukan', path: req.originalUrl });

@@ -62,6 +62,28 @@ app.get('/', (req, res) => {
     res.send('Server mugalab aktif. Akses /api/health untuk cek kesehatan.');
 });
 
+// API Jadwal
+app.get('/api/jadwal/', async (req, res) => {
+    const { minggu_mulai } = req.query;
+
+    if (!minggu_mulai) {
+        return res.status(400).json({ message: 'Parameter minggu_mulai diperlukan'});
+    }
+
+    try {
+        // hitung akhir pekan (ahad + 6 hari = sabtu)
+        const [rows] = await pool.query(
+            `SELECT * FROM jadwal 
+             WHERE tanggal >= ? AND tanggal <= DATE_ADD(?, INTERVAL 6 DAY)
+             ORDER BY tanggal, jam_mulai`,
+            [minggu_mulai, minggu_mulai]
+        );
+    } catch (error) {
+        console.error('Error fetching jadwal:', error);
+        return res.status(500).json({ message: 'Gagal mengambil data jadwal'})
+    }
+});
+
 // 404 handler (harus diletakkan paling bawah)
 app.use((req, res) => {
     res.status(404).json({ error: 'Route tidak ditemukan', path: req.originalUrl });

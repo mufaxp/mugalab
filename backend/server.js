@@ -86,7 +86,7 @@ app.get('/api/jadwal', async (req, res) => {
 });
 
 // delete jadwal
-app.delete('api/jadwal/:id', async (req, res) => {
+app.delete('/api/jadwal/:id', async (req, res) => {
     const { id } = req.params;
 
     try {

@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 card.className = 'jadwal-card-item';
                 card.setAttribute('data-id', item.id);
                 card.innerHTML = `
-                    <div class='jadwal-card-body';
+                    <div class='jadwal-card-body'>
                         <div class="jadwal-card-kegiatan">${item.kegiatan}</div>
                         <div class="jadwal-card-pj">${item.penanggung_jawab} | ${item.kelas !== '-' ? item.kelas : 'Umum'} | ${formatTanggal(item.tanggal)} | Jam ke-${item.jam_mulai} - ${item.jam_selesai}</div>
                     </div>
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 alert(data.message || 'Gagal menghapus jadwal');
             }
-        } catch {
+        } catch (error) {
             console.error('Error', error);
             alert('Gagal terhubung ke server');
         }

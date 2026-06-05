@@ -1,90 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+/* variabel warna muhammadiyah */
+:root {
+    --nm-color-primary: #009c48;     /* Hijau Utama */
+    --nm-color-dark: #1a1a1a;
+    --nm-color-text: #444444;
+    --nm-border: #e5e5e5;
+    --muh-green: #0e703f;            /* Hijau Muhammadiyah */
+    --muh-gold: #cda851;             /* Emas Muhammadiyah */
+}
+
 *, *::before, *::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
+
 html, body {
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
 }
+
 body {
-    background-color: #B3D9FF;
+    background: linear-gradient(135deg, #1a3a6b 0%, #0e703f 35%, #009c48 65%, #2ecc71 100%);
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 5px;
+    padding: 10px;
 }
+
+/* card tabel jadwal */
 .card {
     width: 100%;
     height: 100%;
     background-color: #FFFFFF;
-    border-radius: 16px;
-    padding: 10px 5px 5px 5px;
+    border-radius: 20px;
+    padding: 16px 10px 10px 10px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
 }
+
 .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 5px 8px 5px;
+    padding: 0 8px 12px 8px;
     flex-shrink: 0;
+    flex-wrap: wrap;
+    gap: 8px;
+    border-bottom: 2px solid #e8e8e8;
+    margin-bottom: 8px;
 }
+
 .card-title {
-    font-size: clamp(12px, 2vw, 18px);
+    font-size: clamp(13px, 2vw, 20px);
     font-weight: 700;
-    color: #1a1a1a;
+    color: var(--muh-green);
     line-height: 1.2;
-}
-.btn-ajukan {
-    background-color: #25D366;
-    color: #FFFFFF;
-    padding: 6px 14px;
-    border-radius: 20px;
-    text-decoration: none;
-    font-size: clamp(10px, 1.5vw, 14px);
-    font-weight: 600;
-    white-space: nowrap;
-}
-.btn-ajukan:hover {
-    background-color: #1da851;
-}
-.table-wrapper {
-    flex-grow: 1;
-    overflow: hidden;
-    padding: 0 5px 5px 5px;
-}
-table {
-    width: 100%;
-    height: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-}
-th, td {
-    border: 1px solid #cccccc;
-    text-align: center;
-    vertical-align: middle;
-    font-size: clamp(9px, 1.3vw, 14px);
-    padding: 2px;
-}
-th {
-    background-color: #E8F4FD;
-    font-weight: 700;
-}
-th:first-child, td:first-child {
-    width: 12%;
-    background-color: #E8F4FD;
-    font-weight: 600;
-}
-td {
-    background-color: #FAFAFA;
-}
-td:not(:first-child)::after {
-    content: "—";
-    color: #d0d0d0;
 }
 
 .week-selector {
@@ -94,122 +72,194 @@ td:not(:first-child)::after {
 }
 
 .week-dropdown {
-    padding: 6px 12px;
-    border: 1px solid #cccccc;
-    border-radius: 8px;
-    font-size: clamp(10px, 1.5vw, 14px);
+    padding: 8px 14px;
+    border: 2px solid #d0e6d5;
+    border-radius: 10px;
+    font-size: clamp(10px, 1.2vw, 13px);
     font-family: inherit;
-    background-color: #ffffff;
-    color: #333333;
+    font-weight: 500;
+    background-color: #f0f7f2;
+    color: var(--muh-green);
     cursor: pointer;
     outline: none;
-    transition: border-color 0.2 ease;
-    min-width: 140px;
+    transition: all 0.2s ease;
+    min-width: 160px;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.week-dropdown:hover {
+    border-color: var(--muh-green);
 }
 
 .week-dropdown:focus {
-    border-color: #1E88E5;
-    box-shadow: 0 0 0 2px rgba(30, 136, 229, 0.15);
+    border-color: var(--muh-green);
+    box-shadow: 0 0 0 3px rgba(14, 112, 63, 0.15);
 }
 
-.week-dropdown option {
-    padding: 8px;
+.btn-ajukan {
+    background-color: #0a5c32;
+    color: #FFFFFF;
+    padding: 8px 18px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-size: clamp(10px, 1.4vw, 13px);
+    font-weight: 600;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(10, 92, 50, 0.3);
+    flex-shrink: 0;
 }
-/* Responsive adjustments: tablet */
+
+.btn-ajukan:hover {
+    background-color: #0e703f;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(10, 92, 50, 0.4);
+}
+
+.table-wrapper {
+    flex-grow: 1;
+    overflow: hidden;
+    padding: 0 8px 8px 8px;
+}
+
+table {
+    width: 100%;
+    height: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+    border: 1px solid #d0e6d5;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+th, td {
+    text-align: center;
+    vertical-align: middle;
+    font-size: clamp(8px, 1.2vw, 13px);
+    padding: 4px 2px;
+    border-bottom: 1px solid #d0e6d5;
+    border-right: 1px solid #d0e6d5;
+}
+
+th {
+    background: linear-gradient(180deg, #1a3a6b, #0e703f);
+    color: #FFFFFF;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: clamp(7px, 1vw, 11px);
+}
+
+th:last-child, td:last-child {
+    border-right: none;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+th:first-child, td:first-child {
+    width: 8%;
+    background: #f0f7f2;
+    font-weight: 600;
+    color: var(--muh-green);
+}
+
+td {
+    background-color: #FFFFFF;
+    color: var(--nm-color-text);
+    position: relative;
+}
+
+tbody tr:hover td {
+    background-color: #f0f7f2;
+}
+
+td:not(:first-child)::after {
+    content: "—";
+    color: #c0d8c8;
+    font-size: 0.9em;
+}
+
+.jadwal-card {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    background: linear-gradient(135deg, #f0f7f2, #d0e6d5);
+    border-left: 4px solid var(--muh-gold);
+    border-radius: 6px;
+    padding: 4px 6px;
+    font-size: clamp(7px, 0.9vw, 11px);
+    line-height: 1.3;
+    overflow: hidden;
+    z-index: 5;
+    box-shadow: 0 2px 8px rgba(14, 112, 63, 0.1);
+    text-align: left;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.jadwal-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 16px rgba(14, 112, 63, 0.2);
+    z-index: 10;
+}
+
 @media (max-width: 1024px) {
     body {
         padding: 8px;
     }
     .card {
-        border-radius: 12px;
-    }
-    .card-title {
-        font-size: 16px;
-    }
-    .btn-ajukan {
-        font-size: 12px;
-        padding: 4px 10px;
+        border-radius: 16px;
     }
 }
 
-/* Responsive adjustments: smartphone */
 @media (max-width: 640px) {
     body {
-        padding: 3px;
+        padding: 4px;
     }
-
     .card {
-        border-radius: 12px;
-        padding: 6px 4px 4px 4px;
+        border-radius: 14px;
+        padding: 10px 4px 4px 4px;
     }
-
     .card-header {
-        padding: 0 2px 4px 2px;
+        padding: 0 4px 6px 4px;
     }
-
-    .card-title {
-        font-size: 11px;
+    .week-dropdown {
+        min-width: 130px;
+        font-size: 9px;
+        padding: 6px 10px;
     }
-
     .btn-ajukan {
         font-size: 10px;
-        padding: 4px 8px;
-        border-radius: 14px;
+        padding: 6px 12px;
     }
-
-    /* tabel */
-    .table-wrapper {
-        overflow: hidden;
-        padding: 0 2px 2px 2px;
-    }
-
     table {
-        width: 100%;
-        height: 100%;
-        table-layout: fixed;
+        border-radius: 8px;
     }
-
     th, td {
-        padding: 1px 0;
-        font-size: 8px;                
-        border: 1px solid #cccccc;
-    }
-
-    th {
-        font-size: 7.5px;
-    }
-
-    th:first-child, td:first-child {
-        width: 6%;                     
-    }
-
-    td:not(:first-child)::after {
         font-size: 7px;
+        padding: 2px 1px;
     }
-
-    .week-dropdown {
-        font-size: 9px;
-        padding: 4px 8px;
-        min-width: 120px;
+    th {
+        font-size: 6px;
+    }
+    th:first-child, td:first-child {
+        width: 6%;
     }
 }
 
-/* responsive adjustments: smartphone kecil */
 @media (max-width: 400px) {
     .card-title {
         font-size: 10px;
     }
-
     .btn-ajukan {
-        font-size: 9px;
-        padding: 3px 6px;
+        font-size: 8px;
+        padding: 4px 10px;
     }
-
     th, td {
-        font-size: 7px;
-    }
-
-    th {
-        font-size: 6.5px;
+        font-size: 6px;
     }
 }

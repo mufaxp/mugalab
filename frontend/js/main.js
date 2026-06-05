@@ -98,15 +98,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 position: absolute;
                 top: 0; left: 0; right: 0;
                 height: ${rentang * 100}%;
-                background-color: #E3F2FD;
-                border-left: 4px solid #1E88E5;
+                background: linear-gradient(135deg, #f0f7f2, #d0e6d5);
+                border-left: 4px solid #2ecc71;
                 border-radius: 6px;
                 padding: 4px 6px;
                 font-size: clamp(8px, 1vw, 13px);
                 line-height: 1.3;
                 overflow: hidden;
                 z-index: 5;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                box-shadow: 0 2px 8px rgba(14, 112, 63, 0.1);
                 text-align: left;
             `;
 

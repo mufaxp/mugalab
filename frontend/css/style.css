@@ -172,10 +172,10 @@ td {
     color: var(--nm-color-text);
     position: relative;
 }
-
+/* 
 tbody tr:hover td {
     background-color: #f0f7f2;
-}
+} */
 
 td:not(:first-child)::after {
     content: "—";
@@ -185,11 +185,12 @@ td:not(:first-child)::after {
 
 .jadwal-card {
     position: absolute;
-    top: 2px;
-    left: 2px;
-    right: 2px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: linear-gradient(135deg, #f0f7f2, #d0e6d5);
-    border-left: 4px solid var(--muh-gold);
+    border-left: 4px solid #0e703f;
     border-radius: 6px;
     padding: 4px 6px;
     font-size: clamp(7px, 0.9vw, 11px);
@@ -198,13 +199,6 @@ td:not(:first-child)::after {
     z-index: 5;
     box-shadow: 0 2px 8px rgba(14, 112, 63, 0.1);
     text-align: left;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.jadwal-card:hover {
-    transform: scale(1.02);
-    box-shadow: 0 4px 16px rgba(14, 112, 63, 0.2);
-    z-index: 10;
 }
 
 @media (max-width: 1024px) {

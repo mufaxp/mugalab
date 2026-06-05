@@ -201,59 +201,59 @@ td:not(:first-child)::after {
     text-align: left;
 }
 
-@media (max-width: 1024px) {
-    body {
-        padding: 8px;
-    }
-    .card {
-        border-radius: 16px;
-    }
-}
-
 @media (max-width: 640px) {
+    html, body {
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
     body {
         padding: 4px;
+        align-items: flex-start;
     }
+
     .card {
         border-radius: 14px;
         padding: 10px 4px 4px 4px;
+        height: auto;
+        min-height: 100%;
     }
+
     .card-header {
         padding: 0 4px 6px 4px;
     }
+
     .week-dropdown {
         min-width: 130px;
         font-size: 9px;
         padding: 6px 10px;
     }
+
     .btn-ajukan {
         font-size: 10px;
         padding: 6px 12px;
     }
+
+    .table-wrapper {
+        overflow-y: visible;
+        flex-grow: 0;
+    }
+
     table {
         border-radius: 8px;
+        height: auto;
     }
+
     th, td {
         font-size: 7px;
         padding: 2px 1px;
     }
+
     th {
         font-size: 6px;
     }
+
     th:first-child, td:first-child {
         width: 6%;
-    }
-}
-
-@media (max-width: 400px) {
-    .card-title {
-        font-size: 10px;
-    }
-    .btn-ajukan {
-        font-size: 8px;
-        padding: 4px 10px;
-    }
-    th, td {
-        font-size: 6px;
     }
 }

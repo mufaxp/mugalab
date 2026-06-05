@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 top: 0; left: 0; right: 0;
                 height: ${rentang * 100}%;
                 background: linear-gradient(135deg, #f0f7f2, #d0e6d5);
-                border-left: 4px solid #2ecc71;
+                border-left: 4px solid #0a5c32;
                 border-radius: 6px;
                 padding: 4px 6px;
                 font-size: clamp(8px, 1vw, 13px);

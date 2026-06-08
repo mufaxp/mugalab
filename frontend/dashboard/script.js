@@ -1,53 +1,117 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // proteksi sederhana
+    // keamanan login sederhana
     const nama = localStorage.getItem('nama');
     if (!nama) {
-        // jika belum login, redirect ke laman login
         window.location.href = '/login';
         return;
     }
 
-    // tampilkan nama di header
+    // Tampilkan nama di header
     const userNameDisplay = document.getElementById('userNameDisplay');
     if (userNameDisplay) {
         userNameDisplay.textContent = nama;
     }
 
-    // navigasi sidebar
+    // variabel penting
     const sidebarItems = document.querySelectorAll('.sidebar-item');
     const panels = document.querySelectorAll('.panel');
-
-    // pop up tambah jadwal
     const btnTambah = document.querySelector('.btn-tambah');
     const modalTambah = document.getElementById('modalTambah');
     const btnBatalTambah = document.getElementById('btnBatalTambah');
     const formTambahJadwal = document.getElementById('formTambahJadwal');
+    const logoutBtn = document.getElementById('logoutBtn');
 
-    // buka popup
+    // sidebar hamburger
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const sidebarNav = document.getElementById('sidebarNav');
+
+    // Buat overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'sidebar-overlay';
+    document.body.appendChild(overlay);
+
+    // Fungsi buka sidebar
+    function openSidebar() {
+        if (sidebarNav) sidebarNav.classList.add('active');
+        if (hamburgerBtn) hamburgerBtn.classList.add('active');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Fungsi tutup sidebar
+    function closeSidebar() {
+        if (sidebarNav) sidebarNav.classList.remove('active');
+        if (hamburgerBtn) hamburgerBtn.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    // Event: Klik hamburger
+    if (hamburgerBtn) {
+        hamburgerBtn.addEventListener('click', function() {
+            if (sidebarNav && sidebarNav.classList.contains('active')) {
+                closeSidebar();
+            } else {
+                openSidebar();
+            }
+        });
+    }
+
+    // Event: Klik overlay
+    overlay.addEventListener('click', closeSidebar);
+
+    // navigasi sidebar
+    function activatePanel(panelId) {
+        panels.forEach(panel => panel.classList.remove('active'));
+        const target = document.getElementById(panelId);
+        if (target) target.classList.add('active');
+    }
+
+    sidebarItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Hapus active dari semua item
+            sidebarItems.forEach(i => i.classList.remove('active'));
+            // Tambahkan active ke item yang diklik
+            this.classList.add('active');
+            // Aktifkan panel
+            const panelId = this.getAttribute('data-panel');
+            activatePanel(panelId);
+            // Tutup sidebar di mobile
+            if (window.innerWidth <= 640) {
+                closeSidebar();
+            }
+        });
+    });
+
+    // Tutup sidebar saat resize ke desktop
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 640 && sidebarNav && sidebarNav.classList.contains('active')) {
+            closeSidebar();
+        }
+    });
+
+    // popup tambah jadwal
     if (btnTambah) {
         btnTambah.addEventListener('click', function() {
             modalTambah.style.display = 'flex';
-            // Reset form
             formTambahJadwal.reset();
-            // Set tanggal default ke hari ini
             document.getElementById('tanggal').valueAsDate = new Date();
         });
     }
 
-    // Tutup pop up (tombol batal)
     if (btnBatalTambah) {
         btnBatalTambah.addEventListener('click', function() {
             modalTambah.style.display = 'none';
         });
     }
 
-    // tutup pop up (klik di luar pop up)
     window.addEventListener('click', function(e) {
         if (e.target === modalTambah) {
             modalTambah.style.display = 'none';
         }
     });
-    
+
     // Submit form tambah jadwal
     if (formTambahJadwal) {
         formTambahJadwal.addEventListener('submit', async function(e) {
@@ -60,14 +124,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const jam_mulai = parseInt(document.getElementById('jam_mulai').value);
             const jam_selesai = parseInt(document.getElementById('jam_selesai').value);
 
-            // Validasi
             if (!penanggung_jawab || !kegiatan || !tanggal || !jam_mulai || !jam_selesai) {
                 alert('Semua field wajib diisi!');
                 return;
             }
 
             if (jam_selesai < jam_mulai) {
-                alert('Jam selesai harus lebih besar atau sama dengan jam mulai!');
+                alert('Jam selesai harus >= jam mulai!');
                 return;
             }
 
@@ -75,14 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const response = await fetch('/api/jadwal', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        penanggung_jawab,
-                        kegiatan,
-                        kelas,
-                        tanggal,
-                        jam_mulai,
-                        jam_selesai
-                    })
+                    body: JSON.stringify({ penanggung_jawab, kegiatan, kelas, tanggal, jam_mulai, jam_selesai })
                 });
 
                 const data = await response.json();
@@ -90,7 +146,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     alert('Jadwal berhasil ditambahkan!');
                     modalTambah.style.display = 'none';
-                    // Refresh daftar jadwal
                     loadDashboardJadwal();
                 } else {
                     alert(data.message || 'Gagal menambahkan jadwal');
@@ -101,30 +156,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
-    // Fungsi untuk mengaktifkan panel berdasarkan ID
-    function activatePanel(panelId) {
-        // Sembunyikan semua panel
-        panels.forEach(panel => panel.classList.remove('active'));
-        // Tampilkan panel yang dipilih
-        const target = document.getElementById(panelId);
-        if (target) target.classList.add('active');
-    }
 
-    // Event listener untuk setiap item sidebar
-    sidebarItems.forEach(item => {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-            // Hapus class active dari semua item
-            sidebarItems.forEach(i => i.classList.remove('active'));
-            // Tambahkan class active ke item yang diklik
-            this.classList.add('active');
-            // Dapatkan panel yang sesuai
-            const panelId = this.getAttribute('data-panel');
-            activatePanel(panelId);
-        });
-    });
-
+    // load dashboard jadwal
     async function loadDashboardJadwal() {
         const pekanIniEl = document.getElementById('jadwalPekanIni');
         const pekanDepanEl = document.getElementById('jadwalPekanDepan');
@@ -132,7 +165,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!pekanIniEl || !pekanDepanEl) return;
 
         try {
-            // Hitung Ahad pekan ini
             const today = new Date();
             const day = today.getDay();
             const diff = today.getDate() - day;
@@ -140,12 +172,10 @@ document.addEventListener('DOMContentLoaded', function() {
             sundayIni.setDate(diff);
             const mingguMulaiIni = sundayIni.toISOString().split('T')[0];
 
-            // Hitung Ahad pekan depan
             const sundayDepan = new Date(sundayIni);
             sundayDepan.setDate(sundayIni.getDate() + 7);
             const mingguMulaiDepan = sundayDepan.toISOString().split('T')[0];
 
-            // Fetch kedua pekan sekaligus
             const [resIni, resDepan] = await Promise.all([
                 fetch(`/api/jadwal?minggu_mulai=${mingguMulaiIni}`),
                 fetch(`/api/jadwal?minggu_mulai=${mingguMulaiDepan}`)
@@ -154,20 +184,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const dataIni = await resIni.json();
             const dataDepan = await resDepan.json();
 
-            // Render pekan ini
             renderJadwalSection(pekanIniEl, dataIni, 'pekan ini');
-            
-            // Render pekan depan
             renderJadwalSection(pekanDepanEl, dataDepan, 'pekan depan');
-
         } catch (error) {
-            console.error('Gagal memuat jadwal dashboard:', error);
-            pekanIniEl.innerHTML = '<p style="color:#c62828; text-align:center; padding:20px;">Gagal memuat data jadwal.</p>';
-            pekanDepanEl.innerHTML = '<p style="color:#c62828; text-align:center; padding:20px;">Gagal memuat data jadwal.</p>';
+            console.error('Gagal memuat jadwal:', error);
+            pekanIniEl.innerHTML = '<p style="color:#c62828; text-align:center; padding:20px;">Gagal memuat data.</p>';
+            pekanDepanEl.innerHTML = '<p style="color:#c62828; text-align:center; padding:20px;">Gagal memuat data.</p>';
         }
     }
 
-    // fungsi render card per section
     function renderJadwalSection(containerElement, data, label) {
         if (!containerElement) return;
 
@@ -192,7 +217,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             `;
 
-            // Event listener untuk tombol Hapus
             const btnDelete = card.querySelector('.btn-delete');
             btnDelete.addEventListener('click', function() {
                 hapusJadwal(item.id, card);
@@ -202,33 +226,25 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // fungsi hapus jadwal
     async function hapusJadwal(id, cardElement) {
-        // konfirmasi
-        if(!confirm('Apakah anda yakin ingin menghapus jadwal ini?')) {
-            return;
-        }
+        if (!confirm('Apakah anda yakin ingin menghapus jadwal ini?')) return;
 
         try {
-            const response = await fetch(`/api/jadwal/${id}`, {
-                method: 'DELETE'
-            });
+            const response = await fetch(`/api/jadwal/${id}`, { method: 'DELETE' });
             const data = await response.json();
 
             if (response.ok) {
-                // hapus card dari tampilan
                 cardElement.remove();
                 alert('Jadwal berhasil dihapus');
             } else {
                 alert(data.message || 'Gagal menghapus jadwal');
             }
         } catch (error) {
-            console.error('Error', error);
+            console.error('Error:', error);
             alert('Gagal terhubung ke server');
         }
     }
 
-    // helper untuk format tanggal
     function formatTanggal(dateStr) {
         const date = new Date(dateStr);
         const day = String(date.getDate()).padStart(2, '0');
@@ -236,67 +252,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const year = date.getFullYear();
         return `${day}/${month}/${year}`;
     }
+
     loadDashboardJadwal();
 
-    // Tombol logout (sementara dummy)
-    const logoutBtn = document.getElementById('logoutBtn');
+//  tombol logout
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function() {
-            // hapus data login dan redirect ke login
             localStorage.removeItem('nama');
-            window.location.href = '/login'
+            window.location.href = '/login';
         });
     }
-
-    // hamburger menu
-    const hamburgerBtn = document.getElementById('hamburgerBtn');
-    const sidebarNav = document.getElementById('sidebarNav');
-
-    // Buat overlay
-    const overlay = document.createElement('div');
-    overlay.className = 'sidebar-overlay';
-    document.body.appendChild(overlay);
-
-    // Fungsi buka sidebar
-    function openSidebar() {
-        sidebarNav.classList.add('active');
-        hamburgerBtn.classList.add('active');
-        overlay.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Mencegah scroll
-    }
-    // fungsi tutup sidebar
-    function closeSidebar() {
-        sidebarNav.classList.remove('active');
-        hamburgerBtn.classList.remove('active');
-        overlay.classList.remove('active');
-        document.body.style.overflow = '';
-    }
-    // event: klik hamburger
-    if (hamburgerBtn) {
-        hamburgerBtn.addEventListener('click', function() {
-            if (sidebarNav.classList.contains('active')) {
-                closeSidebar();
-            } else {
-                openSidebar();
-            }
-        });
-    }
-    // event: klik overlay
-    overlay.addEventListener('click', closeSidebar);
-
-    // event: tutup sidebar setelah klik item menu (mobile device)
-    const sidebarItems = document.querySelectorAll('.sidebar-item');
-    sidebarItems.forEach(item => {
-        item.addEventListener('click', function(e) {
-            if (window.innerWidth <= 640) {
-                closeSidebar();
-            }
-        });
-    });
-    // tutup sidebar saat resize ke desktop
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 640 && sidebarNav.classList.contains('active')) {
-            closeSidebar();
-        }
-    })
 });

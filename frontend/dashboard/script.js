@@ -296,7 +296,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // tutup sidebar saat resize ke desktop
     window.addEventListener('resize', function() {
         if (window.innerWidth > 640 && sidebarNav.classList.contains('active')) {
-            closeSidebar
+            closeSidebar();
         }
     })
 });

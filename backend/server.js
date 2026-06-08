@@ -132,6 +132,37 @@ app.delete('/api/jadwal/:id', async (req, res) => {
     }
 });
 
+// edit jadwal
+app.put('/api/jadwal/:id', async (req, res) => {
+    const { id } = req.params;
+    const { penanggung_jawab, kegiatan, kelas, tanggal, jam_mulai, jam_selesai } = req.body;
+
+    // Validasi
+    if (!penanggung_jawab || !kegiatan || !tanggal || !jam_mulai || !jam_selesai) {
+        return res.status(400).json({ message: 'Semua field wajib diisi' });
+    }
+
+    if (jam_selesai < jam_mulai) {
+        return res.status(400).json({ message: 'Jam selesai harus >= jam mulai' });
+    }
+
+    try {
+        const [result] = await pool.query(
+            'UPDATE jadwal SET penanggung_jawab = ?, kegiatan = ?, kelas = ?, tanggal = ?, jam_mulai = ?, jam_selesai = ? WHERE id = ?',
+            [penanggung_jawab, kegiatan, kelas || '-', tanggal, jam_mulai, jam_selesai, id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Jadwal tidak ditemukan' });
+        }
+
+        return res.status(200).json({ message: 'Jadwal berhasil diperbarui' });
+    } catch (error) {
+        console.error('Error memperbarui jadwal:', error);
+        return res.status(500).json({ message: 'Gagal mengupdate jadwal' });
+    }
+});
+
 // 404 handler (harus diletakkan paling bawah)
 app.use((req, res) => {
     res.status(404).json({ error: 'Route tidak ditemukan', path: req.originalUrl });

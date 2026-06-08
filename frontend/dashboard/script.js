@@ -20,6 +20,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnBatalTambah = document.getElementById('btnBatalTambah');
     const formTambahJadwal = document.getElementById('formTambahJadwal');
     const logoutBtn = document.getElementById('logoutBtn');
+    let editMode = false;
+    let editId = null;
 
     // sidebar hamburger
     const hamburgerBtn = document.getElementById('hamburgerBtn');
@@ -94,6 +96,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // popup tambah jadwal
     if (btnTambah) {
         btnTambah.addEventListener('click', function() {
+            editMode = false;
+            editId = null;
+            document.querySelector('.modal-title').textContent = 'Tambah Jadwal Baru';
+            document.querySelector('.btn-simpan').textContent = 'Simpan';
             modalTambah.style.display = 'flex';
             formTambahJadwal.reset();
             document.getElementById('tanggal').valueAsDate = new Date();
@@ -134,9 +140,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
+            // try {
+            //     const response = await fetch('/api/jadwal', {
+            //         method: 'POST',
+            //         headers: { 'Content-Type': 'application/json' },
+            //         body: JSON.stringify({ penanggung_jawab, kegiatan, kelas, tanggal, jam_mulai, jam_selesai })
+            //     });
+
+            //     const data = await response.json();
+
+            //     if (response.ok) {
+            //         alert('Jadwal berhasil ditambahkan!');
+            //         modalTambah.style.display = 'none';
+            //         loadDashboardJadwal();
+            //     } else {
+            //         alert(data.message || 'Gagal menambahkan jadwal');
+            //     }
+            // } catch (error) {
+            //     console.error('Error:', error);
+            //     alert('Gagal terhubung ke server');
+            // }
             try {
-                const response = await fetch('/api/jadwal', {
-                    method: 'POST',
+                const url = editMode ? `/api/jadwal/${editId}` : '/api/jadwal';
+                const method = editMode ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ penanggung_jawab, kegiatan, kelas, tanggal, jam_mulai, jam_selesai })
                 });
@@ -144,17 +173,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await response.json();
 
                 if (response.ok) {
-                    alert('Jadwal berhasil ditambahkan!');
+                    alert(editMode ? 'Jadwal berhasil diperbarui!' : 'Jadwal berhasil ditambahkan!');
                     modalTambah.style.display = 'none';
+                    editMode = false;
+                    editId = null;
                     loadDashboardJadwal();
                 } else {
-                    alert(data.message || 'Gagal menambahkan jadwal');
+                    alert(data.message || 'Gagal menyimpan jadwal');
                 }
             } catch (error) {
                 console.error('Error:', error);
                 alert('Gagal terhubung ke server');
             }
         });
+    }
+
+    // fungsi buka popup untuk edit
+    function openEditModal(item) {
+        editMode = true;
+        editId = item.id;
+        document.querySelector('.modal-title').textContent = 'Edit Jadwal';
+        document.querySelector('.btn-simpan').textContent = 'Update';
+        
+        document.getElementById('penanggung_jawab').value = item.penanggung_jawab;
+        document.getElementById('kegiatan').value = item.kegiatan;
+        document.getElementById('kelas').value = item.kelas === '-' ? '' : item.kelas;
+        document.getElementById('tanggal').value = item.tanggal;
+        document.getElementById('jam_mulai').value = item.jam_mulai;
+        document.getElementById('jam_selesai').value = item.jam_selesai;
+        
+        modalTambah.style.display = 'flex';
     }
 
     // load dashboard jadwal
@@ -222,6 +270,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 hapusJadwal(item.id, card);
             });
 
+            // Event listener untuk tombol Edit
+            const btnEdit = card.querySelector('.btn-edit');
+            btnEdit.addEventListener('click', function() {
+                openEditModal(item);
+            });
             containerElement.appendChild(card);
         });
     }

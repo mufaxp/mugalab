@@ -247,4 +247,54 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = '/login'
         });
     }
+
+    // hamburger menu
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const sidebarNav = document.getElementById('sidebarNav');
+
+    // Buat overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'sidebar-overlay';
+    document.body.appendChild(overlay);
+
+    // Fungsi buka sidebar
+    function openSidebar() {
+        sidebarNav.classList.add('active');
+        hamburgerBtn.classList.add('active');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Mencegah scroll
+    }
+    // fungsi tutup sidebar
+    function closeSidebar() {
+        sidebarNav.classList.remove('active');
+        hamburgerBtn.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    // event: klik hamburger
+    if (hamburgerBtn) {
+        hamburgerBtn.addEventListener('click', function() {
+            if (sidebarNav.classList.contains('active')) {
+                closeSidebar();
+            } else {
+                openSidebar();
+            }
+        });
+    }
+    // event: klik overlay
+    overlay.addEventListener('click', closeSidebar);
+
+    // event: tutup sidebar setelah klik item menu (mobile device)
+    const sidebarItems = document.querySelectorAll('.sidebar-item');
+    sidebarItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            if (window.innerWidth <= 640) {
+                closeSidebar();
+            }
+        });
+    });
+    // tutup sidebar saat resize ke desktop
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 640)
+    })
 });

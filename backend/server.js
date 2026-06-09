@@ -1,4 +1,5 @@
 require('dotenv').config();
+const verifyToken = require('./shared/middleware/verifyToken');
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const pool = require('./config/db');
@@ -27,33 +28,43 @@ app.get('/api/health', (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
     const { username, password } = req.body;
 
-    // validasi input
     if (!username || !password) {
-        return res.status(400).json({ message: 'Username dan password wajib diisi'});
+        return res.status(400).json({ message: 'Username dan password wajib diisi' });
     }
 
     try {
-        // Cari user di database
         const [rows] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
         if (rows.length === 0) {
-            return res.status(401).json({ message: 'Username atau password salah' });
+            return res.status(401).json({ message: 'Username anda salah' });
         }
 
         const user = rows[0];
-        // bandingkan password
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(401).json( {message: 'username atau password salah'} );
+            return res.status(401).json({ message: 'Password anda salah' });
         }
 
-        // login berhasil -> kirim nama
+        // buat jwt token
+        const jwt = require('jsonwebtoken');
+        const token = jwt.sign(
+            { 
+                id: user.id, 
+                username: user.username, 
+                nama: user.nama 
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: '2h' }  // Token berlaku 2 jam
+        );
+
+        // Kirim token + nama
         return res.status(200).json({
             message: 'Login berhasil',
+            token: token,
             nama: user.nama
         });
     } catch (error) {
         console.error('Login error:', error);
-        return res.status(500).json({ message: 'Terjadi kesalahan server'} );
+        return res.status(500).json({ message: 'Terjadi kesalahan server' });
     }
 });
 
@@ -63,7 +74,7 @@ app.get('/', (req, res) => {
 });
 
 // API Jadwal
-app.get('/api/jadwal', async (req, res) => {
+app.get('/api/jadwal', verifyToken, async (req, res) => {
     const { minggu_mulai } = req.query;
 
     if (!minggu_mulai) {
@@ -86,7 +97,7 @@ app.get('/api/jadwal', async (req, res) => {
 });
 
 // tambah jadwal
-app.post('/api/jadwal', async (req, res) => {
+app.post('/api/jadwal', verifyToken, async (req, res) => {
     const { penanggung_jawab, kegiatan, kelas, tanggal, jam_mulai, jam_selesai } = req.body;
 
     // Validasi
@@ -115,7 +126,7 @@ app.post('/api/jadwal', async (req, res) => {
 });
 
 // delete jadwal
-app.delete('/api/jadwal/:id', async (req, res) => {
+app.delete('/api/jadwal/:id', verifyToken, async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -133,7 +144,7 @@ app.delete('/api/jadwal/:id', async (req, res) => {
 });
 
 // edit jadwal
-app.put('/api/jadwal/:id', async (req, res) => {
+app.put('/api/jadwal/:id', verifyToken, async (req, res) => {
     const { id } = req.params;
     const { penanggung_jawab, kegiatan, kelas, tanggal, jam_mulai, jam_selesai } = req.body;
 

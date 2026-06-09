@@ -18,7 +18,8 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         const data = await response.json();
 
         if (response.ok) {
-            // simpan nama ke localStorage
+            // simpan token dan nama ke localStorage
+            localStorage.setItem('token', data.token);
             localStorage.setItem('nama', data.nama);
             // redirect ke dashboard
             window.location.href = '/dashboard';

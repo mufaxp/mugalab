@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     // keamanan login sederhana
+    const token = localStorage.getItem('token');
     const nama = localStorage.getItem('nama');
-    if (!nama) {
+    if (!token || !nama) {
         window.location.href = '/login';
         return;
     }
@@ -118,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Submit form tambah jadwal
+    // Submit form tambah/edit jadwal
     if (formTambahJadwal) {
         formTambahJadwal.addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -166,7 +167,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const response = await fetch(url, {
                     method: method,
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
                     body: JSON.stringify({ penanggung_jawab, kegiatan, kelas, tanggal, jam_mulai, jam_selesai })
                 });
 
@@ -224,9 +228,14 @@ document.addEventListener('DOMContentLoaded', function() {
             sundayDepan.setDate(sundayIni.getDate() + 7);
             const mingguMulaiDepan = sundayDepan.toISOString().split('T')[0];
 
+            const token = localStorage.getItem('token');
             const [resIni, resDepan] = await Promise.all([
-                fetch(`/api/jadwal?minggu_mulai=${mingguMulaiIni}`),
-                fetch(`/api/jadwal?minggu_mulai=${mingguMulaiDepan}`)
+                fetch(`/api/jadwal?minggu_mulai=${mingguMulaiIni}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }),
+                fetch(`/api/jadwal?minggu_mulai=${mingguMulaiDepan}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
             ]);
 
             const dataIni = await resIni.json();
@@ -279,11 +288,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // fungsi hapus jadwal
     async function hapusJadwal(id, cardElement) {
         if (!confirm('Apakah anda yakin ingin menghapus jadwal ini?')) return;
 
         try {
-            const response = await fetch(`/api/jadwal/${id}`, { method: 'DELETE' });
+            const response = await fetch(`/api/jadwal/${id}`, { 
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             const data = await response.json();
 
             if (response.ok) {
@@ -311,6 +324,7 @@ document.addEventListener('DOMContentLoaded', function() {
 //  tombol logout
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function() {
+            localStorage.removeItem('token');
             localStorage.removeItem('nama');
             window.location.href = '/login';
         });

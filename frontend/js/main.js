@@ -51,7 +51,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // ambil data jadwal dari backend
     async function loadJadwal(mingguMulai) {
         try {
-            const response = await fetch(`/api/jadwal?minggu_mulai=${mingguMulai}`);
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/jadwal?minggu_mulai=${mingguMulai}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
             const data = await response.json();
             renderJadwal(data);
         } catch (error) {

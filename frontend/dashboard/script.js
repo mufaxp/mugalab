@@ -141,30 +141,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // try {
-            //     const response = await fetch('/api/jadwal', {
-            //         method: 'POST',
-            //         headers: { 'Content-Type': 'application/json' },
-            //         body: JSON.stringify({ penanggung_jawab, kegiatan, kelas, tanggal, jam_mulai, jam_selesai })
-            //     });
-
-            //     const data = await response.json();
-
-            //     if (response.ok) {
-            //         alert('Jadwal berhasil ditambahkan!');
-            //         modalTambah.style.display = 'none';
-            //         loadDashboardJadwal();
-            //     } else {
-            //         alert(data.message || 'Gagal menambahkan jadwal');
-            //     }
-            // } catch (error) {
-            //     console.error('Error:', error);
-            //     alert('Gagal terhubung ke server');
-            // }
             try {
                 const url = editMode ? `/api/jadwal/${editId}` : '/api/jadwal';
                 const method = editMode ? 'PUT' : 'POST';
 
+                const token = localStorage.getItem('token');
                 const response = await fetch(url, {
                     method: method,
                     headers: {
@@ -290,13 +271,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // fungsi hapus jadwal
     async function hapusJadwal(id, cardElement) {
-        if (!confirm('Apakah anda yakin ingin menghapus jadwal ini?')) return;
+         if (!confirm('Apakah anda yakin ingin menghapus jadwal ini?')) return;
 
-        try {
-            const response = await fetch(`/api/jadwal/${id}`, { 
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/jadwal/${id}`, { 
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
             const data = await response.json();
 
             if (response.ok) {

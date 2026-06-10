@@ -84,7 +84,34 @@ app.get('/api/lab', async (req, res) => {
     }
 });
 
-// API Jadwal
+// API Jadwal publik
+app.get('/api/jadwal/public', async (req, res) => {
+    const { minggu_mulai, lab_id } = req.query;
+
+    if (!minggu_mulai) {
+        return res.status(400).json({ message: 'Parameter minggu_mulai diperlukan' });
+    }
+
+    try {
+        let query = `SELECT * FROM jadwal WHERE tanggal >= ? AND tanggal <= DATE_ADD(?, INTERVAL 6 DAY)`;
+        const params = [minggu_mulai, minggu_mulai];
+
+        if (lab_id) {
+            query += ' AND lab_id = ?';
+            params.push(lab_id);
+        }
+
+        query += ' ORDER BY tanggal, jam_mulai';
+
+        const [rows] = await pool.query(query, params);
+        return res.status(200).json(rows);
+    } catch (error) {
+        console.error('Error fetching jadwal:', error);
+        return res.status(500).json({ message: 'Gagal mengambil data jadwal' });
+    }
+});
+
+// api jadwal privat
 app.get('/api/jadwal', verifyToken, async (req, res) => {
     const { minggu_mulai, lab_id } = req.query;
 

@@ -92,12 +92,10 @@ document.addEventListener('DOMContentLoaded', function() {
     async function loadJadwal(mingguMulai, labId) {
         try {
             const token = localStorage.getItem('token');
-            let url = `/api/jadwal?minggu_mulai=${mingguMulai}`;
+            let url = `/api/jadwal/public?minggu_mulai=${mingguMulai}`;
             if (labId) url += `&lab_id=${labId}`;
 
-            const response = await fetch(url, {
-                headers: {'Authorization': `Bearer ${token}` }
-            })
+            const response = await fetch(url);
             const data = await response.json();
             renderJadwal(data);
         } catch (error) {

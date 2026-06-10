@@ -2,11 +2,51 @@ document.addEventListener('DOMContentLoaded', function() {
     const weekSelect = document.getElementById('weekSelect');
     const tbody = document.querySelector('tbody');
 
-    // fungsi untuk mendapatkan tanggal Ahad (Minggu) dari sebuah tanggal
-    function getSundayOfWeek(date) {
-        const day = date.getDay();
-        const diff = date.getDate() - day;
-        const sunday = new Date(date);
+    // data lab dan navigasi
+    let labs = [];
+    let currentLabIndex = 0;
+
+    async function loadLabs() {
+        try {
+            const response = await fetch('/api/lab');
+            labs = await response.json();
+            if (labs.length > 0) {
+                updateLabDisplay();
+            }
+        } catch (error) {
+            console.error('Gagal memuat data lab:', error);
+        }
+    }
+
+    function updateLabDisplay() {
+        const labTitle = document.getElementById('labTitle');
+        if (labTitle && labs[currentLabIndex]) {
+            labTitle.textContent = labs[currentLabIndex].nama;
+        }
+        // reload jadwal untuk lab aktif
+        const sunday = getCurrentSunday();
+        loadJadwal(formatDateISO(sunday), labs[currentLabIndex].id);
+    }
+
+    // Event listener tombol panah
+    document.getElementById('labPrev').addEventListener('click', function() {
+        if (labs.length === 0) return;
+        currentLabIndex = (currentLabIndex - 1 + labs.length) % labs.length;
+        updateLabDisplay();
+    });
+
+    document.getElementById('labNext').addEventListener('click', function() {
+        if (labs.length === 0) return;
+        currentLabIndex = (currentLabIndex + 1) % labs.length;
+        updateLabDisplay();
+    });
+
+    // fungsi getCurrentSunday
+    function getCurrentSunday() {
+        const today = new Date();
+        const day = today.getDay();
+        const diff = today.getDate() - day;
+        const sunday = new Date(today);
         sunday.setDate(diff);
         sunday.setHours(0, 0, 0, 0);
         return sunday;
@@ -33,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // hitung tanggal pekan lalu, ini, dan depan
     const today = new Date();
-    const currentSunday = getSundayOfWeek(today);
+    const currentSunday = getCurrentSunday();
     const prevSunday = new Date(currentSunday); prevSunday.setDate(currentSunday.getDate() - 7);
     const nextSunday = new Date(currentSunday); nextSunday.setDate(currentSunday.getDate() + 7);
 
@@ -49,14 +89,15 @@ document.addEventListener('DOMContentLoaded', function() {
     weekSelect.value = 'current';
 
     // ambil data jadwal dari backend
-    async function loadJadwal(mingguMulai) {
+    async function loadJadwal(mingguMulai, labId) {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`/api/jadwal?minggu_mulai=${mingguMulai}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+            let url = `/api/jadwal?minggu_mulai=${mingguMulai}`;
+            if (labId) url += `&lab_id=${labId}`;
+
+            const response = await fetch(url, {
+                headers: {'Authorization': `Bearer ${token}` }
+            })
             const data = await response.json();
             renderJadwal(data);
         } catch (error) {
@@ -128,8 +169,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // load data pekan ini saat pertama kali halaman dimuat
-    loadJadwal(formatDateISO(currentSunday));
+    // load labs
+    loadLabs().then(() => {
+        if (labs.length > 0) {
+            loadJadwal(formatDateISO(getCurrentSunday()), labs[currentLabIndex].id);
+        } else {
+            loadJadwal(formatDateISO(getCurrentSunday()));
+        }
+    });
 
     // event: dropdown berubah
     weekSelect.addEventListener('change', function() {
@@ -138,6 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
         else if (this.value === 'current') selectedSunday = currentSunday;
         else if (this.value === 'next') selectedSunday = nextSunday;
 
-        loadJadwal(formatDateISO(selectedSunday));
+        const labId = labs.length > 0 ? labs[currentLabIndex].id : null;
+        loadJadwal(formatDateISO(selectedSunday), labId);
     });
 });

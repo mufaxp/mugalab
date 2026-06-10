@@ -201,6 +201,48 @@ td:not(:first-child)::after {
     text-align: left;
 }
 
+/* navigasi jadwal lab */
+.lab-navigation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 0 4px 0;
+    flex-shrink: 0;
+}
+
+.lab-arrow {
+    background: linear-gradient(135deg, #0a5c32, #0e703f);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(10, 92, 50, 0.2);
+}
+
+.lab-arrow:hover {
+    background: linear-gradient(135deg, #0e703f, #1a8b50);
+    transform: scale(1.1);
+}
+
+.lab-arrow:active {
+    transform: scale(0.95);
+}
+
+.lab-title {
+    font-size: clamp(14px, 2vw, 18px);
+    font-weight: 700;
+    color: #0a5c32;
+    min-width: 180px;
+    text-align: center;
+}
 @media (max-width: 1024px) {
     body {
         padding: 8px;

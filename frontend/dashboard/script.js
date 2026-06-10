@@ -124,6 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formTambahJadwal.addEventListener('submit', async function(e) {
             e.preventDefault();
 
+            const lab_id = parseInt(document.getElementById('lab_id').value);
             const penanggung_jawab = document.getElementById('penanggung_jawab').value.trim();
             const kegiatan = document.getElementById('kegiatan').value.trim();
             const kelas = document.getElementById('kelas').value.trim() || '-';
@@ -152,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ penanggung_jawab, kegiatan, kelas, tanggal, jam_mulai, jam_selesai })
+                    body: JSON.stringify({ lab_id, penanggung_jawab, kegiatan, kelas, tanggal, jam_mulai, jam_selesai })
                 });
 
                 const data = await response.json();
@@ -186,6 +187,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('tanggal').value = item.tanggal;
         document.getElementById('jam_mulai').value = item.jam_mulai;
         document.getElementById('jam_selesai').value = item.jam_selesai;
+        document.getElementById('lab_id').value = item.lab_id || 1;
         
         modalTambah.style.display = 'flex';
     }

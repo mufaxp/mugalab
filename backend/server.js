@@ -73,22 +73,37 @@ app.get('/', (req, res) => {
     res.send('Server mugalab aktif. Akses /api/health untuk cek kesehatan.');
 });
 
+// GET daftar lab
+app.get('/api/lab', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT * FROM lab ORDER BY id');
+        return res.status(200).json(rows);
+    } catch (error) {
+        console.error('Error fetching lab:', error);
+        return res.status(500).json({ message: 'Gagal mengambil data lab' });
+    }
+});
+
 // API Jadwal
 app.get('/api/jadwal', verifyToken, async (req, res) => {
-    const { minggu_mulai } = req.query;
+    const { minggu_mulai, lab_id } = req.query;
 
     if (!minggu_mulai) {
         return res.status(400).json({ message: 'Parameter minggu_mulai diperlukan' });
     }
 
     try {
-        // Hitung akhir pekan (Ahad + 6 hari = Sabtu)
-        const [rows] = await pool.query(
-            `SELECT * FROM jadwal 
-             WHERE tanggal >= ? AND tanggal <= DATE_ADD(?, INTERVAL 6 DAY)
-             ORDER BY tanggal, jam_mulai`,
-            [minggu_mulai, minggu_mulai]
-        );
+        let query = `SELECT * FROM jadwal WHERE tanggal >= ? AND tanggal <= DATE_ADD(?, INTERVAL 6 DAY)`;
+        const params = [minggu_mulai, minggu_mulai];
+
+        if (lab_id) {
+            query += ' AND lab_id = ?';
+            params.push(lab_id);
+        }
+
+        query += ' ORDER BY tanggal, jam_mulai';
+
+        const [rows] = await pool.query(query, params);
         return res.status(200).json(rows);
     } catch (error) {
         console.error('Error fetching jadwal:', error);
@@ -110,9 +125,10 @@ app.post('/api/jadwal', verifyToken, async (req, res) => {
     }
 
     try {
+        const { lab_id } = req.body
         const [result] = await pool.query(
-            'INSERT INTO jadwal (penanggung_jawab, kegiatan, kelas, tanggal, jam_mulai, jam_selesai) VALUES (?, ?, ?, ?, ?, ?)',
-            [penanggung_jawab, kegiatan, kelas || '-', tanggal, jam_mulai, jam_selesai]
+            'INSERT INTO jadwal (penanggung_jawab, kegiatan, kelas, tanggal, jam_mulai, jam_selesai, lab_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [penanggung_jawab, kegiatan, kelas || '-', tanggal, jam_mulai, jam_selesai, lab_id || 1]
         );
 
         return res.status(201).json({
@@ -158,9 +174,11 @@ app.put('/api/jadwal/:id', verifyToken, async (req, res) => {
     }
 
     try {
+        const { lab_id } = req.body;
+
         const [result] = await pool.query(
-            'UPDATE jadwal SET penanggung_jawab = ?, kegiatan = ?, kelas = ?, tanggal = ?, jam_mulai = ?, jam_selesai = ? WHERE id = ?',
-            [penanggung_jawab, kegiatan, kelas || '-', tanggal, jam_mulai, jam_selesai, id]
+            'UPDATE jadwal SET penanggung_jawab = ?, kegiatan = ?, kelas = ?, tanggal = ?, jam_mulai = ?, jam_selesai = ?, lab_id = ? WHERE id = ?',
+            [penanggung_jawab, kegiatan, kelas || '-', tanggal, jam_mulai, jam_selesai, lab_id || 1, id]
         );
 
         if (result.affectedRows === 0) {

@@ -2,6 +2,36 @@ document.addEventListener('DOMContentLoaded', function() {
     const weekSelect = document.getElementById('weekSelect');
     const tbody = document.querySelector('tbody');
 
+    // fungsi getCurrentSunday
+    function getCurrentSunday() {
+        const today = new Date();
+        const day = today.getDay();
+        const diff = today.getDate() - day;
+        const sunday = new Date(today);
+        sunday.setDate(diff);
+        sunday.setHours(0, 0, 0, 0);
+        return sunday;
+    }
+
+    function formatDate(date) {
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        return `${day}/${month}`;
+    }
+
+    function formatDateISO(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function getWeekRange(sunday) {
+        const saturday = new Date(sunday);
+        saturday.setDate(sunday.getDate() + 6);
+        return { start: formatDate(sunday), end: formatDate(saturday) };
+    }
+    
     // data lab dan navigasi
     let labs = [];
     let currentLabIndex = 0;
@@ -40,39 +70,9 @@ document.addEventListener('DOMContentLoaded', function() {
         updateLabDisplay();
     });
 
-    // fungsi getCurrentSunday
-    function getCurrentSunday() {
-        const today = new Date();
-        const day = today.getDay();
-        const diff = today.getDate() - day;
-        const sunday = new Date(today);
-        sunday.setDate(diff);
-        sunday.setHours(0, 0, 0, 0);
-        return sunday;
-    }
-
-    function formatDate(date) {
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        return `${day}/${month}`;
-    }
-
-    function formatDateISO(date) {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
-
-    function getWeekRange(sunday) {
-        const saturday = new Date(sunday);
-        saturday.setDate(sunday.getDate() + 6);
-        return { start: formatDate(sunday), end: formatDate(saturday) };
-    }
 
     // hitung tanggal pekan lalu, ini, dan depan
     const today = new Date();
-    const currentSunday = getCurrentSunday();
     const prevSunday = new Date(currentSunday); prevSunday.setDate(currentSunday.getDate() - 7);
     const nextSunday = new Date(currentSunday); nextSunday.setDate(currentSunday.getDate() + 7);
 

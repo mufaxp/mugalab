@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // data lab dan navigasi
     let labs = [];
     let currentLabIndex = 0;
+    let currentSunday = getCurrentSunday();
 
     async function loadLabs() {
         try {
@@ -23,9 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (labTitle && labs[currentLabIndex]) {
             labTitle.textContent = labs[currentLabIndex].nama;
         }
-        // reload jadwal untuk lab aktif
-        const sunday = getCurrentSunday();
-        loadJadwal(formatDateISO(sunday), labs[currentLabIndex].id);
+        loadJadwal(formatDateISO(currentSunday), labs[currentLabIndex].id);
     }
 
     // Event listener tombol panah
@@ -170,20 +169,23 @@ document.addEventListener('DOMContentLoaded', function() {
     // load labs
     loadLabs().then(() => {
         if (labs.length > 0) {
-            loadJadwal(formatDateISO(getCurrentSunday()), labs[currentLabIndex].id);
+            loadJadwal(formatDateISO(currentSunday), labs[currentLabIndex].id);
         } else {
-            loadJadwal(formatDateISO(getCurrentSunday()));
+            loadJadwal(formatDateISO(currentSunday));
         }
     });
 
     // event: dropdown berubah
     weekSelect.addEventListener('change', function() {
-        let selectedSunday;
-        if (this.value === 'prev') selectedSunday = prevSunday;
-        else if (this.value === 'current') selectedSunday = currentSunday;
-        else if (this.value === 'next') selectedSunday = nextSunday;
+        if (this.value === 'prev') {
+            currentSunday = new Date(prevSunday);
+        } else if (this.value === 'current') {
+            currentSunday = getCurrentSunday();
+        } else if (this.value === 'next') {
+            currentSunday = new Date(nextSunday);
+        }
 
         const labId = labs.length > 0 ? labs[currentLabIndex].id : null;
-        loadJadwal(formatDateISO(selectedSunday), labId);
+        loadJadwal(formatDateISO(currentSunday), labId);
     });
 });

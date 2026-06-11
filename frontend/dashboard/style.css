@@ -408,6 +408,39 @@ body {
     display: block;
 }
 
+/* filter lab di dashboard */
+.lab-filter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+.lab-filter label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+    white-space: nowrap;
+}
+.lab-filter-select {
+    width: auto;
+    min-width: 200px;
+    padding: 8px 12px;
+    border: 1px solid #d0e6d5;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    background-color: #f0f7f2;
+    color: #0e703f;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.lab-filter-select:focus {
+    border-color: #0e703f;
+    box-shadow: 0 0 0 2px rgba(14, 112, 63, 0.1);
+}
+
 /* responsif */
 @media (max-width: 640px) {
     .hamburger-btn {

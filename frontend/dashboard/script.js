@@ -23,6 +23,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const logoutBtn = document.getElementById('logoutBtn');
     let editMode = false;
     let editId = null;
+    const labFilterSelect = document.getElementById('labFilterSelect');
+
+    // filter lab
+    if (labFilterSelect) {
+        labFilterSelect.addEventListener('change', function() {
+            const selectedValue = this.value;
+            if (selectedValue === 'all') {
+                loadDashboardJadwal(); // semua lab
+            } else {
+                loadDashboardJadwal(parseInt(selectedValue)); // lab tertentu
+            }
+        })
+    }
 
     // sidebar hamburger
     const hamburgerBtn = document.getElementById('hamburgerBtn');
@@ -193,45 +206,54 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // load dashboard jadwal
-    async function loadDashboardJadwal() {
-        const pekanIniEl = document.getElementById('jadwalPekanIni');
-        const pekanDepanEl = document.getElementById('jadwalPekanDepan');
+    async function loadDashboardJadwal(labId = null) {
+    const pekanIniEl = document.getElementById('jadwalPekanIni');
+    const pekanDepanEl = document.getElementById('jadwalPekanDepan');
+    
+    if (!pekanIniEl || !pekanDepanEl) return;
+
+    try {
+        const today = new Date();
+        const day = today.getDay();
+        const diff = today.getDate() - day;
+        const sundayIni = new Date(today);
+        sundayIni.setDate(diff);
+        const mingguMulaiIni = sundayIni.toISOString().split('T')[0];
+
+        const sundayDepan = new Date(sundayIni);
+        sundayDepan.setDate(sundayIni.getDate() + 7);
+        const mingguMulaiDepan = sundayDepan.toISOString().split('T')[0];
+
+        // Buat URL dengan parameter lab_id
+        let urlIni = `/api/jadwal?minggu_mulai=${mingguMulaiIni}`;
+        let urlDepan = `/api/jadwal?minggu_mulai=${mingguMulaiDepan}`;
         
-        if (!pekanIniEl || !pekanDepanEl) return;
-
-        try {
-            const today = new Date();
-            const day = today.getDay();
-            const diff = today.getDate() - day;
-            const sundayIni = new Date(today);
-            sundayIni.setDate(diff);
-            const mingguMulaiIni = sundayIni.toISOString().split('T')[0];
-
-            const sundayDepan = new Date(sundayIni);
-            sundayDepan.setDate(sundayIni.getDate() + 7);
-            const mingguMulaiDepan = sundayDepan.toISOString().split('T')[0];
-
-            const token = localStorage.getItem('token');
-            const [resIni, resDepan] = await Promise.all([
-                fetch(`/api/jadwal?minggu_mulai=${mingguMulaiIni}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                }),
-                fetch(`/api/jadwal?minggu_mulai=${mingguMulaiDepan}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                })
-            ]);
-
-            const dataIni = await resIni.json();
-            const dataDepan = await resDepan.json();
-
-            renderJadwalSection(pekanIniEl, dataIni, 'pekan ini');
-            renderJadwalSection(pekanDepanEl, dataDepan, 'pekan depan');
-        } catch (error) {
-            console.error('Gagal memuat jadwal:', error);
-            pekanIniEl.innerHTML = '<p style="color:#c62828; text-align:center; padding:20px;">Gagal memuat data.</p>';
-            pekanDepanEl.innerHTML = '<p style="color:#c62828; text-align:center; padding:20px;">Gagal memuat data.</p>';
+        if (labId) {
+            urlIni += `&lab_id=${labId}`;
+            urlDepan += `&lab_id=${labId}`;
         }
+
+        const token = localStorage.getItem('token');
+        const [resIni, resDepan] = await Promise.all([
+            fetch(urlIni, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }),
+            fetch(urlDepan, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+        ]);
+
+        const dataIni = await resIni.json();
+        const dataDepan = await resDepan.json();
+
+        renderJadwalSection(pekanIniEl, dataIni, 'pekan ini');
+        renderJadwalSection(pekanDepanEl, dataDepan, 'pekan depan');
+    } catch (error) {
+        console.error('Gagal memuat jadwal:', error);
+        pekanIniEl.innerHTML = '<p style="color:#c62828; text-align:center; padding:20px;">Gagal memuat data.</p>';
+        pekanDepanEl.innerHTML = '<p style="color:#c62828; text-align:center; padding:20px;">Gagal memuat data.</p>';
     }
+}
 
     function renderJadwalSection(containerElement, data, label) {
         if (!containerElement) return;

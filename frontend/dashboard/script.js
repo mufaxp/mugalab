@@ -25,6 +25,12 @@ document.addEventListener('DOMContentLoaded', function() {
     let editId = null;
     const labFilterSelect = document.getElementById('labFilterSelect');
 
+    function getCurrentLabFilter() {
+        if (!labFilterSelect) return null;
+        const value = labFilterSelect.value;
+        if (value === 'all') return null;
+        return parseInt(value);
+    }
     // filter lab
     if (labFilterSelect) {
         labFilterSelect.addEventListener('change', function() {
@@ -176,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     modalTambah.style.display = 'none';
                     editMode = false;
                     editId = null;
-                    loadDashboardJadwal();
+                    loadDashboardJadwal(getCurrentLabFilter());
                 } else {
                     alert(data.message || 'Gagal menyimpan jadwal');
                 }
@@ -197,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('penanggung_jawab').value = item.penanggung_jawab;
         document.getElementById('kegiatan').value = item.kegiatan;
         document.getElementById('kelas').value = item.kelas === '-' ? '' : item.kelas;
-        document.getElementById('tanggal').value = item.tanggal;
+        document.getElementById('tanggal').value = item.tanggal ? item.tanggal.substring(0, 10) : '';
         document.getElementById('jam_mulai').value = item.jam_mulai;
         document.getElementById('jam_selesai').value = item.jam_selesai;
         document.getElementById('lab_id').value = item.lab_id || 1;
@@ -308,6 +314,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (response.ok) {
                 cardElement.remove();
                 alert('Jadwal berhasil dihapus');
+                loadDashboardJadwal(getCurrentLabFilter());
             } else {
                 alert(data.message || 'Gagal menghapus jadwal');
             }

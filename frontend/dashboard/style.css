@@ -530,6 +530,20 @@ body {
     display: block;
 }
 
+.btn-pakai {
+    background: #FFF3E0;
+    color: #E65100;
+    border: 1px solid #FFCC80;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    margin-left: 4px;
+}
+.btn-pakai:hover {
+    background: #FFE0B2;
+}
+
 /* responsive */
 @media (max-width: 768px) {
     .hamburger-btn {

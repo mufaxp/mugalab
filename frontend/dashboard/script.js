@@ -417,14 +417,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td style="padding:8px; border:1px solid #d0e6d5;">${item.jumlah}</td>
                 <td style="padding:8px; border:1px solid #d0e6d5;">${kondisiEmoji} ${item.kondisi}</td>
                 <td style="padding:8px; border:1px solid #d0e6d5;">
-                    <button class="btn-edit" onclick="editAlat(${item.id})">Edit</button>
-                    <button class="btn-delete" onclick="hapusAlat(${item.id})">Hapus</button>
+                    <button class="btn-edit" data-edit-alat="${item.id}">Edit</button>
+                    <button class="btn-delete" data-hapus-alat="${item.id}">Hapus</button>
                 </td>
             </tr>`;
         });
         
         html += '</tbody></table>';
         container.innerHTML = html;
+        // Event listener untuk tombol Edit & Hapus Alat
+        container.querySelectorAll('.btn-edit[data-edit-alat]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                editAlat(parseInt(this.getAttribute('data-edit-alat')));
+            });
+        });
+        container.querySelectorAll('.btn-delete[data-hapus-alat]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                hapusAlat(parseInt(this.getAttribute('data-hapus-alat')));
+            });
+        });
     }
 
     // CRUD alat
@@ -547,15 +558,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td style="padding:8px; border:1px solid #d0e6d5;">${item.satuan}</td>
                 <td style="padding:8px; border:1px solid #d0e6d5;">${tgl}</td>
                 <td style="padding:8px; border:1px solid #d0e6d5;">
-                    <button class="btn-edit" onclick="editBahan(${item.id})">Edit</button>
-                    <button class="btn-delete" onclick="hapusBahan(${item.id})">Hapus</button>
-                    <button style="background:#FFF3E0;color:#E65100;border:1px solid #FFCC80;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;margin-left:4px;" onclick="bukaModalPakai(${item.id}, '${item.nama_bahan}', ${item.jumlah}, '${item.satuan}')">Pakai</button>
+                    <button class="btn-edit" data-edit-bahan="${item.id}">Edit</button>
+                    <button class="btn-delete" data-hapus-bahan="${item.id}">Hapus</button>
+                    <button class="btn-pakai" data-pakai-bahan='${JSON.stringify({id: item.id, nama: item.nama_bahan, stok: item.jumlah, satuan: item.satuan})}'>Pakai</button>
                 </td>
             </tr>`;
         });
         
         html += '</tbody></table>';
         container.innerHTML = html;
+        // Event listener untuk tombol Edit & Hapus Bahan
+        container.querySelectorAll('.btn-edit[data-edit-bahan]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                editBahan(parseInt(this.getAttribute('data-edit-bahan')));
+            });
+        });
+        container.querySelectorAll('.btn-delete[data-hapus-bahan]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                hapusBahan(parseInt(this.getAttribute('data-hapus-bahan')));
+            });
+        });
+        // Event listener untuk tombol Pakai
+        container.querySelectorAll('.btn-pakai[data-pakai-bahan]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const data = JSON.parse(this.getAttribute('data-pakai-bahan'));
+                bukaModalPakai(data.id, data.nama, data.stok, data.satuan);
+            });
+        });
     }
 
     // CRUD bahan

@@ -454,6 +454,7 @@ document.addEventListener('DOMContentLoaded', function() {
             nama_alat: document.getElementById('alat_nama').value,
             produsen: document.getElementById('alat_produsen').value || '-',
             jumlah: parseInt(document.getElementById('alat_jumlah').value),
+            kondisi: document.getElementById('alat_kondisi').value,
             lab_id: parseInt(document.getElementById('alat_lab').value),
             keterangan: document.getElementById('alat_keterangan').value
         };
@@ -494,6 +495,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('alat_nama').value = item.nama_alat;
         document.getElementById('alat_produsen').value = item.produsen;
         document.getElementById('alat_jumlah').value = item.jumlah;
+        document.getElementById('alat_kondisi').value = item.kondisi || 'baik';
         document.getElementById('alat_lab').value = item.lab_id;
         document.getElementById('alat_keterangan').value = item.keterangan || '';
         document.getElementById('modalAlat').style.display = 'flex';

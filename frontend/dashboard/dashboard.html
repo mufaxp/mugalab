@@ -71,11 +71,49 @@
 
             <!-- Panel Inventaris -->
             <div id="inventaris" class="panel">
-                <h2>🧪 Inventaris Alat & Bahan</h2>
+                <div class="panel-header">
+                    <h2>🧪 Inventaris Alat & Bahan</h2>
+                </div>
                 <p>Kelola data inventaris: cek stok, tambah barang baru, kurangi jumlah, dan perbarui kondisi alat.</p>
-                <!-- Nanti bisa diisi tabel atau form -->
+                
+                <!-- Filter Lab -->
+                <div class="lab-filter">
+                    <label for="invLabFilter">Pilih Laboratorium:</label>
+                    <select id="invLabFilter" class="form-input lab-filter-select">
+                        <option value="all">Semua Lab</option>
+                        <option value="1">Lab Biologi-Kimia</option>
+                        <option value="2">Lab Fisika</option>
+                    </select>
+                </div>
+                
+                <!-- Tab Alat / Bahan -->
+                <div class="inv-tabs">
+                    <button class="inv-tab active" data-tab="alat">Alat</button>
+                    <button class="inv-tab" data-tab="bahan">Bahan</button>
+                </div>
+                
+                <!-- Tabel Alat -->
+                <div id="alatPanel" class="inv-panel active">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <h3>Daftar Alat</h3>
+                        <button class="btn-tambah" id="btnTambahAlat">Tambah Alat</button>
+                    </div>
+                    <div id="alatList" style="overflow-x:auto;">
+                        <p style="color:#999; text-align:center; padding:20px;">Memuat data alat...</p>
+                    </div>
+                </div>
+                
+                <!-- Tabel Bahan -->
+                <div id="bahanPanel" class="inv-panel">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <h3>Daftar Bahan</h3>
+                        <button class="btn-tambah" id="btnTambahBahan">Tambah Bahan</button>
+                    </div>
+                    <div id="bahanList" style="overflow-x:auto;">
+                        <p style="color:#999; text-align:center; padding:20px;">Memuat data bahan...</p>
+                    </div>
+                </div>
             </div>
-
             <!-- Panel Laporan Kerusakan -->
             <div id="laporan" class="panel">
                 <h2>⚠️ Laporan Kerusakan Alat</h2>
@@ -153,6 +191,136 @@
             </form>
         </div>
      </div>
+     <!-- Modal Tambah/Edit Alat -->
+    <div id="modalAlat" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <h3 class="modal-title" id="modalAlatTitle">Tambah Alat</h3>
+            <form id="formAlat">
+                <div class="form-group">
+                    <label for="alat_kode">Kode Alat</label>
+                    <input type="text" id="alat_kode" class="form-input" placeholder="ALT-001" required>
+                </div>
+                <div class="form-group">
+                    <label for="alat_nama">Nama Alat</label>
+                    <input type="text" id="alat_nama" class="form-input" placeholder="Nama alat" required>
+                </div>
+                <div class="form-group">
+                    <label for="alat_produsen">Produsen</label>
+                    <input type="text" id="alat_produsen" class="form-input" placeholder="Nama produsen (isi - jika tidak ada)">
+                </div>
+                <div class="form-group">
+                    <label for="alat_jumlah">Jumlah</label>
+                    <input type="number" id="alat_jumlah" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="alat_lab">Laboratorium</label>
+                    <select id="alat_lab" class="form-input">
+                        <option value="1">Lab Biologi-Kimia</option>
+                        <option value="2">Lab Fisika</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="alat_keterangan">Keterangan</label>
+                    <input type="text" id="alat_keterangan" class="form-input" placeholder="Catatan tambahan">
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-simpan">Simpan</button>
+                    <button type="button" class="btn-batal" onclick="document.getElementById('modalAlat').style.display='none'">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Tambah/Edit Bahan -->
+    <div id="modalBahan" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <h3 class="modal-title" id="modalBahanTitle">Tambah Bahan</h3>
+            <form id="formBahan">
+                <div class="form-group">
+                    <label for="bahan_kode">Kode Bahan</label>
+                    <input type="text" id="bahan_kode" class="form-input" placeholder="BHN-001" required>
+                </div>
+                <div class="form-group">
+                    <label for="bahan_nama">Nama Bahan</label>
+                    <input type="text" id="bahan_nama" class="form-input" placeholder="Nama bahan" required>
+                </div>
+                <div class="form-group">
+                    <label for="bahan_produsen">Produsen</label>
+                    <input type="text" id="bahan_produsen" class="form-input" placeholder="Nama produsen (isi - jika tidak ada)">
+                </div>
+                <div class="form-row">
+                    <div class="form-group form-group-half">
+                        <label for="bahan_jumlah">Jumlah Stok</label>
+                        <input type="number" step="0.01" id="bahan_jumlah" class="form-input" required>
+                    </div>
+                    <div class="form-group form-group-half">
+                        <label for="bahan_satuan">Satuan</label>
+                        <select id="bahan_satuan" class="form-input">
+                            <option value="gram">gram</option>
+                            <option value="ml">ml</option>
+                            <option value="liter">liter</option>
+                            <option value="kg">kg</option>
+                            <option value="buah">buah</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="bahan_kadaluarsa">Tanggal Kadaluarsa</label>
+                    <input type="date" id="bahan_kadaluarsa" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="bahan_lab">Laboratorium</label>
+                    <select id="bahan_lab" class="form-input">
+                        <option value="1">Lab Biologi-Kimia</option>
+                        <option value="2">Lab Fisika</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="bahan_keterangan">Keterangan</label>
+                    <input type="text" id="bahan_keterangan" class="form-input" placeholder="Catatan tambahan">
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-simpan">Simpan</button>
+                    <button type="button" class="btn-batal" onclick="document.getElementById('modalBahan').style.display='none'">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Pakai Bahan -->
+    <div id="modalPakai" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <h3 class="modal-title">Pakai Bahan</h3>
+            <form id="formPakai">
+                <input type="hidden" id="pakai_bahan_id">
+                <p style="margin-bottom:12px;">Stok tersedia: <strong id="pakai_stok"></strong></p>
+                <div class="form-group">
+                    <label for="pakai_jumlah">Jumlah Digunakan</label>
+                    <input type="number" step="0.01" id="pakai_jumlah" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="pakai_pj">Penanggung Jawab</label>
+                    <input type="text" id="pakai_pj" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="pakai_kelas">Kelas</label>
+                    <input type="text" id="pakai_kelas" class="form-input" placeholder="Isi - untuk umum">
+                </div>
+                <div class="form-group">
+                    <label for="pakai_kegiatan">Kegiatan</label>
+                    <input type="text" id="pakai_kegiatan" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="pakai_tanggal">Tanggal</label>
+                    <input type="date" id="pakai_tanggal" class="form-input" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-simpan">Simpan</button>
+                    <button type="button" class="btn-batal" onclick="document.getElementById('modalPakai').style.display='none'">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
     <script src="/dashboard/script.js"></script>
 </body>
 </html>

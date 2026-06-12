@@ -492,6 +492,44 @@ body {
     display: block;
 }
 
+/* tab inventaris */
+.inv-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 16px;
+    border-bottom: 2px solid var(--muh-green-light);
+}
+
+.inv-tab {
+    padding: 10px 20px;
+    border: none;
+    background: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.15s;
+    font-family: inherit;
+}
+
+.inv-tab:hover {
+    color: var(--muh-green);
+}
+
+.inv-tab.active {
+    color: var(--muh-green);
+    border-bottom-color: var(--muh-green);
+}
+
+.inv-panel {
+    display: none;
+}
+
+.inv-panel.active {
+    display: block;
+}
+
 /* responsive */
 @media (max-width: 768px) {
     .hamburger-btn {

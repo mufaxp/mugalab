@@ -334,7 +334,346 @@ document.addEventListener('DOMContentLoaded', function() {
 
     loadDashboardJadwal();
 
-//  tombol logout
+    // tab inventaris
+    const invTabs = document.querySelectorAll('.inv-tab');
+    const invPanels = document.querySelectorAll('.inv-panel');
+
+    invTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            invTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            const target = this.getAttribute('data-tab');
+            invPanels.forEach(p => p.classList.remove('active'));
+            document.getElementById(target + 'Panel').classList.add('active');
+        });
+    });
+    
+    // variabel inventaris
+    let alatEditMode = false;
+    let alatEditId = null;
+    let bahanEditMode = false;
+    let bahanEditId = null;
+    const invLabFilter = document.getElementById('invLabFilter');
+
+    // filter lab berubah
+    if (invLabFilter) {
+        invLabFilter.addEventListener('change', function() {
+            loadAlat();
+            loadBahan();
+        });
+    }
+
+    function getInvLabFilter() {
+        if (!invLabFilter) return null;
+        const val = invLabFilter.value;
+        return val === 'all' ? null : parseInt(val);
+    }
+
+    // load dan render alat
+    async function loadAlat() {
+        const container = document.getElementById('alatList');
+        if (!container) return;
+        
+        try {
+            const token = localStorage.getItem('token');
+            let url = '/api/alat';
+            const labId = getInvLabFilter();
+            if (labId) url += `?lab_id=${labId}`;
+            
+            const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+            const data = await res.json();
+            renderAlat(data);
+        } catch (error) {
+            container.innerHTML = '<p style="color:#c62828; text-align:center;">Gagal memuat data alat.</p>';
+        }
+    }
+
+    function renderAlat(data) {
+        const container = document.getElementById('alatList');
+        if (data.length === 0) {
+            container.innerHTML = '<p style="color:#999; text-align:center; padding:20px;">Belum ada data alat.</p>';
+            return;
+        }
+        
+        let html = `<table style="width:100%; border-collapse:collapse; font-size:13px;">
+            <thead>
+                <tr style="background:#f0f7f2;">
+                    <th style="padding:8px; border:1px solid #d0e6d5;">Kode</th>
+                    <th style="padding:8px; border:1px solid #d0e6d5;">Nama Alat</th>
+                    <th style="padding:8px; border:1px solid #d0e6d5;">Produsen</th>
+                    <th style="padding:8px; border:1px solid #d0e6d5;">Jumlah</th>
+                    <th style="padding:8px; border:1px solid #d0e6d5;">Kondisi</th>
+                    <th style="padding:8px; border:1px solid #d0e6d5;">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>`;
+        
+        data.forEach(item => {
+            const kondisiEmoji = item.kondisi === 'baik' ? '✅' : item.kondisi === 'rusak' ? '🔴' : '🟡';
+            html += `<tr>
+                <td style="padding:8px; border:1px solid #d0e6d5;">${item.kode_alat}</td>
+                <td style="padding:8px; border:1px solid #d0e6d5;">${item.nama_alat}</td>
+                <td style="padding:8px; border:1px solid #d0e6d5;">${item.produsen}</td>
+                <td style="padding:8px; border:1px solid #d0e6d5;">${item.jumlah}</td>
+                <td style="padding:8px; border:1px solid #d0e6d5;">${kondisiEmoji} ${item.kondisi}</td>
+                <td style="padding:8px; border:1px solid #d0e6d5;">
+                    <button class="btn-edit" onclick="editAlat(${item.id})">Edit</button>
+                    <button class="btn-delete" onclick="hapusAlat(${item.id})">Hapus</button>
+                </td>
+            </tr>`;
+        });
+        
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    // CRUD alat
+    document.getElementById('btnTambahAlat').addEventListener('click', function() {
+        alatEditMode = false;
+        alatEditId = null;
+        document.getElementById('modalAlatTitle').textContent = 'Tambah Alat';
+        document.getElementById('formAlat').reset();
+        document.getElementById('modalAlat').style.display = 'flex';
+    });
+
+    document.getElementById('formAlat').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const body = {
+            kode_alat: document.getElementById('alat_kode').value,
+            nama_alat: document.getElementById('alat_nama').value,
+            produsen: document.getElementById('alat_produsen').value || '-',
+            jumlah: parseInt(document.getElementById('alat_jumlah').value),
+            lab_id: parseInt(document.getElementById('alat_lab').value),
+            keterangan: document.getElementById('alat_keterangan').value
+        };
+        
+        const url = alatEditMode ? `/api/alat/${alatEditId}` : '/api/alat';
+        const method = alatEditMode ? 'PUT' : 'POST';
+        
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(url, {
+                method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert(data.message);
+                document.getElementById('modalAlat').style.display = 'none';
+                loadAlat();
+            } else {
+                alert(data.message);
+            }
+        } catch (error) {
+            alert('Gagal terhubung ke server');
+        }
+    });
+
+    async function editAlat(id) {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`/api/alat?lab_id=${getInvLabFilter() || ''}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        const item = data.find(a => a.id === id);
+        if (!item) return;
+        
+        alatEditMode = true;
+        alatEditId = id;
+        document.getElementById('modalAlatTitle').textContent = 'Edit Alat';
+        document.getElementById('alat_kode').value = item.kode_alat;
+        document.getElementById('alat_nama').value = item.nama_alat;
+        document.getElementById('alat_produsen').value = item.produsen;
+        document.getElementById('alat_jumlah').value = item.jumlah;
+        document.getElementById('alat_lab').value = item.lab_id;
+        document.getElementById('alat_keterangan').value = item.keterangan || '';
+        document.getElementById('modalAlat').style.display = 'flex';
+    }
+
+    async function hapusAlat(id) {
+        if (!confirm('Yakin hapus alat ini?')) return;
+        const token = localStorage.getItem('token');
+        const res = await fetch(`/api/alat/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        alert(data.message);
+        loadAlat();
+    }
+
+    // load dan render bahan
+    async function loadBahan() {
+        const container = document.getElementById('bahanList');
+        if (!container) return;
+        
+        try {
+            const token = localStorage.getItem('token');
+            let url = '/api/bahan';
+            const labId = getInvLabFilter();
+            if (labId) url += `?lab_id=${labId}`;
+            
+            const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+            const data = await res.json();
+            renderBahan(data);
+        } catch (error) {
+            container.innerHTML = '<p style="color:#c62828; text-align:center;">Gagal memuat data bahan.</p>';
+        }
+    }
+
+    function renderBahan(data) {
+        const container = document.getElementById('bahanList');
+        if (data.length === 0) {
+            container.innerHTML = '<p style="color:#999; text-align:center; padding:20px;">Belum ada data bahan.</p>';
+            return;
+        }
+        
+        let html = `<table style="width:100%; border-collapse:collapse; font-size:13px;">
+            <thead>
+                <tr style="background:#f0f7f2;">
+                    <th style="padding:8px; border:1px solid #d0e6d5;">Kode</th>
+                    <th style="padding:8px; border:1px solid #d0e6d5;">Nama Bahan</th>
+                    <th style="padding:8px; border:1px solid #d0e6d5;">Produsen</th>
+                    <th style="padding:8px; border:1px solid #d0e6d5;">Stok</th>
+                    <th style="padding:8px; border:1px solid #d0e6d5;">Satuan</th>
+                    <th style="padding:8px; border:1px solid #d0e6d5;">Kadaluarsa</th>
+                    <th style="padding:8px; border:1px solid #d0e6d5;">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>`;
+        
+        data.forEach(item => {
+            const tgl = item.tanggal_kadaluarsa ? item.tanggal_kadaluarsa.substring(0, 10) : '-';
+            html += `<tr>
+                <td style="padding:8px; border:1px solid #d0e6d5;">${item.kode_bahan}</td>
+                <td style="padding:8px; border:1px solid #d0e6d5;">${item.nama_bahan}</td>
+                <td style="padding:8px; border:1px solid #d0e6d5;">${item.produsen}</td>
+                <td style="padding:8px; border:1px solid #d0e6d5;">${item.jumlah}</td>
+                <td style="padding:8px; border:1px solid #d0e6d5;">${item.satuan}</td>
+                <td style="padding:8px; border:1px solid #d0e6d5;">${tgl}</td>
+                <td style="padding:8px; border:1px solid #d0e6d5;">
+                    <button class="btn-edit" onclick="editBahan(${item.id})">Edit</button>
+                    <button class="btn-delete" onclick="hapusBahan(${item.id})">Hapus</button>
+                    <button style="background:#FFF3E0;color:#E65100;border:1px solid #FFCC80;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;margin-left:4px;" onclick="bukaModalPakai(${item.id}, '${item.nama_bahan}', ${item.jumlah}, '${item.satuan}')">Pakai</button>
+                </td>
+            </tr>`;
+        });
+        
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    // CRUD bahan
+    document.getElementById('btnTambahBahan').addEventListener('click', function() {
+        bahanEditMode = false;
+        bahanEditId = null;
+        document.getElementById('modalBahanTitle').textContent = 'Tambah Bahan';
+        document.getElementById('formBahan').reset();
+        document.getElementById('modalBahan').style.display = 'flex';
+    });
+
+    document.getElementById('formBahan').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const body = {
+            kode_bahan: document.getElementById('bahan_kode').value,
+            nama_bahan: document.getElementById('bahan_nama').value,
+            produsen: document.getElementById('bahan_produsen').value || '-',
+            jumlah: parseFloat(document.getElementById('bahan_jumlah').value),
+            satuan: document.getElementById('bahan_satuan').value,
+            tanggal_kadaluarsa: document.getElementById('bahan_kadaluarsa').value || null,
+            lab_id: parseInt(document.getElementById('bahan_lab').value),
+            keterangan: document.getElementById('bahan_keterangan').value
+        };
+        
+        const url = bahanEditMode ? `/api/bahan/${bahanEditId}` : '/api/bahan';
+        const method = bahanEditMode ? 'PUT' : 'POST';
+        
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(url, {
+                method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert(data.message);
+                document.getElementById('modalBahan').style.display = 'none';
+                loadBahan();
+            } else {
+                alert(data.message);
+            }
+        } catch (error) {
+            alert('Gagal terhubung ke server');
+        }
+    });
+
+    async function editBahan(id) {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`/api/bahan?lab_id=${getInvLabFilter() || ''}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        const item = data.find(b => b.id === id);
+        if (!item) return;
+        
+        bahanEditMode = true;
+        bahanEditId = id;
+        document.getElementById('modalBahanTitle').textContent = 'Edit Bahan';
+        document.getElementById('bahan_kode').value = item.kode_bahan;
+        document.getElementById('bahan_nama').value = item.nama_bahan;
+        document.getElementById('bahan_produsen').value = item.produsen;
+        document.getElementById('bahan_jumlah').value = item.jumlah;
+        document.getElementById('bahan_satuan').value = item.satuan;
+        document.getElementById('bahan_kadaluarsa').value = item.tanggal_kadaluarsa ? item.tanggal_kadaluarsa.substring(0, 10) : '';
+        document.getElementById('bahan_lab').value = item.lab_id;
+        document.getElementById('bahan_keterangan').value = item.keterangan || '';
+        document.getElementById('modalBahan').style.display = 'flex';
+    }
+
+    async function hapusBahan(id) {
+        if (!confirm('Yakin hapus bahan ini?')) return;
+        const token = localStorage.getItem('token');
+        const res = await fetch(`/api/bahan/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        alert(data.message);
+        loadBahan();
+    }
+
+    // pakai bahan
+    function bukaModalPakai(id, nama, stok, satuan) {
+        document.getElementById('pakai_bahan_id').value = id;
+        document.getElementById('pakai_stok').textContent = `${stok} ${satuan}`;
+        document.getElementById('formPakai').reset();
+        document.getElementById('pakai_tanggal').valueAsDate = new Date();
+        document.getElementById('modalPakai').style.display = 'flex';
+    }
+
+    document.getElementById('formPakai').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const body = {
+            bahan_id: parseInt(document.getElementById('pakai_bahan_id').value),
+            jumlah_digunakan: parseFloat(document.getElementById('pakai_jumlah').value),
+            penanggung_jawab: document.getElementById('pakai_pj').value,
+            kelas: document.getElementById('pakai_kelas').value || '-',
+            kegiatan: document.getElementById('pakai_kegiatan').value,
+            tanggal: document.getElementById('pakai_tanggal').value
+        };
+        
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch('/api/bahan/pakai', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            alert(data.message);
+            if (res.ok) {
+                document.getElementById('modalPakai').style.display = 'none';
+                loadBahan();
+            }
+        } catch (error) {
+            alert('Gagal terhubung ke server');
+        }
+    });
+
+    loadAlat();
+    loadBahan();
+    
+    //  tombol logout
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function() {
             localStorage.removeItem('token');

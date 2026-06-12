@@ -414,7 +414,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td style="padding:8px; border:1px solid #d0e6d5;">${item.kode_alat}</td>
                 <td style="padding:8px; border:1px solid #d0e6d5;">${item.nama_alat}</td>
                 <td style="padding:8px; border:1px solid #d0e6d5;">${item.produsen}</td>
-                <td style="padding:8px; border:1px solid #d0e6d5;">${item.jumlah}</td>
+                <td style="padding:8px; border:1px solid #d0e6d5;">
+                    ${item.jumlah} total<br>
+                    <span style="color:#c62828; font-size:11px;">${item.jumlah_rusak || 0} rusak</span>
+                </td>
                 <td style="padding:8px; border:1px solid #d0e6d5;">${kondisiEmoji} ${item.kondisi}</td>
                 <td style="padding:8px; border:1px solid #d0e6d5;">
                     <button class="btn-edit" data-edit-alat="${item.id}">Edit</button>
@@ -454,6 +457,7 @@ document.addEventListener('DOMContentLoaded', function() {
             nama_alat: document.getElementById('alat_nama').value,
             produsen: document.getElementById('alat_produsen').value || '-',
             jumlah: parseInt(document.getElementById('alat_jumlah').value),
+            jumlah_rusak: parseInt(document.getElementById('alat_jumlah_rusak').value) || 0,
             kondisi: document.getElementById('alat_kondisi').value,
             lab_id: parseInt(document.getElementById('alat_lab').value),
             keterangan: document.getElementById('alat_keterangan').value
@@ -495,6 +499,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('alat_nama').value = item.nama_alat;
         document.getElementById('alat_produsen').value = item.produsen;
         document.getElementById('alat_jumlah').value = item.jumlah;
+        document.getElementById('alat_jumlah_rusak').value = item.jumlah_rusak || 0;
         document.getElementById('alat_kondisi').value = item.kondisi || 'baik';
         document.getElementById('alat_lab').value = item.lab_id;
         document.getElementById('alat_keterangan').value = item.keterangan || '';

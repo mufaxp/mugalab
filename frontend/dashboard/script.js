@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('penanggung_jawab').value = item.penanggung_jawab;
         document.getElementById('kegiatan').value = item.kegiatan;
         document.getElementById('kelas').value = item.kelas === '-' ? '' : item.kelas;
-        document.getElementById('tanggal').value = item.tanggal ? item.tanggal.substring(0, 10) : '';
+        document.getElementById('tanggal').value = item.tanggal ? item.tanggal.split('T')[0] : '';
         document.getElementById('jam_mulai').value = item.jam_mulai;
         document.getElementById('jam_selesai').value = item.jam_selesai;
         document.getElementById('lab_id').value = item.lab_id || 1;

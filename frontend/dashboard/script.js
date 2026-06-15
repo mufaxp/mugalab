@@ -1250,7 +1250,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <tbody>`;
 
         data.forEach(item => {
-            const tgl = item.tanggal ? item.tanggal.substring(0, 10) : '-';
+            const tgl = item.tanggal ? formatTanggal(item.tanggal) : '-';
             html += `<tr>
                 <td style="padding:8px; border:1px solid #d0e6d5;">${tgl}</td>
                 <td style="padding:8px; border:1px solid #d0e6d5;">${item.nama_bahan}</td>

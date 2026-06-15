@@ -370,7 +370,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('lp_lab_id').value = item.lab_id || 1;
         document.getElementById('lp_judul').value = item.kegiatan || '';
         document.getElementById('lp_tujuan').value = '';
-        document.getElementById('lp_alat_bahan').value = '';
+        // document.getElementById('lp_alat_bahan').value = '';  // ❌ HAPUS
         document.getElementById('lp_deskripsi').value = '';
         document.getElementById('lp_jumlah_kelompok').value = 1;
         document.getElementById('modalLaporanPraktikum').style.display = 'flex';

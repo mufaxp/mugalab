@@ -1393,7 +1393,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('lp_tujuan').value = item.tujuan_praktikum || '';
         document.getElementById('lp_alat_bahan').value = item.daftar_alat_bahan || '';
         document.getElementById('lp_deskripsi').value = item.deskripsi_kegiatan || '';
-        document.getElementById('lp_tanggal').value = item.tanggal ? item.tanggal.substring(0, 10) : '';
+        document.getElementById('lp_tanggal').value = toLocalDate(item.tanggal);  // ✅ Perbaiki
         document.getElementById('lp_lab_id').value = item.lab_id || 1;
         document.getElementById('modalLaporanPraktikum').style.display = 'flex';
     }

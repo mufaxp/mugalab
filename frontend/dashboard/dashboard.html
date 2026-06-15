@@ -157,11 +157,11 @@
                 
                 <!-- Filter Lab -->
                 <div class="lab-filter">
-                    <label for="riwayatLabFilter">Pilih Laboratorium:</label>
+                    <label for="riwayatLabFilter">Pilih Ruang Laboratorium:</label>
                     <select id="riwayatLabFilter" class="form-input lab-filter-select">
-                        <option value="all">Semua Lab</option>
-                        <option value="1">Lab Biologi-Kimia</option>
-                        <option value="2">Lab Fisika</option>
+                        <option value="all">Semua Ruang Laboratorium</option>
+                        <option value="1">Ruang Laboratorium Biologi dan Kimia</option>
+                        <option value="2">Ruang Laboratorium Fisika</option>
                     </select>
                 </div>
                 
@@ -416,6 +416,70 @@
                 <div class="modal-actions">
                     <button type="submit" class="btn-simpan">Simpan</button>
                     <button type="button" class="btn-batal" onclick="document.getElementById('modalLaporan').style.display='none'">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Modal Laporan Praktikum -->
+    <div id="modalLaporanPraktikum" class="modal-overlay" style="display:none;">
+        <div class="modal-content" style="max-width:650px;">
+            <h3 class="modal-title">Buat Laporan Praktikum</h3>
+            <form id="formLaporanPraktikum">
+                <input type="hidden" id="lp_jadwal_id">
+                <div class="form-row">
+                    <div class="form-group form-group-half">
+                        <label for="lp_kelas">Kelas</label>
+                        <input type="text" id="lp_kelas" class="form-input" required>
+                    </div>
+                    <div class="form-group form-group-half">
+                        <label for="lp_jumlah_kelompok">Jumlah Kelompok</label>
+                        <input type="number" id="lp_jumlah_kelompok" class="form-input" value="1" min="1" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group form-group-half">
+                        <label for="lp_mapel">Mata Pelajaran</label>
+                        <input type="text" id="lp_mapel" class="form-input" required>
+                    </div>
+                    <div class="form-group form-group-half">
+                        <label for="lp_guru">Guru Mapel</label>
+                        <input type="text" id="lp_guru" class="form-input" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group form-group-half">
+                        <label for="lp_jam_mulai">Jam Mulai</label>
+                        <input type="number" id="lp_jam_mulai" class="form-input" min="1" max="10" required>
+                    </div>
+                    <div class="form-group form-group-half">
+                        <label for="lp_jam_selesai">Jam Selesai</label>
+                        <input type="number" id="lp_jam_selesai" class="form-input" min="1" max="10" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="lp_judul">Judul Praktikum</label>
+                    <input type="text" id="lp_judul" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="lp_tujuan">Tujuan Praktikum</label>
+                    <textarea id="lp_tujuan" class="form-input" rows="2" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="lp_alat_bahan">Daftar Alat & Bahan</label>
+                    <textarea id="lp_alat_bahan" class="form-input" rows="3" placeholder="Sebutkan alat dan bahan yang digunakan..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="lp_deskripsi">Deskripsi Kegiatan</label>
+                    <textarea id="lp_deskripsi" class="form-input" rows="3" placeholder="Jelaskan langkah-langkah praktikum..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="lp_tanggal">Tanggal</label>
+                    <input type="date" id="lp_tanggal" class="form-input" required>
+                </div>
+                <input type="hidden" id="lp_lab_id" value="1">
+                <div class="modal-actions">
+                    <button type="submit" class="btn-simpan">Simpan</button>
+                    <button type="button" class="btn-batal" onclick="document.getElementById('modalLaporanPraktikum').style.display='none'">Batal</button>
                 </div>
             </form>
         </div>

@@ -280,6 +280,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="jadwal-card-pj">${item.penanggung_jawab} | ${item.kelas !== '-' ? item.kelas : 'Umum'} | ${formatTanggal(item.tanggal)} | Jam ke-${item.jam_mulai} - ${item.jam_selesai}</div>
                 </div>
                 <div class="jadwal-card-actions">
+                    <button class="btn-laporan" data-laporan='${JSON.stringify(item)}'>Laporan</button>
                     <button class="btn-edit">Edit</button>
                     <button class="btn-delete" data-id="${item.id}">Hapus</button>
                 </div>
@@ -294,6 +295,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const btnEdit = card.querySelector('.btn-edit');
             btnEdit.addEventListener('click', function() {
                 openEditModal(item);
+            });
+
+            // Event listener untuk tombol Buat Laporan
+            const btnLaporan = card.querySelector('.btn-laporan');
+            btnLaporan.addEventListener('click', function() {
+                const data = JSON.parse(this.getAttribute('data-laporan'));
+                bukaModalLaporan(data);
             });
             containerElement.appendChild(card);
         });
@@ -324,6 +332,60 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // fungsi buat laporan kegiatan praktikum
+    function bukaModalLaporan(item) {
+        document.getElementById('lp_jadwal_id').value = item.id || '';
+        document.getElementById('lp_kelas').value = item.kelas !== '-' ? item.kelas : '';
+        document.getElementById('lp_mapel').value = item.kegiatan || '';
+        document.getElementById('lp_guru').value = item.penanggung_jawab || '';
+        document.getElementById('lp_jam_mulai').value = item.jam_mulai || '';
+        document.getElementById('lp_jam_selesai').value = item.jam_selesai || '';
+        document.getElementById('lp_tanggal').value = item.tanggal ? item.tanggal.substring(0, 10) : '';
+        document.getElementById('lp_lab_id').value = item.lab_id || 1;
+        document.getElementById('lp_judul').value = '';
+        document.getElementById('lp_tujuan').value = '';
+        document.getElementById('lp_alat_bahan').value = '';
+        document.getElementById('lp_deskripsi').value = '';
+        document.getElementById('lp_jumlah_kelompok').value = 1;
+        document.getElementById('modalLaporanPraktikum').style.display = 'flex';
+    }
+
+    document.getElementById('formLaporanPraktikum').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const body = {
+            jadwal_id: document.getElementById('lp_jadwal_id').value || null,
+            kelas: document.getElementById('lp_kelas').value,
+            jumlah_kelompok: parseInt(document.getElementById('lp_jumlah_kelompok').value),
+            mata_pelajaran: document.getElementById('lp_mapel').value,
+            jam_mulai: parseInt(document.getElementById('lp_jam_mulai').value),
+            jam_selesai: parseInt(document.getElementById('lp_jam_selesai').value),
+            guru_mapel: document.getElementById('lp_guru').value,
+            judul_praktikum: document.getElementById('lp_judul').value,
+            tujuan_praktikum: document.getElementById('lp_tujuan').value,
+            daftar_alat_bahan: document.getElementById('lp_alat_bahan').value,
+            deskripsi_kegiatan: document.getElementById('lp_deskripsi').value,
+            tanggal: document.getElementById('lp_tanggal').value,
+            lab_id: parseInt(document.getElementById('lp_lab_id').value)
+        };
+        
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch('/api/laporan-praktikum', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            alert(data.message);
+            if (res.ok) {
+                document.getElementById('modalLaporanPraktikum').style.display = 'none';
+            }
+        } catch (error) {
+            alert('Gagal terhubung ke server');
+        }
+    });
+    
     function formatTanggal(dateStr) {
         const date = new Date(dateStr);
         const day = String(date.getDate()).padStart(2, '0');

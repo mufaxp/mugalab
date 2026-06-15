@@ -536,6 +536,51 @@ app.delete('/api/bahan/pakai/:id', verifyToken, async (req, res) => {
     }
 });
 
+// Laporan Kegiatan Praktikum
+// GET semua laporan
+app.get('/api/laporan-praktikum', verifyToken, async (req, res) => {
+    const { lab_id } = req.query;
+    try {
+        let query = 'SELECT * FROM laporan_praktikum';
+        const params = [];
+        if (lab_id) {
+            query += ' WHERE lab_id = ?';
+            params.push(lab_id);
+        }
+        query += ' ORDER BY tanggal DESC, created_at DESC';
+        const [rows] = await pool.query(query, params);
+        return res.status(200).json(rows);
+    } catch (error) {
+        return res.status(500).json({ message: 'Gagal mengambil laporan' });
+    }
+});
+
+// POST buat laporan
+app.post('/api/laporan-praktikum', verifyToken, async (req, res) => {
+    const { jadwal_id, kelas, jumlah_kelompok, mata_pelajaran, jam_mulai, jam_selesai, guru_mapel, judul_praktikum, tujuan_praktikum, daftar_alat_bahan, deskripsi_kegiatan, tanggal, lab_id } = req.body;
+    
+    try {
+        await pool.query(
+            'INSERT INTO laporan_praktikum (jadwal_id, kelas, jumlah_kelompok, mata_pelajaran, jam_mulai, jam_selesai, guru_mapel, judul_praktikum, tujuan_praktikum, daftar_alat_bahan, deskripsi_kegiatan, tanggal, lab_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [jadwal_id || null, kelas, jumlah_kelompok, mata_pelajaran, jam_mulai, jam_selesai, guru_mapel, judul_praktikum, tujuan_praktikum, daftar_alat_bahan, deskripsi_kegiatan, tanggal, lab_id || 1]
+        );
+        return res.status(201).json({ message: 'Laporan berhasil dibuat' });
+    } catch (error) {
+        return res.status(500).json({ message: 'Gagal membuat laporan' });
+    }
+});
+
+// DELETE laporan
+app.delete('/api/laporan-praktikum/:id', verifyToken, async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM laporan_praktikum WHERE id = ?', [id]);
+        return res.status(200).json({ message: 'Laporan berhasil dihapus' });
+    } catch (error) {
+        return res.status(500).json({ message: 'Gagal menghapus laporan' });
+    }
+});
+
 // 404 handler (harus diletakkan paling bawah)
 app.use((req, res) => {
     res.status(404).json({ error: 'Route tidak ditemukan', path: req.originalUrl });

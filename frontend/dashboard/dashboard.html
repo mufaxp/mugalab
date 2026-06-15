@@ -29,6 +29,7 @@
                 <li><a class="sidebar-item" data-panel="inventaris">🧪 Inventaris</a></li>
                 <li><a class="sidebar-item" data-panel="laporan">⚠️ Laporan Kerusakan Alat</a></li>
                 <li><a class="sidebar-item" data-panel="riwayat">📋 Riwayat Penggunaan Bahan</a></li>
+                <li><a class="sidebar-item" data-panel="laporan-praktikum">📝 Laporan Praktikum</a></li>
             </ul>
         </nav>
 
@@ -168,6 +169,29 @@
                 <!-- Tabel Riwayat -->
                 <div id="riwayatList" style="overflow-x:auto; margin-top:16px;">
                     <p style="color:#999; text-align:center; padding:20px;">Memuat data riwayat...</p>
+                </div>
+            </div>
+
+            <!-- Panel Laporan Kegiatan Praktikum -->
+            <div id="laporan-praktikum" class="panel">
+                <div class="panel-header">
+                    <h2>📝 Laporan Kegiatan Praktikum</h2>
+                </div>
+                <p>Laporan kegiatan praktikum yang telah dilaksanakan.</p>
+                
+                <!-- Filter Lab -->
+                <div class="lab-filter">
+                    <label for="lpLabFilter">Pilih Laboratorium:</label>
+                    <select id="lpLabFilter" class="form-input lab-filter-select">
+                        <option value="all">Semua Lab</option>
+                        <option value="1">Lab Biologi-Kimia</option>
+                        <option value="2">Lab Fisika</option>
+                    </select>
+                </div>
+                
+                <!-- Daftar Laporan -->
+                <div id="lpList" style="overflow-x:auto; margin-top:16px;">
+                    <p style="color:#999; text-align:center; padding:20px;">Memuat data laporan...</p>
                 </div>
             </div>
         </main>

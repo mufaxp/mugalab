@@ -1269,6 +1269,121 @@ document.addEventListener('DOMContentLoaded', function() {
     if (riwayatSidebar) {
         riwayatSidebar.addEventListener('click', loadRiwayat);
     }
+
+    // Panel laporan praktikum
+    const lpLabFilter = document.getElementById('lpLabFilter');
+
+    if (lpLabFilter) {
+        lpLabFilter.addEventListener('change', loadLaporanPraktikum);
+    }
+
+    function getLpLabFilter() {
+        if (!lpLabFilter) return null;
+        const val = lpLabFilter.value;
+        return val === 'all' ? null : parseInt(val);
+    }
+
+    async function loadLaporanPraktikum() {
+        const container = document.getElementById('lpList');
+        if (!container) return;
+
+        try {
+            const token = localStorage.getItem('token');
+            let url = '/api/laporan-praktikum';
+            const labId = getLpLabFilter();
+            if (labId) url += `?lab_id=${labId}`;
+
+            const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+            const data = await res.json();
+            renderLaporanPraktikum(data);
+        } catch (error) {
+            container.innerHTML = '<p style="color:#c62828; text-align:center;">Gagal memuat data laporan.</p>';
+        }
+    }
+
+    function renderLaporanPraktikum(data) {
+        const container = document.getElementById('lpList');
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p style="color:#999; text-align:center; padding:20px;">Belum ada laporan praktikum.</p>';
+            return;
+        }
+
+        let html = '';
+        data.forEach(item => {
+            const tgl = item.tanggal ? item.tanggal.substring(0, 10) : '-';
+            html += `
+            <div class="jadwal-card-item" style="margin-bottom:10px;">
+                <div class="jadwal-card-body">
+                    <div class="jadwal-card-kegiatan">${item.judul_praktikum || 'Tanpa Judul'}</div>
+                    <div class="jadwal-card-pj">
+                        ${item.guru_mapel} | ${item.kelas} | ${tgl} | Jam ke-${item.jam_mulai}-${item.jam_selesai}
+                    </div>
+                    ${item.tujuan_praktikum ? `<div style="font-size:12px; color:#888; margin-top:4px;">${item.tujuan_praktikum.substring(0, 100)}...</div>` : ''}
+                </div>
+                <div class="jadwal-card-actions">
+                    <button class="btn-edit btn-xs" data-edit-lp="${item.id}">Edit</button>
+                    <button class="btn-delete btn-xs" data-hapus-lp="${item.id}">Hapus</button>
+                </div>
+            </div>`;
+        });
+
+        container.innerHTML = html;
+
+        // Event listener Edit
+        container.querySelectorAll('button[data-edit-lp]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = parseInt(this.getAttribute('data-edit-lp'));
+                const item = data.find(d => d.id === id);
+                if (item) editLaporanPraktikum(item);
+            });
+        });
+
+        // Event listener Hapus
+        container.querySelectorAll('button[data-hapus-lp]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = parseInt(this.getAttribute('data-hapus-lp'));
+                if (confirm('Yakin hapus laporan ini?')) hapusLaporanPraktikum(id);
+            });
+        });
+    }
+
+    function editLaporanPraktikum(item) {
+        document.getElementById('lp_jadwal_id').value = item.jadwal_id || '';
+        document.getElementById('lp_kelas').value = item.kelas || '';
+        document.getElementById('lp_jumlah_kelompok').value = item.jumlah_kelompok || 1;
+        document.getElementById('lp_mapel').value = item.mata_pelajaran || '';
+        document.getElementById('lp_guru').value = item.guru_mapel || '';
+        document.getElementById('lp_jam_mulai').value = item.jam_mulai || '';
+        document.getElementById('lp_jam_selesai').value = item.jam_selesai || '';
+        document.getElementById('lp_judul').value = item.judul_praktikum || '';
+        document.getElementById('lp_tujuan').value = item.tujuan_praktikum || '';
+        document.getElementById('lp_alat_bahan').value = item.daftar_alat_bahan || '';
+        document.getElementById('lp_deskripsi').value = item.deskripsi_kegiatan || '';
+        document.getElementById('lp_tanggal').value = item.tanggal ? item.tanggal.substring(0, 10) : '';
+        document.getElementById('lp_lab_id').value = item.lab_id || 1;
+        document.getElementById('modalLaporanPraktikum').style.display = 'flex';
+    }
+
+    async function hapusLaporanPraktikum(id) {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`/api/laporan-praktikum/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            alert(data.message);
+            if (res.ok) loadLaporanPraktikum();
+        } catch (error) {
+            alert('Gagal terhubung ke server');
+        }
+    }
+
+    // Load laporan saat panel dibuka
+    const lpSidebar = document.querySelector('.sidebar-item[data-panel="laporan-praktikum"]');
+    if (lpSidebar) {
+        lpSidebar.addEventListener('click', loadLaporanPraktikum);
+    }
     
     //  tombol logout
     if (logoutBtn) {

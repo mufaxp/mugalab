@@ -706,9 +706,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    loadAlat();
-    loadBahan();
-
     // search inventaris
     let allAlatData = [];
     let allBahanData = [];
@@ -826,6 +823,9 @@ document.addEventListener('DOMContentLoaded', function() {
             suggestBahan.classList.remove('active');
         }
     });
+    
+    loadAlat();
+    loadBahan();
     
     // laporan kerusakan
     const laporanLabFilter = document.getElementById('laporanLabFilter');

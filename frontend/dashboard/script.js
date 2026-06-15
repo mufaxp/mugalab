@@ -299,10 +299,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Event listener untuk tombol Buat Laporan
             const btnLaporan = card.querySelector('.btn-laporan');
-            btnLaporan.addEventListener('click', function() {
-                const data = JSON.parse(this.getAttribute('data-laporan'));
-                bukaModalLaporan(data);
-            });
+            if (item.has_laporan) {
+                // ✅ Jadwal sudah punya laporan → nonaktifkan tombol
+                btnLaporan.textContent = '✅ Ada Laporan';        // Ubah teks
+                btnLaporan.style.backgroundColor = '#E0E0E0';    // Warna abu-abu
+                btnLaporan.style.color = '#999';                 // Teks abu-abu
+                btnLaporan.style.cursor = 'not-allowed';          // Kursor berubah jadi 🚫
+                btnLaporan.style.pointerEvents = 'none';          // Nonaktifkan klik
+                btnLaporan.style.border = '1px solid #ccc';      // Border abu-abu
+            } else {
+                // ✅ Belum ada laporan → tombol aktif
+                btnLaporan.addEventListener('click', function() {
+                    const data = JSON.parse(this.getAttribute('data-laporan'));
+                    bukaModalLaporan(data);
+                });
+            }
             containerElement.appendChild(card);
         });
     }
@@ -380,6 +391,11 @@ document.addEventListener('DOMContentLoaded', function() {
             alert(data.message);
             if (res.ok) {
                 document.getElementById('modalLaporanPraktikum').style.display = 'none';
+                if (typeof loadLaporanPraktikum === 'function') {
+                    loadLaporanPraktikum();
+                }
+                // ✅ Juga refresh panel jadwal agar tombol laporan berubah
+                loadDashboardJadwal(getCurrentLabFilter());
             }
         } catch (error) {
             alert('Gagal terhubung ke server');
@@ -1321,8 +1337,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     ${item.tujuan_praktikum ? `<div style="font-size:12px; color:#888; margin-top:4px;">${item.tujuan_praktikum.substring(0, 100)}...</div>` : ''}
                 </div>
                 <div class="jadwal-card-actions">
-                    <button class="btn-edit btn-xs" data-edit-lp="${item.id}">Edit</button>
-                    <button class="btn-delete btn-xs" data-hapus-lp="${item.id}">Hapus</button>
+                    <button class="btn-edit" data-edit-lp="${item.id}">Edit</button>
+                    <button class="btn-delete" data-hapus-lp="${item.id}">Hapus</button>
                 </div>
             </div>`;
         });

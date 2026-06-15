@@ -93,7 +93,11 @@ app.get('/api/jadwal/public', async (req, res) => {
     }
 
     try {
-        let query = `SELECT * FROM jadwal WHERE tanggal >= ? AND tanggal <= DATE_ADD(?, INTERVAL 6 DAY)`;
+        let query = `SELECT j.*, 
+            CASE WHEN lp.id IS NOT NULL THEN true ELSE false END as has_laporan
+        FROM jadwal j 
+        LEFT JOIN laporan_praktikum lp ON j.id = lp.jadwal_id
+        WHERE j.tanggal >= ? AND j.tanggal <= DATE_ADD(?, INTERVAL 6 DAY)`;
         const params = [minggu_mulai, minggu_mulai];
 
         if (lab_id) {
@@ -120,15 +124,19 @@ app.get('/api/jadwal', verifyToken, async (req, res) => {
     }
 
     try {
-        let query = `SELECT * FROM jadwal WHERE tanggal >= ? AND tanggal <= DATE_ADD(?, INTERVAL 6 DAY)`;
+        let query = `SELECT j.*, 
+            CASE WHEN lp.id IS NOT NULL THEN true ELSE false END as has_laporan
+        FROM jadwal j 
+        LEFT JOIN laporan_praktikum lp ON j.id = lp.jadwal_id
+        WHERE j.tanggal >= ? AND j.tanggal <= DATE_ADD(?, INTERVAL 6 DAY)`;
         const params = [minggu_mulai, minggu_mulai];
 
         if (lab_id) {
-            query += ' AND lab_id = ?';
+            query += ' AND j.lab_id = ?';
             params.push(lab_id);
         }
 
-        query += ' ORDER BY tanggal, jam_mulai';
+        query += ' ORDER BY j.tanggal, j.jam_mulai';
 
         const [rows] = await pool.query(query, params);
         return res.status(200).json(rows);

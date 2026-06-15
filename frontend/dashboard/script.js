@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('penanggung_jawab').value = item.penanggung_jawab;
         document.getElementById('kegiatan').value = item.kegiatan;
         document.getElementById('kelas').value = item.kelas === '-' ? '' : item.kelas;
-        document.getElementById('tanggal').value = item.tanggal ? item.tanggal.substring(0, 10) : '';
+        document.getElementById('tanggal').value = toLocalDate(item.tanggal);
         document.getElementById('jam_mulai').value = item.jam_mulai;
         document.getElementById('jam_selesai').value = item.jam_selesai;
         document.getElementById('lab_id').value = item.lab_id || 1;
@@ -340,7 +340,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('lp_guru').value = item.penanggung_jawab || '';
         document.getElementById('lp_jam_mulai').value = item.jam_mulai || '';
         document.getElementById('lp_jam_selesai').value = item.jam_selesai || '';
-        document.getElementById('lp_tanggal').value = item.tanggal ? item.tanggal.substring(0, 10) : '';  // ✅ Perbaiki
+        document.getElementById('lp_tanggal').value = toLocalDate(item.tanggal);
         document.getElementById('lp_lab_id').value = item.lab_id || 1;
         document.getElementById('lp_judul').value = item.kegiatan || '';
         document.getElementById('lp_tujuan').value = '';
@@ -392,6 +392,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
         return `${day}/${month}/${year}`;
+    }
+
+    function toLocalDate(dateStr) {
+        if (!dateStr) return '';
+        const d = new Date(dateStr);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
     }
 
     loadDashboardJadwal();

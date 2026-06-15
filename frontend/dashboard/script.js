@@ -7,12 +7,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    function parseDateSafe(dateStr) {
-        if (!dateStr) return '';
-        // Ambil 10 karakter pertama (YYYY-MM-DD) langsung dari string
-        return dateStr.substring(0, 10);
-    }
-
     // Tampilkan nama di header
     const userNameDisplay = document.getElementById('userNameDisplay');
     if (userNameDisplay) {
@@ -209,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('penanggung_jawab').value = item.penanggung_jawab;
         document.getElementById('kegiatan').value = item.kegiatan;
         document.getElementById('kelas').value = item.kelas === '-' ? '' : item.kelas;
-        document.getElementById('tanggal').value = parseDateSafe(item.tanggal);
+        document.getElementById('tanggal').value = item.tanggal ? item.tanggal.substring(0, 10) : '';
         document.getElementById('jam_mulai').value = item.jam_mulai;
         document.getElementById('jam_selesai').value = item.jam_selesai;
         document.getElementById('lab_id').value = item.lab_id || 1;
@@ -346,7 +340,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('lp_guru').value = item.penanggung_jawab || '';
         document.getElementById('lp_jam_mulai').value = item.jam_mulai || '';
         document.getElementById('lp_jam_selesai').value = item.jam_selesai || '';
-        document.getElementById('lp_tanggal').value = parseDateSafe(item.tanggal);  
+        document.getElementById('lp_tanggal').value = item.tanggal ? formatTanggal(item.tanggal) : '';
         document.getElementById('lp_lab_id').value = item.lab_id || 1;
         document.getElementById('lp_judul').value = item.kegiatan || '';
         document.getElementById('lp_tujuan').value = '';
@@ -393,15 +387,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     function formatTanggal(dateStr) {
-        // Ambil langsung dari string, jangan pakai new Date()
-        if (!dateStr) return '-';
-        const parts = dateStr.substring(0, 10).split('-');
-        return `${parts[2]}/${parts[1]}/${parts[0]}`;
-    }  
-    
-    function parseDateSafe(dateStr) {
-        if (!dateStr) return '';
-        return dateStr.substring(0, 10);
+        const date = new Date(dateStr);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
     }
 
     loadDashboardJadwal();

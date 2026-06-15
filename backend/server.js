@@ -386,14 +386,25 @@ app.post('/api/bahan/pakai', verifyToken, async (req, res) => {
 
 // GET riwayat penggunaan bahan
 app.get('/api/bahan/pakai', verifyToken, async (req, res) => {
-    const { bahan_id } = req.query;
+    const { bahan_id, lab_id } = req.query;
     try {
-        let query = 'SELECT pb.*, b.nama_bahan, b.satuan FROM penggunaan_bahan pb JOIN bahan b ON pb.bahan_id = b.id';
+        let query = 'SELECT pb.*, b.nama_bahan, b.satuan, b.lab_id FROM penggunaan_bahan pb JOIN bahan b ON pb.bahan_id = b.id';
         const params = [];
+        const conditions = [];
+        
         if (bahan_id) {
-            query += ' WHERE pb.bahan_id = ?';
+            conditions.push('pb.bahan_id = ?');
             params.push(bahan_id);
         }
+        if (lab_id) {
+            conditions.push('b.lab_id = ?');
+            params.push(lab_id);
+        }
+        
+        if (conditions.length > 0) {
+            query += ' WHERE ' + conditions.join(' AND ');
+        }
+        
         query += ' ORDER BY pb.tanggal DESC, pb.created_at DESC LIMIT 100';
         const [rows] = await pool.query(query, params);
         return res.status(200).json(rows);

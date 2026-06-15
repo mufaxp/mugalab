@@ -370,7 +370,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('lp_lab_id').value = item.lab_id || 1;
         document.getElementById('lp_judul').value = item.kegiatan || '';
         document.getElementById('lp_tujuan').value = '';
-        // document.getElementById('lp_alat_bahan').value = '';  // ❌ HAPUS
         document.getElementById('lp_deskripsi').value = '';
         document.getElementById('lp_jumlah_kelompok').value = 1;
         document.getElementById('modalLaporanPraktikum').style.display = 'flex';
@@ -1640,9 +1639,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('lp_jam_selesai').value = item.jam_selesai || '';
         document.getElementById('lp_judul').value = item.judul_praktikum || '';
         document.getElementById('lp_tujuan').value = item.tujuan_praktikum || '';
-        document.getElementById('lp_alat_bahan').value = item.daftar_alat_bahan || '';
         document.getElementById('lp_deskripsi').value = item.deskripsi_kegiatan || '';
-        document.getElementById('lp_tanggal').value = toLocalDate(item.tanggal);  // ✅ Perbaiki
+        document.getElementById('lp_tanggal').value = toLocalDate(item.tanggal);
         document.getElementById('lp_lab_id').value = item.lab_id || 1;
         document.getElementById('modalLaporanPraktikum').style.display = 'flex';
 

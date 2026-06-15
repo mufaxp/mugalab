@@ -87,11 +87,9 @@ app.get('/api/lab', async (req, res) => {
 // API Jadwal publik
 app.get('/api/jadwal/public', async (req, res) => {
     const { minggu_mulai, lab_id } = req.query;
-
     if (!minggu_mulai) {
         return res.status(400).json({ message: 'Parameter minggu_mulai diperlukan' });
     }
-
     try {
         let query = `SELECT j.*, 
             CASE WHEN lp.id IS NOT NULL THEN true ELSE false END as has_laporan
@@ -99,14 +97,11 @@ app.get('/api/jadwal/public', async (req, res) => {
         LEFT JOIN laporan_praktikum lp ON j.id = lp.jadwal_id
         WHERE j.tanggal >= ? AND j.tanggal <= DATE_ADD(?, INTERVAL 6 DAY)`;
         const params = [minggu_mulai, minggu_mulai];
-
         if (lab_id) {
-            query += ' AND lab_id = ?';
+            query += ' AND j.lab_id = ?';
             params.push(lab_id);
         }
-
-        query += ' ORDER BY tanggal, jam_mulai';
-
+        query += ' ORDER BY j.tanggal, j.jam_mulai';
         const [rows] = await pool.query(query, params);
         return res.status(200).json(rows);
     } catch (error) {
@@ -575,6 +570,22 @@ app.post('/api/laporan-praktikum', verifyToken, async (req, res) => {
         return res.status(201).json({ message: 'Laporan berhasil dibuat' });
     } catch (error) {
         return res.status(500).json({ message: 'Gagal membuat laporan' });
+    }
+});
+
+// PUT update laporan praktikum
+app.put('/api/laporan-praktikum/:id', verifyToken, async (req, res) => {
+    const { id } = req.params;
+    const { kelas, jumlah_kelompok, mata_pelajaran, jam_mulai, jam_selesai, guru_mapel, judul_praktikum, tujuan_praktikum, daftar_alat_bahan, deskripsi_kegiatan, tanggal, lab_id } = req.body;
+    
+    try {
+        await pool.query(
+            'UPDATE laporan_praktikum SET kelas=?, jumlah_kelompok=?, mata_pelajaran=?, jam_mulai=?, jam_selesai=?, guru_mapel=?, judul_praktikum=?, tujuan_praktikum=?, daftar_alat_bahan=?, deskripsi_kegiatan=?, tanggal=?, lab_id=? WHERE id=?',
+            [kelas, jumlah_kelompok, mata_pelajaran, jam_mulai, jam_selesai, guru_mapel, judul_praktikum, tujuan_praktikum, daftar_alat_bahan, deskripsi_kegiatan, tanggal, lab_id || 1, id]
+        );
+        return res.status(200).json({ message: 'Laporan berhasil diperbarui' });
+    } catch (error) {
+        return res.status(500).json({ message: 'Gagal memperbarui laporan' });
     }
 });
 

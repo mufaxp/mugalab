@@ -1339,7 +1339,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let html = '';
         data.forEach(item => {
-            const tgl = item.tanggal ? item.tanggal.substring(0, 10) : '-';
+            const tgl = item.tanggal ? formatTanggal(item.tanggal) : '-';
             html += `
             <div class="jadwal-card-item" style="margin-bottom:10px;">
                 <div class="jadwal-card-body">

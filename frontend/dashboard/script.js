@@ -336,13 +336,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function bukaModalLaporan(item) {
         document.getElementById('lp_jadwal_id').value = item.id || '';
         document.getElementById('lp_kelas').value = item.kelas !== '-' ? item.kelas : '';
-        document.getElementById('lp_mapel').value = item.kegiatan || '';
+        document.getElementById('lp_mapel').value = '';
         document.getElementById('lp_guru').value = item.penanggung_jawab || '';
         document.getElementById('lp_jam_mulai').value = item.jam_mulai || '';
         document.getElementById('lp_jam_selesai').value = item.jam_selesai || '';
-        document.getElementById('lp_tanggal').value = item.tanggal ? item.tanggal.substring(0, 10) : '';
+        document.getElementById('lp_tanggal').value = item.tanggal ? item.tanggal.split('T')[0] : '';  
         document.getElementById('lp_lab_id').value = item.lab_id || 1;
-        document.getElementById('lp_judul').value = '';
+        document.getElementById('lp_judul').value = item.kegiatan || '';
         document.getElementById('lp_tujuan').value = '';
         document.getElementById('lp_alat_bahan').value = '';
         document.getElementById('lp_deskripsi').value = '';

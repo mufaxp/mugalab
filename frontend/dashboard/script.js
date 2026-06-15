@@ -1598,6 +1598,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ${item.tujuan_praktikum ? `<div style="font-size:12px; color:#888; margin-top:4px;">${item.tujuan_praktikum.substring(0, 100)}...</div>` : ''}
                 </div>
                 <div class="jadwal-card-actions">
+                    <button class="btn-pdf" data-pdf-lp="${item.id}">📄 PDF</button>
                     <button class="btn-edit" data-edit-lp="${item.id}">Edit</button>
                     <button class="btn-delete" data-hapus-lp="${item.id}">Hapus</button>
                 </div>
@@ -1620,6 +1621,15 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.addEventListener('click', function() {
                 const id = parseInt(this.getAttribute('data-hapus-lp'));
                 if (confirm('Yakin hapus laporan ini?')) hapusLaporanPraktikum(id);
+            });
+        });
+
+        // Event listener PDF
+        container.querySelectorAll('button[data-pdf-lp]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = parseInt(this.getAttribute('data-pdf-lp'));
+                const item = data.find(d => d.id === id);
+                if (item) generatePDF(item);
             });
         });
     }
@@ -1670,6 +1680,103 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             alert('Gagal terhubung ke server');
         }
+    }
+
+    function generatePDF(item) {
+        // Parse data alat/bahan
+        let alatBahan = { alat: [], bahan: [] };
+        try {
+            alatBahan = JSON.parse(item.daftar_alat_bahan || '{}');
+        } catch (e) {}
+
+        // Format tanggal
+        const tgl = item.tanggal ? formatTanggal(item.tanggal) : '-';
+        const tglPDF = item.tanggal ? new Date(item.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-';
+
+        // Nama lab
+        const labName = item.lab_id == 1 ? 'Lab Biologi-Kimia' : 'Lab Fisika';
+
+        // Buat HTML untuk PDF
+        const pdfContent = `
+        <div style="font-family: 'Times New Roman', serif; padding: 40px; max-width: 700px; margin: auto; color: #000;">
+            <!-- HEADER -->
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; font-size: 16px; text-transform: uppercase;">LABORATORIUM IPA</h2>
+                <h3 style="margin: 5px 0; font-size: 14px; text-transform: uppercase;">SMA MUHAMMADIYAH 3 JAKARTA</h3>
+                <hr style="border: 1px solid #000; margin: 10px 0;">
+                <h3 style="margin: 10px 0; font-size: 14px; text-transform: uppercase;">LAPORAN KEGIATAN PRAKTIKUM</h3>
+            </div>
+
+            <!-- INFO -->
+            <table style="width: 100%; font-size: 13px; border-collapse: collapse; margin-bottom: 15px;">
+                <tr><td style="width: 30%; padding: 3px 0;">Mata Pelajaran</td><td>: ${item.mata_pelajaran || '-'}</td></tr>
+                <tr><td style="padding: 3px 0;">Judul Praktikum</td><td>: ${item.judul_praktikum || '-'}</td></tr>
+                <tr><td style="padding: 3px 0;">Kelas</td><td>: ${item.kelas || '-'}</td></tr>
+                <tr><td style="padding: 3px 0;">Jumlah Kelompok</td><td>: ${item.jumlah_kelompok || '-'}</td></tr>
+                <tr><td style="padding: 3px 0;">Tanggal</td><td>: ${tglPDF}</td></tr>
+                <tr><td style="padding: 3px 0;">Jam</td><td>: ${item.jam_mulai || '-'} - ${item.jam_selesai || '-'}</td></tr>
+                <tr><td style="padding: 3px 0;">Guru Pengampu</td><td>: ${item.guru_mapel || '-'}</td></tr>
+                <tr><td style="padding: 3px 0;">Laboratorium</td><td>: ${labName}</td></tr>
+            </table>
+
+            <hr style="border: 1px solid #000; margin: 10px 0;">
+
+            <!-- A. TUJUAN -->
+            <h4 style="margin: 12px 0 5px 0; font-size: 13px;">A. TUJUAN PRAKTIKUM</h4>
+            <p style="font-size: 12px; text-align: justify; margin: 0 0 10px 0;">${item.tujuan_praktikum || '-'}</p>
+
+            <!-- B. ALAT & BAHAN -->
+            <h4 style="margin: 12px 0 5px 0; font-size: 13px;">B. ALAT & BAHAN</h4>
+            ${alatBahan.alat && alatBahan.alat.length > 0 ? `
+                <p style="font-size: 12px; margin: 0 0 5px 0;"><strong>Alat:</strong></p>
+                <ol style="font-size: 12px; margin: 0 0 10px 0; padding-left: 25px;">
+                    ${alatBahan.alat.map(a => `<li>${a.nama} (${a.kode}) — ${a.jumlah} ${a.satuan}</li>`).join('')}
+                </ol>
+            ` : '<p style="font-size: 12px;">-</p>'}
+            ${alatBahan.bahan && alatBahan.bahan.length > 0 ? `
+                <p style="font-size: 12px; margin: 0 0 5px 0;"><strong>Bahan:</strong></p>
+                <ol style="font-size: 12px; margin: 0 0 10px 0; padding-left: 25px;">
+                    ${alatBahan.bahan.map(b => `<li>${b.nama} (${b.kode}) — ${b.jumlah} ${b.satuan}</li>`).join('')}
+                </ol>
+            ` : '<p style="font-size: 12px;">-</p>'}
+
+            <!-- C. DESKRIPSI KEGIATAN -->
+            <h4 style="margin: 12px 0 5px 0; font-size: 13px;">C. DESKRIPSI KEGIATAN</h4>
+            <p style="font-size: 12px; text-align: justify; margin: 0 0 10px 0;">${item.deskripsi_kegiatan || '-'}</p>
+
+            <hr style="border: 1px solid #000; margin: 20px 0 10px 0;">
+
+            <!-- TANDA TANGAN -->
+            <table style="width: 100%; font-size: 12px; margin-top: 30px;">
+                <tr>
+                    <td style="width: 50%; text-align: left; vertical-align: top;">
+                        <p style="margin: 0;">Guru Pengampu</p>
+                        <br><br>
+                        <p style="margin: 0; text-decoration: underline;">(_________________)</p>
+                        <p style="margin: 5px 0 0 0;">${item.guru_mapel || '........................'}</p>
+                    </td>
+                    <td style="width: 50%; text-align: right; vertical-align: top;">
+                        <p style="margin: 0;">Jakarta, ${tglPDF}</p>
+                        <p style="margin: 5px 0 0 0;">Mengetahui,</p>
+                        <br><br>
+                        <p style="margin: 0; text-decoration: underline;">(_________________)</p>
+                        <p style="margin: 5px 0 0 0;">Laboran</p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        `;
+
+        // Generate PDF
+        const opt = {
+            margin: 0,
+            filename: `Laporan_Praktikum_${item.judul_praktikum || 'Tanpa_Judul'}_${tgl.replace(/\//g, '-')}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(pdfContent).save();
     }
 
     // Load laporan saat panel dibuka

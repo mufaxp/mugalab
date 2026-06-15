@@ -703,6 +703,21 @@ body {
     background-color: #0e703f;
 }
 
+.btn-pdf {
+    background-color: #E3F2FD;
+    color: #1565C0;
+    border: 1px solid #90CAF9;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+.btn-pdf:hover {
+    background-color: #BBDEFB;
+}
+
 @media (max-width: 640px) {
     .search-input {
         width: 150px;

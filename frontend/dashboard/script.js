@@ -1149,47 +1149,35 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Submit form laporan
-    document.getElementById('formLaporanPraktikum').addEventListener('submit', async function(e) {
+    document.getElementById('formLaporan').addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const body = {
-            kelas: document.getElementById('lp_kelas').value,
-            jumlah_kelompok: parseInt(document.getElementById('lp_jumlah_kelompok').value),
-            mata_pelajaran: document.getElementById('lp_mapel').value,
-            jam_mulai: parseInt(document.getElementById('lp_jam_mulai').value),
-            jam_selesai: parseInt(document.getElementById('lp_jam_selesai').value),
-            guru_mapel: document.getElementById('lp_guru').value,
-            judul_praktikum: document.getElementById('lp_judul').value,
-            tujuan_praktikum: document.getElementById('lp_tujuan').value,
-            daftar_alat_bahan: document.getElementById('lp_alat_bahan').value,
-            deskripsi_kegiatan: document.getElementById('lp_deskripsi').value,
-            tanggal: document.getElementById('lp_tanggal').value,
-            lab_id: parseInt(document.getElementById('lp_lab_id').value)
+            alat_id: parseInt(document.getElementById('laporan_alat').value),
+            jumlah_rusak: parseInt(document.getElementById('laporan_jumlah').value),
+            pelapor: document.getElementById('laporan_pelapor').value,
+            tanggal_lapor: document.getElementById('laporan_tanggal').value,
+            keterangan: document.getElementById('laporan_keterangan').value
         };
         
-        // Hanya tambahkan jadwal_id jika mode tambah
-        if (!lpEditMode) {
-            body.jadwal_id = document.getElementById('lp_jadwal_id').value || null;
+        if (!body.alat_id || !body.jumlah_rusak || !body.pelapor || !body.tanggal_lapor || !document.getElementById('laporan_alat_search').value) {
+            alert('Semua field wajib diisi!');
+            return;
         }
-        
-        const url = lpEditMode ? `/api/laporan-praktikum/${lpEditId}` : '/api/laporan-praktikum';
-        const method = lpEditMode ? 'PUT' : 'POST';
         
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(url, {
-                method: method,
+            const res = await fetch('/api/laporan-kerusakan', {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(body)
             });
             const data = await res.json();
             alert(data.message);
             if (res.ok) {
-                document.getElementById('modalLaporanPraktikum').style.display = 'none';
-                lpEditMode = false;
-                lpEditId = null;
-                if (typeof loadLaporanPraktikum === 'function') loadLaporanPraktikum();
-                loadDashboardJadwal(getCurrentLabFilter());
+                document.getElementById('modalLaporan').style.display = 'none';
+                loadLaporan();
+                loadAlat();
             }
         } catch (error) {
             alert('Gagal terhubung ke server');

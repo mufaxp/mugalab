@@ -490,9 +490,33 @@
                     <textarea id="lp_tujuan" class="form-input" rows="2" required></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="lp_alat_bahan">Daftar Alat & Bahan</label>
-                    <textarea id="lp_alat_bahan" class="form-input" rows="3" placeholder="Sebutkan alat dan bahan yang digunakan..."></textarea>
+                    <label>Alat yang Digunakan</label>
+                    <div style="display:flex; gap:8px; margin-bottom:8px;">
+                        <div class="search-wrapper" style="flex:1;">
+                            <input type="text" id="lp_search_alat" class="form-input search-input" style="width:100%;" placeholder="Cari alat..." autocomplete="off">
+                            <div id="lp_suggest_alat" class="search-suggest"></div>
+                        </div>
+                        <input type="number" id="lp_jumlah_alat" class="form-input" placeholder="Jml" min="1" style="width:70px;">
+                        <button type="button" class="btn-tambah-item" id="btnTambahAlatLP">+</button>
+                    </div>
+                    <div id="lp_list_alat" class="item-list"></div>
                 </div>
+                <div class="form-group">
+                    <label>Bahan yang Digunakan</label>
+                    <div style="display:flex; gap:8px; margin-bottom:8px;">
+                        <div class="search-wrapper" style="flex:1;">
+                            <input type="text" id="lp_search_bahan" class="form-input search-input" style="width:100%;" placeholder="Cari bahan..." autocomplete="off">
+                            <div id="lp_suggest_bahan" class="search-suggest"></div>
+                        </div>
+                        <input type="number" id="lp_jumlah_bahan" class="form-input" placeholder="Jml" min="0.01" step="0.01" style="width:70px;">
+                        <input type="text" id="lp_satuan_bahan" class="form-input" placeholder="Satuan" style="width:80px;" readonly>
+                        <button type="button" class="btn-tambah-item" id="btnTambahBahanLP">+</button>
+                    </div>
+                    <div id="lp_list_bahan" class="item-list"></div>
+                </div>
+                <!-- Hidden field untuk menyimpan data JSON -->
+                <input type="hidden" id="lp_alat_json">
+                <input type="hidden" id="lp_bahan_json">
                 <div class="form-group">
                     <label for="lp_deskripsi">Deskripsi Kegiatan</label>
                     <textarea id="lp_deskripsi" class="form-input" rows="3" placeholder="Jelaskan langkah-langkah praktikum..."></textarea>

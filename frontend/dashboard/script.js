@@ -25,6 +25,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let editId = null;
     let lpEditMode = false;
     let lpEditId = null;
+    let lpAlatList = [];   // Array alat yang dipilih
+    let lpBahanList = [];  // Array bahan yang dipilih
+    let allAlatForLP = []; // Data alat dari API
+    let allBahanForLP = []; // Data bahan dari API
     const labFilterSelect = document.getElementById('labFilterSelect');
 
     function getCurrentLabFilter() {
@@ -349,6 +353,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function bukaModalLaporan(item) {
         lpEditMode = false;
         lpEditId = null;
+        lpAlatList = [];
+        lpBahanList = [];
+        renderLPAlatList();
+        renderLPBahanList();
         document.getElementById('modalLaporanPraktikum').querySelector('.modal-title').textContent = 'Buat Laporan Praktikum';
         document.getElementById('modalLaporanPraktikum').querySelector('.btn-simpan').textContent = 'Simpan';
         
@@ -380,7 +388,10 @@ document.addEventListener('DOMContentLoaded', function() {
             guru_mapel: document.getElementById('lp_guru').value,
             judul_praktikum: document.getElementById('lp_judul').value,
             tujuan_praktikum: document.getElementById('lp_tujuan').value,
-            daftar_alat_bahan: document.getElementById('lp_alat_bahan').value,
+            daftar_alat_bahan: JSON.stringify({
+                alat: lpAlatList,
+                bahan: lpBahanList
+            }),
             deskripsi_kegiatan: document.getElementById('lp_deskripsi').value,
             tanggal: document.getElementById('lp_tanggal').value,
             lab_id: parseInt(document.getElementById('lp_lab_id').value)
@@ -1356,6 +1367,187 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    async function loadAlatBahanForLP() {
+        try {
+            const token = localStorage.getItem('token');
+            const [resAlat, resBahan] = await Promise.all([
+                fetch('/api/alat', { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch('/api/bahan', { headers: { 'Authorization': `Bearer ${token}` } })
+            ]);
+            allAlatForLP = await resAlat.json();
+            allBahanForLP = await resBahan.json();
+        } catch (error) {
+            console.error('Gagal load alat/bahan:', error);
+        }
+    }
+
+    // Panggil saat halaman dimuat
+    loadAlatBahanForLP();
+
+    // cari alat untuk laporan kegiatan praktikum
+    const lpSearchAlat = document.getElementById('lp_search_alat');
+    const lpSuggestAlat = document.getElementById('lp_suggest_alat');
+
+    lpSearchAlat.addEventListener('input', function() {
+        const keyword = this.value.toLowerCase().trim();
+        if (!keyword) {
+            lpSuggestAlat.classList.remove('active');
+            return;
+        }
+        const filtered = allAlatForLP.filter(item => 
+            item.nama_alat.toLowerCase().includes(keyword) || 
+            item.kode_alat.toLowerCase().includes(keyword)
+        );
+        lpSuggestAlat.innerHTML = filtered.map(item => 
+            `<div class="search-suggest-item" data-id="${item.id}" data-nama="${item.nama_alat}" data-kode="${item.kode_alat}">
+                🔧 ${item.kode_alat} - ${item.nama_alat} (Stok: ${item.jumlah})
+            </div>`
+        ).join('');
+        lpSuggestAlat.classList.add('active');
+    });
+
+    lpSuggestAlat.addEventListener('click', function(e) {
+        const item = e.target.closest('.search-suggest-item');
+        if (item) {
+            lpSearchAlat.value = `${item.getAttribute('data-kode')} - ${item.getAttribute('data-nama')}`;
+            lpSearchAlat.setAttribute('data-selected-id', item.getAttribute('data-id'));
+            lpSearchAlat.setAttribute('data-selected-nama', item.getAttribute('data-nama'));
+            lpSearchAlat.setAttribute('data-selected-kode', item.getAttribute('data-kode'));
+            lpSuggestAlat.classList.remove('active');
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#modalLaporanPraktikum .search-wrapper')) {
+            lpSuggestAlat.classList.remove('active');
+            lpSuggestBahan.classList.remove('active');
+        }
+    });
+
+    document.getElementById('btnTambahAlatLP').addEventListener('click', function() {
+        const id = lpSearchAlat.getAttribute('data-selected-id');
+        const nama = lpSearchAlat.getAttribute('data-selected-nama');
+        const kode = lpSearchAlat.getAttribute('data-selected-kode');
+        const jumlah = parseInt(document.getElementById('lp_jumlah_alat').value);
+        
+        if (!id || !jumlah || jumlah < 1) {
+            alert('Pilih alat dan isi jumlah!');
+            return;
+        }
+        
+        // Cek duplikasi
+        if (lpAlatList.find(a => a.id == id)) {
+            alert('Alat ini sudah ada di daftar!');
+            return;
+        }
+        
+        lpAlatList.push({ id: parseInt(id), kode, nama, jumlah, satuan: 'buah' });
+        renderLPAlatList();
+        
+        // Reset input
+        lpSearchAlat.value = '';
+        lpSearchAlat.removeAttribute('data-selected-id');
+        document.getElementById('lp_jumlah_alat').value = '';
+    });
+
+    function renderLPAlatList() {
+        const container = document.getElementById('lp_list_alat');
+        container.innerHTML = lpAlatList.map((item, index) => `
+            <div class="item-row">
+                <span>🔧 ${item.kode} - ${item.nama} — ${item.jumlah} ${item.satuan}</span>
+                <button class="btn-remove" data-index="${index}" data-type="alat">✕</button>
+            </div>
+        `).join('');
+        
+        // Event hapus
+        container.querySelectorAll('.btn-remove').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const idx = parseInt(this.getAttribute('data-index'));
+                lpAlatList.splice(idx, 1);
+                renderLPAlatList();
+            });
+        });
+    }
+
+    // cari bahan untuk laporan kegiatan praktikum
+    const lpSearchBahan = document.getElementById('lp_search_bahan');
+    const lpSuggestBahan = document.getElementById('lp_suggest_bahan');
+
+    lpSearchBahan.addEventListener('input', function() {
+        const keyword = this.value.toLowerCase().trim();
+        if (!keyword) {
+            lpSuggestBahan.classList.remove('active');
+            return;
+        }
+        const filtered = allBahanForLP.filter(item => 
+            item.nama_bahan.toLowerCase().includes(keyword) || 
+            item.kode_bahan.toLowerCase().includes(keyword)
+        );
+        lpSuggestBahan.innerHTML = filtered.map(item => 
+            `<div class="search-suggest-item" data-id="${item.id}" data-nama="${item.nama_bahan}" data-kode="${item.kode_bahan}" data-satuan="${item.satuan}">
+                🧪 ${item.kode_bahan} - ${item.nama_bahan} (Stok: ${item.jumlah} ${item.satuan})
+            </div>`
+        ).join('');
+        lpSuggestBahan.classList.add('active');
+    });
+
+    lpSuggestBahan.addEventListener('click', function(e) {
+        const item = e.target.closest('.search-suggest-item');
+        if (item) {
+            lpSearchBahan.value = `${item.getAttribute('data-kode')} - ${item.getAttribute('data-nama')}`;
+            lpSearchBahan.setAttribute('data-selected-id', item.getAttribute('data-id'));
+            lpSearchBahan.setAttribute('data-selected-nama', item.getAttribute('data-nama'));
+            lpSearchBahan.setAttribute('data-selected-kode', item.getAttribute('data-kode'));
+            document.getElementById('lp_satuan_bahan').value = item.getAttribute('data-satuan');
+            lpSuggestBahan.classList.remove('active');
+        }
+    });
+
+    document.getElementById('btnTambahBahanLP').addEventListener('click', function() {
+    const id = lpSearchBahan.getAttribute('data-selected-id');
+        const nama = lpSearchBahan.getAttribute('data-selected-nama');
+        const kode = lpSearchBahan.getAttribute('data-selected-kode');
+        const jumlah = parseFloat(document.getElementById('lp_jumlah_bahan').value);
+        const satuan = document.getElementById('lp_satuan_bahan').value;
+        
+        if (!id || !jumlah || jumlah <= 0 || !satuan) {
+            alert('Pilih bahan, isi jumlah, dan satuan!');
+            return;
+        }
+        
+        if (lpBahanList.find(b => b.id == id)) {
+            alert('Bahan ini sudah ada di daftar!');
+            return;
+        }
+        
+        lpBahanList.push({ id: parseInt(id), kode, nama, jumlah, satuan });
+        renderLPBahanList();
+        
+        // Reset input
+        lpSearchBahan.value = '';
+        lpSearchBahan.removeAttribute('data-selected-id');
+        document.getElementById('lp_jumlah_bahan').value = '';
+        document.getElementById('lp_satuan_bahan').value = '';
+    });
+
+    function renderLPBahanList() {
+        const container = document.getElementById('lp_list_bahan');
+        container.innerHTML = lpBahanList.map((item, index) => `
+            <div class="item-row">
+                <span>🧪 ${item.kode} - ${item.nama} — ${item.jumlah} ${item.satuan}</span>
+                <button class="btn-remove" data-index="${index}" data-type="bahan">✕</button>
+            </div>
+        `).join('');
+        
+        container.querySelectorAll('.btn-remove').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const idx = parseInt(this.getAttribute('data-index'));
+                lpBahanList.splice(idx, 1);
+                renderLPBahanList();
+            });
+        });
+    }
+    
     // Panel laporan praktikum
     const lpLabFilter = document.getElementById('lpLabFilter');
 
@@ -1453,6 +1645,18 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('lp_tanggal').value = toLocalDate(item.tanggal);  // ✅ Perbaiki
         document.getElementById('lp_lab_id').value = item.lab_id || 1;
         document.getElementById('modalLaporanPraktikum').style.display = 'flex';
+
+        // Parse data alat/bahan dari JSON
+        try {
+            const dataAlatBahan = JSON.parse(item.daftar_alat_bahan || '{}');
+            lpAlatList = dataAlatBahan.alat || [];
+            lpBahanList = dataAlatBahan.bahan || [];
+        } catch (e) {
+            lpAlatList = [];
+            lpBahanList = [];
+        }
+        renderLPAlatList();
+        renderLPBahanList();
     }
 
     async function hapusLaporanPraktikum(id) {

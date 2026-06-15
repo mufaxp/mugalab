@@ -521,6 +521,21 @@ app.delete('/api/laporan-kerusakan/:id', verifyToken, async (req, res) => {
     }
 });
 
+// DELETE riwayat penggunaan bahan
+app.delete('/api/bahan/pakai/:id', verifyToken, async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [result] = await pool.query('DELETE FROM penggunaan_bahan WHERE id = ?', [id]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Riwayat tidak ditemukan' });
+        }
+        return res.status(200).json({ message: 'Riwayat berhasil dihapus (stok tidak berubah)' });
+    } catch (error) {
+        console.error('Error deleting riwayat:', error);
+        return res.status(500).json({ message: 'Gagal menghapus riwayat' });
+    }
+});
+
 // 404 handler (harus diletakkan paling bawah)
 app.use((req, res) => {
     res.status(404).json({ error: 'Route tidak ditemukan', path: req.originalUrl });

@@ -28,6 +28,7 @@
                 <li><a class="sidebar-item active" data-panel="jadwal">📅 Jadwal</a></li>
                 <li><a class="sidebar-item" data-panel="inventaris">🧪 Inventaris</a></li>
                 <li><a class="sidebar-item" data-panel="laporan">⚠️ Laporan Kerusakan Alat</a></li>
+                <li><a class="sidebar-item" data-panel="riwayat">📋 Riwayat Penggunaan Bahan</a></li>
             </ul>
         </nav>
 
@@ -142,10 +143,31 @@
                         <option value="2">Ruang Laboratorium Fisika</option>
                     </select>
                 </div>
-                
                 <!-- Tabel Laporan -->
                 <div id="laporanList" style="overflow-x:auto; margin-top:16px;">
                     <p style="color:#999; text-align:center; padding:20px;">Memuat data laporan...</p>
+                </div>
+            </div>
+            <!-- Panel Riwayat Penggunaan Bahan -->
+            <div id="riwayat" class="panel">
+                <div class="panel-header">
+                    <h2>📋 Riwayat Penggunaan Bahan</h2>
+                </div>
+                <p>Catatan historis penggunaan bahan di laboratorium.</p>
+                
+                <!-- Filter Lab -->
+                <div class="lab-filter">
+                    <label for="riwayatLabFilter">Pilih Laboratorium:</label>
+                    <select id="riwayatLabFilter" class="form-input lab-filter-select">
+                        <option value="all">Semua Lab</option>
+                        <option value="1">Lab Biologi-Kimia</option>
+                        <option value="2">Lab Fisika</option>
+                    </select>
+                </div>
+                
+                <!-- Tabel Riwayat -->
+                <div id="riwayatList" style="overflow-x:auto; margin-top:16px;">
+                    <p style="color:#999; text-align:center; padding:20px;">Memuat data riwayat...</p>
                 </div>
             </div>
         </main>

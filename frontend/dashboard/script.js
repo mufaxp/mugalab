@@ -1095,6 +1095,109 @@ document.addEventListener('DOMContentLoaded', function() {
     if (laporanSidebar) {
         laporanSidebar.addEventListener('click', loadLaporan);
     }
+
+    // riwayat penggunaan bahan
+    const riwayatLabFilter = document.getElementById('riwayatLabFilter');
+
+    if (riwayatLabFilter) {
+        riwayatLabFilter.addEventListener('change', loadRiwayat);
+    }
+
+    function getRiwayatLabFilter() {
+        if (!riwayatLabFilter) return null;
+        const val = riwayatLabFilter.value;
+        return val === 'all' ? null : parseInt(val);
+    }
+
+    async function loadRiwayat() {
+        const container = document.getElementById('riwayatList');
+        if (!container) return;
+
+        try {
+            const token = localStorage.getItem('token');
+            let url = '/api/bahan/pakai';
+            const labId = getRiwayatLabFilter();
+            if (labId) url += `?lab_id=${labId}`;
+
+            const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+            const data = await res.json();
+            renderRiwayat(data);
+        } catch (error) {
+            container.innerHTML = '<p style="color:#c62828; text-align:center;">Gagal memuat data riwayat.</p>';
+        }
+    }
+
+    function renderRiwayat(data) {
+        const container = document.getElementById('riwayatList');
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p style="color:#999; text-align:center; padding:20px;">Belum ada riwayat penggunaan bahan.</p>';
+            return;
+        }
+
+        let html = `<table style="width:100%; border-collapse:collapse; font-size:13px;">
+            <thead>
+                <tr style="background:#f0f7f2;">
+                    <th style="padding:8px; border:1px solid #d0e6d5;">Tanggal</th>
+                    <th style="padding:8px; border:1px solid #d0e6d5;">Nama Bahan</th>
+                    <th style="padding:8px; border:1px solid #d0e6d5;">Jumlah</th>
+                    <th style="padding:8px; border:1px solid #d0e6d5;">Satuan</th>
+                    <th style="padding:8px; border:1px solid #d0e6d5;">Penanggung Jawab</th>
+                    <th style="padding:8px; border:1px solid #d0e6d5;">Kelas</th>
+                    <th style="padding:8px; border:1px solid #d0e6d5;">Kegiatan</th>
+                    <th style="padding:8px; border:1px solid #d0e6d5;">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+        data.forEach(item => {
+            const tgl = item.tanggal ? item.tanggal.substring(0, 10) : '-';
+            html += `<tr>
+                <td style="padding:8px; border:1px solid #d0e6d5;">${tgl}</td>
+                <td style="padding:8px; border:1px solid #d0e6d5;">${item.nama_bahan}</td>
+                <td style="padding:8px; border:1px solid #d0e6d5;">${item.jumlah_digunakan}</td>
+                <td style="padding:8px; border:1px solid #d0e6d5;">${item.satuan}</td>
+                <td style="padding:8px; border:1px solid #d0e6d5;">${item.penanggung_jawab}</td>
+                <td style="padding:8px; border:1px solid #d0e6d5;">${item.kelas || '-'}</td>
+                <td style="padding:8px; border:1px solid #d0e6d5;">${item.kegiatan}</td>
+                <td style="padding:8px; border:1px solid #d0e6d5;">
+                    <button class="btn-delete btn-xs" data-hapus-riwayat="${item.id}">Hapus</button>
+                </td>
+            </tr>`;
+        });
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+
+        // Event listener untuk tombol Hapus
+        container.querySelectorAll('button[data-hapus-riwayat]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                hapusRiwayat(parseInt(this.getAttribute('data-hapus-riwayat')));
+            });
+        });
+    }
+
+    async function hapusRiwayat(id) {
+        if (!confirm('Yakin hapus riwayat ini? (Stok bahan tidak akan kembali)')) return;
+        
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`/api/bahan/pakai/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            alert(data.message);
+            if (res.ok) loadRiwayat();
+        } catch (error) {
+            alert('Gagal terhubung ke server');
+        }
+    }
+
+    // Load riwayat saat panel dibuka
+    const riwayatSidebar = document.querySelector('.sidebar-item[data-panel="riwayat"]');
+    if (riwayatSidebar) {
+        riwayatSidebar.addEventListener('click', loadRiwayat);
+    }
     
     //  tombol logout
     if (logoutBtn) {

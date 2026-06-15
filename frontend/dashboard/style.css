@@ -549,6 +549,70 @@ body {
     margin: 1px !important;
 }
 
+/* kolom search inventaris */
+.search-wrapper {
+    position: relative;
+}
+
+.search-input {
+    padding: 8px 12px;
+    border: 1px solid #d0e6d5;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: inherit;
+    width: 200px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.search-input:focus {
+    border-color: #0e703f;
+    box-shadow: 0 0 0 2px rgba(14, 112, 63, 0.1);
+}
+
+.search-suggest {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #d0e6d5;
+    border-radius: 0 0 8px 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.search-suggest.active {
+    display: block;
+}
+
+.search-suggest-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.15s;
+}
+
+.search-suggest-item:hover,
+.search-suggest-item.selected {
+    background-color: #f0f7f2;
+}
+
+.search-suggest-item:last-child {
+    border-bottom: none;
+}
+
+@media (max-width: 640px) {
+    .search-input {
+        width: 150px;
+        font-size: 11px;
+    }
+}
+
 /* responsive */
 @media (max-width: 768px) {
     .hamburger-btn {

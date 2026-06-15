@@ -94,9 +94,15 @@
                 
                 <!-- Tabel Alat -->
                 <div id="alatPanel" class="inv-panel active">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:10px; flex-wrap:wrap;">
                         <h3>Daftar Alat</h3>
-                        <button class="btn-tambah" id="btnTambahAlat">Tambah Alat</button>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <button class="btn-tambah" id="btnTambahAlat">Tambah Alat</button>
+                            <div class="search-wrapper">
+                                <input type="text" id="searchAlat" class="search-input" placeholder="Cari alat...">
+                                <div id="suggestAlat" class="search-suggest"></div>
+                            </div>
+                        </div>
                     </div>
                     <div id="alatList" style="overflow-x:auto;">
                         <p style="color:#999; text-align:center; padding:20px;">Memuat data alat...</p>
@@ -105,9 +111,15 @@
                 
                 <!-- Tabel Bahan -->
                 <div id="bahanPanel" class="inv-panel">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:10px; flex-wrap:wrap;">
                         <h3>Daftar Bahan</h3>
-                        <button class="btn-tambah" id="btnTambahBahan">Tambah Bahan</button>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <button class="btn-tambah" id="btnTambahBahan">Tambah Bahan</button>
+                            <div class="search-wrapper">
+                                <input type="text" id="searchBahan" class="search-input" placeholder="Cari bahan...">
+                                <div id="suggestBahan" class="search-suggest"></div>
+                            </div>
+                        </div>
                     </div>
                     <div id="bahanList" style="overflow-x:auto;">
                         <p style="color:#999; text-align:center; padding:20px;">Memuat data bahan...</p>

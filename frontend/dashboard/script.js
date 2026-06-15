@@ -708,6 +708,124 @@ document.addEventListener('DOMContentLoaded', function() {
 
     loadAlat();
     loadBahan();
+
+    // search inventaris
+    let allAlatData = [];
+    let allBahanData = [];
+
+    // Override loadAlat untuk menyimpan data mentah
+    const originalLoadAlat = loadAlat;
+    loadAlat = async function() {
+        const container = document.getElementById('alatList');
+        if (!container) return;
+        try {
+            const token = localStorage.getItem('token');
+            let url = '/api/alat';
+            const labId = getInvLabFilter();
+            if (labId) url += `?lab_id=${labId}`;
+            const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+            allAlatData = await res.json();
+            renderAlat(allAlatData);
+        } catch (error) {
+            container.innerHTML = '<p style="color:#c62828;">Gagal memuat data alat.</p>';
+        }
+    };
+
+    // Override loadBahan untuk menyimpan data mentah
+    const originalLoadBahan = loadBahan;
+    loadBahan = async function() {
+        const container = document.getElementById('bahanList');
+        if (!container) return;
+        try {
+            const token = localStorage.getItem('token');
+            let url = '/api/bahan';
+            const labId = getInvLabFilter();
+            if (labId) url += `?lab_id=${labId}`;
+            const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+            allBahanData = await res.json();
+            renderBahan(allBahanData);
+        } catch (error) {
+            container.innerHTML = '<p style="color:#c62828;">Gagal memuat data bahan.</p>';
+        }
+    };
+
+    // Search Alat
+    const searchAlat = document.getElementById('searchAlat');
+    const suggestAlat = document.getElementById('suggestAlat');
+
+    searchAlat.addEventListener('input', function() {
+        const keyword = this.value.toLowerCase().trim();
+        if (!keyword) {
+            suggestAlat.classList.remove('active');
+            renderAlat(allAlatData);
+            return;
+        }
+        const filtered = allAlatData.filter(item => 
+            item.nama_alat.toLowerCase().includes(keyword) || 
+            item.kode_alat.toLowerCase().includes(keyword)
+        );
+        suggestAlat.innerHTML = filtered.map(item => 
+            `<div class="search-suggest-item" data-id="${item.id}">${item.kode_alat} - ${item.nama_alat}</div>`
+        ).join('');
+        suggestAlat.classList.add('active');
+    });
+
+    suggestAlat.addEventListener('click', function(e) {
+        const item = e.target.closest('.search-suggest-item');
+        if (item) {
+            const id = parseInt(item.getAttribute('data-id'));
+            const selected = allAlatData.filter(a => a.id === id);
+            renderAlat(selected);
+            suggestAlat.classList.remove('active');
+            searchAlat.value = selected[0].nama_alat;
+        }
+    });
+
+    // Sembunyikan suggestion saat klik di luar
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.search-wrapper')) {
+            suggestAlat.classList.remove('active');
+        }
+    });
+
+    // Search Bahan
+    const searchBahan = document.getElementById('searchBahan');
+    const suggestBahan = document.getElementById('suggestBahan');
+
+    searchBahan.addEventListener('input', function() {
+        const keyword = this.value.toLowerCase().trim();
+        if (!keyword) {
+            suggestBahan.classList.remove('active');
+            renderBahan(allBahanData);
+            return;
+        }
+        const filtered = allBahanData.filter(item => 
+            item.nama_bahan.toLowerCase().includes(keyword) || 
+            item.kode_bahan.toLowerCase().includes(keyword)
+        );
+        suggestBahan.innerHTML = filtered.map(item => 
+            `<div class="search-suggest-item" data-id="${item.id}">${item.kode_bahan} - ${item.nama_bahan}</div>`
+        ).join('');
+        suggestBahan.classList.add('active');
+    });
+
+    suggestBahan.addEventListener('click', function(e) {
+        const item = e.target.closest('.search-suggest-item');
+        if (item) {
+            const id = parseInt(item.getAttribute('data-id'));
+            const selected = allBahanData.filter(b => b.id === id);
+            renderBahan(selected);
+            suggestBahan.classList.remove('active');
+            searchBahan.value = selected[0].nama_bahan;
+        }
+    });
+
+    // Sembunyikan suggestion bahan saat klik di luar
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#bahanPanel .search-wrapper')) {
+            suggestBahan.classList.remove('active');
+        }
+    });
     
     // laporan kerusakan
     const laporanLabFilter = document.getElementById('laporanLabFilter');

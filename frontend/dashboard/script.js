@@ -1746,21 +1746,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
             <hr style="border: 1px solid #000; margin: 20px 0 10px 0;">
 
-            <!-- TANDA TANGAN -->
-            <table style="width: 100%; font-size: 12px; margin-top: 30px;">
+                    <!-- TANDA TANGAN -->
+            <table style="width: 100%; font-size: 12px; margin-top: 20px;">
                 <tr>
-                    <td style="width: 50%; text-align: left; vertical-align: top;">
-                        <p style="margin: 0;">Guru Pengampu</p>
-                        <br><br>
-                        <p style="margin: 0; text-decoration: underline;">(_________________)</p>
-                        <p style="margin: 5px 0 0 0;">${item.guru_mapel || '........................'}</p>
-                    </td>
-                    <td style="width: 50%; text-align: right; vertical-align: top;">
+                    <!-- KANAN ATAS: Jakarta & Mengetahui -->
+                    <td style="width: 100%; text-align: right; vertical-align: top;" colspan="2">
                         <p style="margin: 0;">Jakarta, ${tglPDF}</p>
                         <p style="margin: 5px 0 0 0;">Mengetahui,</p>
-                        <br><br>
-                        <p style="margin: 0; text-decoration: underline;">(_________________)</p>
-                        <p style="margin: 5px 0 0 0;">Laboran</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="height: 15px;"></td>
+                </tr>
+                <tr>
+                    <!-- KIRI: Guru Pengampu -->
+                    <td style="width: 50%; text-align: center; vertical-align: top; padding-right: 10px;">
+                        <p style="margin: 0;">Guru Pengampu</p>
+                        <br><br><br><br>
+                        <p style="margin: 0; text-decoration: underline;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+                        <p style="margin: 4px 0 0 0;">${item.guru_mapel || '........................'}</p>
+                    </td>
+                    <!-- KANAN: Laboran -->
+                    <td style="width: 50%; text-align: center; vertical-align: top; padding-left: 10px;">
+                        <p style="margin: 0;">Laboran</p>
+                        <br><br><br><br>
+                        <p style="margin: 0; text-decoration: underline;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+                        <p style="margin: 4px 0 0 0;">Mufadilah Hermansyah, S.Pd.</p>
                     </td>
                 </tr>
             </table>

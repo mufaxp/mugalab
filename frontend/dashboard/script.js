@@ -1299,6 +1299,63 @@ document.addEventListener('DOMContentLoaded', function() {
         riwayatSidebar.addEventListener('click', loadRiwayat);
     }
 
+    // Export Riwayat ke Excel
+    document.getElementById('btnExportRiwayat').addEventListener('click', async function() {
+        try {
+            const token = localStorage.getItem('token');
+            let url = '/api/bahan/pakai';
+            const labId = getRiwayatLabFilter();
+            if (labId) url += `?lab_id=${labId}`;
+            
+            const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+            const data = await res.json();
+            
+            if (!data || data.length === 0) {
+                alert('Tidak ada data untuk diexport');
+                return;
+            }
+            
+            // Siapkan data untuk Excel
+            const excelData = data.map((item, index) => ({
+                'No': index + 1,
+                'Tanggal': item.tanggal ? item.tanggal.substring(0, 10) : '-',
+                'Nama Bahan': item.nama_bahan,
+                'Jumlah Digunakan': item.jumlah_digunakan,
+                'Satuan': item.satuan,
+                'Penanggung Jawab': item.penanggung_jawab,
+                'Kelas': item.kelas || '-',
+                'Kegiatan': item.kegiatan
+            }));
+            
+            // Buat worksheet
+            const ws = XLSX.utils.json_to_sheet(excelData);
+            
+            // Atur lebar kolom
+            ws['!cols'] = [
+                { wch: 5 },   // No
+                { wch: 12 },  // Tanggal
+                { wch: 25 },  // Nama Bahan
+                { wch: 15 },  // Jumlah
+                { wch: 10 },  // Satuan
+                { wch: 25 },  // PJ
+                { wch: 10 },  // Kelas
+                { wch: 30 }   // Kegiatan
+            ];
+            
+            // Buat workbook
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Riwayat Penggunaan Bahan');
+            
+            // Download
+            const today = new Date().toISOString().substring(0, 10);
+            XLSX.writeFile(wb, `Riwayat_Penggunaan_Bahan_${today}.xlsx`);
+            
+        } catch (error) {
+            console.error('Export error:', error);
+            alert('Gagal mengexport data');
+        }
+    });
+
     // Panel laporan praktikum
     const lpLabFilter = document.getElementById('lpLabFilter');
 

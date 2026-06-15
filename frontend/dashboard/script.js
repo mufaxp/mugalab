@@ -340,7 +340,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('lp_guru').value = item.penanggung_jawab || '';
         document.getElementById('lp_jam_mulai').value = item.jam_mulai || '';
         document.getElementById('lp_jam_selesai').value = item.jam_selesai || '';
-        document.getElementById('lp_tanggal').value = item.tanggal ? formatTanggal(item.tanggal) : '';
+        document.getElementById('lp_tanggal').value = item.tanggal ? item.tanggal.substring(0, 10) : '';  // ✅ Perbaiki
         document.getElementById('lp_lab_id').value = item.lab_id || 1;
         document.getElementById('lp_judul').value = item.kegiatan || '';
         document.getElementById('lp_tujuan').value = '';

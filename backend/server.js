@@ -400,6 +400,127 @@ app.get('/api/bahan/pakai', verifyToken, async (req, res) => {
     }
 });
 
+// GET semua laporan kerusakan
+app.get('/api/laporan-kerusakan', verifyToken, async (req, res) => {
+    const { lab_id } = req.query;
+    try {
+        let query = `
+            SELECT lk.*, a.kode_alat, a.nama_alat 
+            FROM laporan_kerusakan lk 
+            JOIN alat a ON lk.alat_id = a.id
+        `;
+        const params = [];
+        if (lab_id) {
+            query += ' WHERE a.lab_id = ?';
+            params.push(lab_id);
+        }
+        query += ' ORDER BY lk.created_at DESC';
+        const [rows] = await pool.query(query, params);
+        return res.status(200).json(rows);
+    } catch (error) {
+        console.error('Error fetching laporan:', error);
+        return res.status(500).json({ message: 'Gagal mengambil data laporan' });
+    }
+});
+
+// POST laporan baru
+app.post('/api/laporan-kerusakan', verifyToken, async (req, res) => {
+    const { alat_id, jumlah_rusak, pelapor, tanggal_lapor, keterangan } = req.body;
+
+    if (!alat_id || !jumlah_rusak || !pelapor || !tanggal_lapor) {
+        return res.status(400).json({ message: 'Field wajib diisi' });
+    }
+
+    try {
+        // Cek stok alat
+        const [alatRows] = await pool.query('SELECT jumlah FROM alat WHERE id=?', [alat_id]);
+        if (alatRows.length === 0) return res.status(404).json({ message: 'Alat tidak ditemukan' });
+        if (alatRows[0].jumlah < jumlah_rusak) {
+            return res.status(400).json({ message: 'Jumlah alat tidak mencukupi' });
+        }
+
+        // Insert laporan
+        await pool.query(
+            'INSERT INTO laporan_kerusakan (alat_id, jumlah_rusak, pelapor, tanggal_lapor, keterangan) VALUES (?, ?, ?, ?, ?)',
+            [alat_id, jumlah_rusak, pelapor, tanggal_lapor, keterangan || '']
+        );
+
+        // Kurangi stok alat
+        await pool.query(
+            'UPDATE alat SET jumlah = jumlah - ?, jumlah_rusak = jumlah_rusak + ? WHERE id = ?',
+            [jumlah_rusak, jumlah_rusak, alat_id]
+        );
+
+        return res.status(201).json({ message: 'Laporan berhasil dibuat, stok alat berkurang' });
+    } catch (error) {
+        console.error('Error creating laporan:', error);
+        return res.status(500).json({ message: 'Gagal membuat laporan' });
+    }
+});
+
+// PUT update status laporan
+app.put('/api/laporan-kerusakan/:id', verifyToken, async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!status) {
+        return res.status(400).json({ message: 'Status wajib diisi' });
+    }
+
+    try {
+        // Ambil data laporan
+        const [laporanRows] = await pool.query('SELECT * FROM laporan_kerusakan WHERE id=?', [id]);
+        if (laporanRows.length === 0) return res.status(404).json({ message: 'Laporan tidak ditemukan' });
+
+        const laporan = laporanRows[0];
+        const oldStatus = laporan.status;
+
+        // Update status
+        await pool.query('UPDATE laporan_kerusakan SET status=? WHERE id=?', [status, id]);
+
+        // Logika stok
+        if (status === 'selesai' && (oldStatus === 'rusak' || oldStatus === 'diperbaiki')) {
+            // Kembalikan stok
+            await pool.query(
+                'UPDATE alat SET jumlah = jumlah + ?, jumlah_rusak = jumlah_rusak - ? WHERE id = ?',
+                [laporan.jumlah_rusak, laporan.jumlah_rusak, laporan.alat_id]
+            );
+        }
+        // status 'dibuang' tidak mengubah stok
+
+        return res.status(200).json({ message: 'Status berhasil diperbarui' });
+    } catch (error) {
+        console.error('Error updating laporan:', error);
+        return res.status(500).json({ message: 'Gagal memperbarui status' });
+    }
+});
+
+// DELETE laporan
+app.delete('/api/laporan-kerusakan/:id', verifyToken, async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const [laporanRows] = await pool.query('SELECT * FROM laporan_kerusakan WHERE id=?', [id]);
+        if (laporanRows.length === 0) return res.status(404).json({ message: 'Laporan tidak ditemukan' });
+
+        const laporan = laporanRows[0];
+
+        // Jika status rusak atau diperbaiki, kembalikan stok (koreksi)
+        if (laporan.status === 'rusak' || laporan.status === 'diperbaiki') {
+            await pool.query(
+                'UPDATE alat SET jumlah = jumlah + ?, jumlah_rusak = jumlah_rusak - ? WHERE id = ?',
+                [laporan.jumlah_rusak, laporan.jumlah_rusak, laporan.alat_id]
+            );
+        }
+
+        await pool.query('DELETE FROM laporan_kerusakan WHERE id=?', [id]);
+        return res.status(200).json({ message: 'Laporan berhasil dihapus' });
+    } catch (error) {
+        console.error('Error deleting laporan:', error);
+        return res.status(500).json({ message: 'Gagal menghapus laporan' });
+    }
+});
+
 // 404 handler (harus diletakkan paling bawah)
 app.use((req, res) => {
     res.status(404).json({ error: 'Route tidak ditemukan', path: req.originalUrl });

@@ -372,7 +372,6 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         
         const body = {
-            jadwal_id: document.getElementById('lp_jadwal_id').value || null,
             kelas: document.getElementById('lp_kelas').value,
             jumlah_kelompok: parseInt(document.getElementById('lp_jumlah_kelompok').value),
             mata_pelajaran: document.getElementById('lp_mapel').value,
@@ -387,10 +386,18 @@ document.addEventListener('DOMContentLoaded', function() {
             lab_id: parseInt(document.getElementById('lp_lab_id').value)
         };
         
+        // Hanya tambahkan jadwal_id jika mode tambah
+        if (!lpEditMode) {
+            body.jadwal_id = document.getElementById('lp_jadwal_id').value || null;
+        }
+        
+        const url = lpEditMode ? `/api/laporan-praktikum/${lpEditId}` : '/api/laporan-praktikum';
+        const method = lpEditMode ? 'PUT' : 'POST';
+        
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('/api/laporan-praktikum', {
-                method: 'POST',
+            const res = await fetch(url, {
+                method: method,
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(body)
             });
@@ -398,10 +405,9 @@ document.addEventListener('DOMContentLoaded', function() {
             alert(data.message);
             if (res.ok) {
                 document.getElementById('modalLaporanPraktikum').style.display = 'none';
-                if (typeof loadLaporanPraktikum === 'function') {
-                    loadLaporanPraktikum();
-                }
-                // ✅ Juga refresh panel jadwal agar tombol laporan berubah
+                lpEditMode = false;
+                lpEditId = null;
+                if (typeof loadLaporanPraktikum === 'function') loadLaporanPraktikum();
                 loadDashboardJadwal(getCurrentLabFilter());
             }
         } catch (error) {

@@ -826,6 +826,58 @@ document.addEventListener('DOMContentLoaded', function() {
     
     loadAlat();
     loadBahan();
+
+    // search alat untuk laporan kerusakan alat
+    const laporanAlatSearch = document.getElementById('laporan_alat_search');
+    const laporanAlatHidden = document.getElementById('laporan_alat');
+    const suggestLaporanAlat = document.getElementById('suggestLaporanAlat');
+
+    if (laporanAlatSearch) {
+        laporanAlatSearch.addEventListener('input', function() {
+            const keyword = this.value.toLowerCase().trim();
+            const data = window._laporanAlatList || [];
+            
+            if (!keyword) {
+                suggestLaporanAlat.classList.remove('active');
+                laporanAlatHidden.value = '';
+                return;
+            }
+            
+            const filtered = data.filter(item => 
+                item.nama_alat.toLowerCase().includes(keyword) || 
+                item.kode_alat.toLowerCase().includes(keyword)
+            );
+            
+            suggestLaporanAlat.innerHTML = filtered.map(item => 
+                `<div class="search-suggest-item" data-id="${item.id}" data-nama="${item.nama_alat}" data-kode="${item.kode_alat}" data-stok="${item.jumlah}">
+                    ${item.kode_alat} - ${item.nama_alat} (Stok: ${item.jumlah})
+                </div>`
+            ).join('');
+            
+            suggestLaporanAlat.classList.add('active');
+        });
+
+        suggestLaporanAlat.addEventListener('click', function(e) {
+            const item = e.target.closest('.search-suggest-item');
+            if (item) {
+                const id = item.getAttribute('data-id');
+                const nama = item.getAttribute('data-nama');
+                const kode = item.getAttribute('data-kode');
+                const stok = item.getAttribute('data-stok');
+                
+                laporanAlatHidden.value = id;
+                laporanAlatSearch.value = `${kode} - ${nama} (Stok: ${stok})`;
+                suggestLaporanAlat.classList.remove('active');
+            }
+        });
+
+        // Sembunyikan suggestion saat klik di luar
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#modalLaporan .search-wrapper')) {
+                suggestLaporanAlat.classList.remove('active');
+            }
+        });
+    }
     
     // laporan kerusakan
     const laporanLabFilter = document.getElementById('laporanLabFilter');
@@ -984,20 +1036,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Buka modal lapor
     document.getElementById('btnTambahLaporan').addEventListener('click', async function() {
-        // Load daftar alat untuk dropdown
-        const token = localStorage.getItem('token');
-        const res = await fetch('/api/alat', { headers: { 'Authorization': `Bearer ${token}` } });
-        const alatList = await res.json();
-        
-        const select = document.getElementById('laporan_alat');
-        select.innerHTML = '<option value="">-- Pilih Alat --</option>';
-        alatList.forEach(alat => {
-            select.innerHTML += `<option value="${alat.id}">${alat.kode_alat} - ${alat.nama_alat} (Stok: ${alat.jumlah})</option>`;
-        });
-        
+        // Reset form
         document.getElementById('formLaporan').reset();
+        document.getElementById('laporan_alat').value = '';
+        document.getElementById('laporan_alat_search').value = '';
+        document.getElementById('suggestLaporanAlat').innerHTML = '';
         document.getElementById('laporan_tanggal').valueAsDate = new Date();
         document.getElementById('modalLaporan').style.display = 'flex';
+        
+        // Load data alat untuk search
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch('/api/alat', { headers: { 'Authorization': `Bearer ${token}` } });
+            window._laporanAlatList = await res.json();
+        } catch (error) {
+            window._laporanAlatList = [];
+        }
     });
 
     // Submit form laporan
@@ -1012,7 +1066,7 @@ document.addEventListener('DOMContentLoaded', function() {
             keterangan: document.getElementById('laporan_keterangan').value
         };
         
-        if (!body.alat_id || !body.jumlah_rusak || !body.pelapor || !body.tanggal_lapor) {
+        if (!body.alat_id || !body.jumlah_rusak || !body.pelapor || !body.tanggal_lapor || !document.getElementById('laporan_alat_search').value) {
             alert('Semua field wajib diisi!');
             return;
         }

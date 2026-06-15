@@ -78,11 +78,11 @@
                 
                 <!-- Filter Lab -->
                 <div class="lab-filter">
-                    <label for="invLabFilter">Pilih Laboratorium:</label>
+                    <label for="invLabFilter">Pilih Ruang Laboratorium:</label>
                     <select id="invLabFilter" class="form-input lab-filter-select">
-                        <option value="all">Semua Lab</option>
-                        <option value="1">Lab Biologi-Kimia</option>
-                        <option value="2">Lab Fisika</option>
+                        <option value="all">Semua Ruang Laboratorium</option>
+                        <option value="1">Ruang Laboratorium Biologi dan Kimia</option>
+                        <option value="2">Ruang Laboratorium Fisika</option>
                     </select>
                 </div>
                 
@@ -369,9 +369,11 @@
             <form id="formLaporan">
                 <div class="form-group">
                     <label for="laporan_alat">Pilih Alat</label>
-                    <select id="laporan_alat" class="form-input" required>
-                        <option value="">-- Pilih Alat --</option>
-                    </select>
+                    <div class="search-wrapper" style="width:100%;">
+                        <input type="text" id="laporan_alat_search" class="form-input search-input" style="width:100%;" placeholder="Ketik nama/kode alat..." autocomplete="off">
+                        <input type="hidden" id="laporan_alat" value="">
+                        <div id="suggestLaporanAlat" class="search-suggest" style="width:100%;"></div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="laporan_jumlah">Jumlah Rusak</label>

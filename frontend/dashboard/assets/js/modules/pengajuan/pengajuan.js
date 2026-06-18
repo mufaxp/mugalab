@@ -39,7 +39,7 @@ function renderPengajuan(data) {
 
     let html = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead><tr style="background:#f0f7f2;">
-            <th style="padding:8px;border:1px solid #d0e6d5;">Pengaju</th>
+            <th style="padding:8px;border:1px solid #d0e6d5;">Pemohon</th>
             <th style="padding:8px;border:1px solid #d0e6d5;">Kegiatan</th>
             <th style="padding:8px;border:1px solid #d0e6d5;">Mapel</th>
             <th style="padding:8px;border:1px solid #d0e6d5;">Kelas</th>

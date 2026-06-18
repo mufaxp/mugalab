@@ -162,8 +162,8 @@ app.post('/api/jadwal', verifyToken, async (req, res) => {
         );
 
         // Kirim notif WA
-        const jadwalBaru = { kegiatan, penanggung_jawab, tanggal, jam_mulai, jam_selesai, lab_id };
-        sendWANotification(jadwalBaru, 'Baru');
+        const notifJadwalBaru = { kegiatan, kelas, penanggung_jawab, tanggal, jam_mulai, jam_selesai, lab_id };
+        sendWANotification(notifJadwalBaru, 'Baru');
 
         return res.status(201).json({
             message: 'Jadwal berhasil ditambahkan',
@@ -220,8 +220,8 @@ app.put('/api/jadwal/:id', verifyToken, async (req, res) => {
         }
 
         // Kirim notif WA
-        const jadwalEdit = { kegiatan, penanggung_jawab, tanggal, jam_mulai, jam_selesai, lab_id };
-        sendWANotification(jadwalEdit, 'Diperbarui');
+        const notifEditJadwal = { kegiatan, kelas, penanggung_jawab, tanggal, jam_mulai, jam_selesai, lab_id };
+        sendWANotification(notifEditJadwal, 'Diperbarui');
 
         return res.status(200).json({ message: 'Jadwal berhasil diperbarui' });
     } catch (error) {
@@ -236,6 +236,7 @@ async function sendWANotification(jadwal, action) {
         const labName = jadwal.lab_id == 1 ? 'Ruang Laboratorium Biologi dan Kimia' : 'Ruang Laboratorium Fisika';
         const message = `📅 *Jadwal Lab ${action}*\n\n`
             + `*Kegiatan:* ${jadwal.kegiatan}\n`
+            + `*Kelas:* ${jadwal.kelas}\n`
             + `*Penanggungjawab:* ${jadwal.penanggung_jawab}\n`
             + `*Tanggal:* ${jadwal.tanggal}\n`
             + `*Jam:* ${jadwal.jam_mulai}-${jadwal.jam_selesai}\n`

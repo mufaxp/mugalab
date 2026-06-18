@@ -165,40 +165,14 @@ app.post('/api/jadwal', verifyToken, async (req, res) => {
             message: 'Jadwal berhasil ditambahkan',
             id: result.insertId
         });
+        // Kirim notif WA
+        const jadwalBaru = { kegiatan, penanggung_jawab, tanggal, jam_mulai, jam_selesai, lab_id };
+        sendWANotification(jadwalBaru, 'Baru');
     } catch (error) {
         console.error('Error menambahkan jadwal:', error);
         return res.status(500).json({ message: 'Gagal menambahkan jadwal' });
     }
 });
-
-async function sendWhatsappNotification(jadwal, action) {
-    try {
-        const message = `*Jadwal Lab ${action}*\n\n`
-            + `*Kegiatan:* ${jadwal.kegiatan}\n`
-            + `*Penanggung jawab:* ${jadwal.penanggung_jawab}\n`
-            + `*Tanggal:* ${jadwal.tanggal}\n`
-            + `*Jam:* ${jadwal.jam_mulai}-${jadwal.jam_selesai}\n`
-            + `*Lab:* ${jadwal.lab_id == 1 ? 'Biologi-Kimia' : 'Fisika'}\n\n`
-            + `🔗 https://lab.mugalearning.web.id`;
-
-        // kirim via API Fonnte
-        await fetch('https://api.fonnte.com/send', {
-            method: 'POST',
-            headers: {
-                'Authorization': 'TOKEN_FONNTE',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                target: '6289688422795',
-                message: message,
-                countryCode: '62'
-            })
-        });
-        console.log('Notifikasi whatsapp terkirim');
-    } catch (error) {
-        console.error('Gagal kirim notifikasi ke whatsapp', error.message);
-    }
-}
 
 // delete jadwal
 app.delete('/api/jadwal/:id', verifyToken, async (req, res) => {
@@ -245,11 +219,50 @@ app.put('/api/jadwal/:id', verifyToken, async (req, res) => {
         }
 
         return res.status(200).json({ message: 'Jadwal berhasil diperbarui' });
+        // Kirim notif WA
+        const jadwalEdit = { kegiatan, penanggung_jawab, tanggal, jam_mulai, jam_selesai, lab_id };
+        sendWANotification(jadwalEdit, 'Diperbarui');
     } catch (error) {
         console.error('Error memperbarui jadwal:', error);
         return res.status(500).json({ message: 'Gagal mengupdate jadwal' });
     }
 });
+
+// method notifikasi whatsapp
+async function sendWANotification(jadwal, action) {
+    try {
+        const labName = jadwal.lab_id == 1 ? 'Ruang Laboratorium Biologi dan Kimia' : 'Ruang Laboratorium Fisika';
+        const message = `📅 *Jadwal Lab ${action}*\n\n`
+            + `*Kegiatan:* ${jadwal.kegiatan}\n`
+            + `*Penanggungjawab:* ${jadwal.penanggung_jawab}\n`
+            + `*Tanggal:* ${jadwal.tanggal}\n`
+            + `*Jam:* ${jadwal.jam_mulai}-${jadwal.jam_selesai}\n`
+            + `*Ruangan:* ${labName}\n\n`
+            + `🔗 https://lab.mugalearning.web.id`;
+
+        const response = await fetch('https://api.fonnte.com/send', {
+            method: 'POST',
+            headers: {
+                'Authorization': process.env.TOKEN_FONNTE,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                target: '6289688422795',
+                message: message,
+                countryCode: '62'
+            })
+        });
+
+        const result = await response.json();
+        if (result.status) {
+            console.log('Notif WA terkirim');
+        } else {
+            console.log('Gagal kirim WA:', result.reason || 'Unknown');
+        }
+    } catch (error) {
+        console.error('Error kirim WA:', error.message);
+    }
+}
 
 // GET semua alat di dashboard
 app.get('/api/alat', verifyToken, async (req, res) => {

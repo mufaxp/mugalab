@@ -30,6 +30,7 @@
                 <li><a class="sidebar-item" data-panel="laporan">⚠️ Laporan Kerusakan Alat</a></li>
                 <li><a class="sidebar-item" data-panel="riwayat">📋 Riwayat Penggunaan Bahan</a></li>
                 <li><a class="sidebar-item" data-panel="laporan-praktikum">📝 Laporan Kegiatan Praktikum</a></li>
+                <li><a class="sidebar-item" data-panel="pengajuan">📩 Pengajuan Jadwal</a></li>
             </ul>
         </nav>
 
@@ -193,6 +194,17 @@
                 <!-- Daftar Laporan -->
                 <div id="lpList" style="overflow-x:auto; margin-top:16px;">
                     <p style="color:#999; text-align:center; padding:20px;">Memuat data laporan...</p>
+                </div>
+            </div>
+            <!-- Panel Pengajuan Jadwal -->
+            <div id="pengajuan" class="panel">
+                <div class="panel-header">
+                    <h2>📩 Pengajuan Jadwal</h2>
+                </div>
+                <p>Daftar pengajuan jadwal dari guru melalui WhatsApp. Klik Terima atau Tolak.</p>
+                
+                <div id="pengajuanList" style="overflow-x:auto; margin-top:16px;">
+                    <p style="color:#999; text-align:center; padding:20px;">Memuat data pengajuan...</p>
                 </div>
             </div>
         </main>
@@ -550,7 +562,7 @@
     <script src="/dashboard/assets/js/modules/laporanKerusakan/laporanKerusakan.js"></script>
     <script src="/dashboard/assets/js/modules/riwayatBahan/riwayatBahan.js"></script>
     <script src="/dashboard/assets/js/modules/laprak/laprak.js"></script>
-
+    <script src="/dashboard/assets/js/modules/pengajuan/pengajuan.js"></script>
     <!-- Orchestrator -->
     <script src="/dashboard/assets/js/main.js"></script>
 </body>

@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (typeof initLaporanKerusakan === 'function') initLaporanKerusakan();
     if (typeof initRiwayatBahan === 'function') initRiwayatBahan();
     if (typeof initLaprak === 'function') initLaprak();
+    if (typeof initPengajuan === 'function') initPengajuan();
 
     console.log('✅ Dashboard siap - semua modul telah terinisialisasi.');
 });

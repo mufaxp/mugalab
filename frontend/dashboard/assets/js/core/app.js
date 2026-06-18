@@ -1,6 +1,6 @@
 /**
  * app.js - Core Application
- * Sidebar navigasi, hamburger menu, koordinasi panel.
+ * Sidebar navigasi, hamburger menu, tabs, koordinasi panel.
  */
 
 function initSidebar() {
@@ -61,8 +61,20 @@ function initHamburger() {
     });
 }
 
+function initTabs() {
+    document.querySelectorAll('.inv-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.inv-tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            document.querySelectorAll('.inv-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById(this.getAttribute('data-tab') + 'Panel').classList.add('active');
+        });
+    });
+}
+
 function initApp() {
     initSidebar();
     initHamburger();
+    initTabs();
     console.log('✅ Core app siap');
 }

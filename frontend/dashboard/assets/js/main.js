@@ -19,5 +19,5 @@ document.addEventListener('DOMContentLoaded', function() {
     if (typeof initRiwayatBahan === 'function') initRiwayatBahan();
     if (typeof initLaprak === 'function') initLaprak();
 
-    console.log('✅ Dashboard siap');
+    console.log('✅ Dashboard siap - semua modul telah terinisialisasi.');
 });

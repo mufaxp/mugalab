@@ -250,7 +250,7 @@ async function sendWANotification(jadwal, action) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                target: '6289688422795',
+                target: process.env.ADMIN_WA,
                 message: message,
                 countryCode: '62'
             })
@@ -655,6 +655,146 @@ app.delete('/api/laporan-praktikum/:id', verifyToken, async (req, res) => {
         return res.status(500).json({ message: 'Gagal menghapus laporan' });
     }
 });
+
+// GET semua pengajuan jadwal
+app.get('/api/pengajuan', verifyToken, async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            'SELECT * FROM pengajuan_jadwal ORDER BY created_at DESC'
+        );
+        return res.status(200).json(rows);
+    } catch (error) {
+        return res.status(500).json({ message: 'Gagal mengambil data pengajuan' });
+    }
+});
+
+// POST pengajuan baru (dari chatbot)
+app.post('/api/pengajuan', async (req, res) => {
+    const { pengaju, nomor_wa, penanggung_jawab, mata_pelajaran, kegiatan, kelas, tanggal, jam_mulai, jam_selesai, lab_id } = req.body;
+
+    if (!penanggung_jawab || !kegiatan || !tanggal) {
+        return res.status(400).json({ message: 'Data tidak lengkap' });
+    }
+
+    try {
+        const [result] = await pool.query(
+            'INSERT INTO pengajuan_jadwal (pengaju, nomor_wa, penanggung_jawab, mata_pelajaran, kegiatan, kelas, tanggal, jam_mulai, jam_selesai, lab_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [pengaju, nomor_wa, penanggung_jawab, mata_pelajaran || '', kegiatan, kelas || '-', tanggal, jam_mulai, jam_selesai, lab_id || 1]
+        );
+
+        // Kirim notif ke Bapak
+        const notifMsg = `📩 *Pengajuan Jadwal Baru*\n\n`
+            + `Pemohon: ${pengaju || '-'}\n`
+            + `Kegiatan: ${kegiatan}\n`
+            + `PJ: ${penanggung_jawab}\n`
+            + `Mapel: ${mata_pelajaran || '-'}\n`
+            + `Tanggal: ${tanggal}\n`
+            + `Jam: ${jam_mulai}-${jam_selesai}\n\n`
+            + `Segera cek dashboard untuk terima/tolak.\n`
+            + `🔗 https://lab.mugalearning.web.id/dashboard`;
+
+        await sendWANotificationToAdmin(notifMsg);
+
+        return res.status(201).json({ message: 'Pengajuan berhasil dikirim' });
+    } catch (error) {
+        console.error('Error pengajuan:', error);
+        return res.status(500).json({ message: 'Gagal menyimpan pengajuan' });
+    }
+});
+
+// PUT terima/tolak pengajuan
+app.put('/api/pengajuan/:id', verifyToken, async (req, res) => {
+    const { id } = req.params;
+    const { status, alasan_tolak } = req.body;
+
+    try {
+        const [rows] = await pool.query('SELECT * FROM pengajuan_jadwal WHERE id = ?', [id]);
+        if (rows.length === 0) return res.status(404).json({ message: 'Pengajuan tidak ditemukan' });
+
+        const pengajuan = rows[0];
+
+        // Update status
+        await pool.query(
+            'UPDATE pengajuan_jadwal SET status = ?, alasan_tolak = ?, processed_at = NOW(), processed_by = ? WHERE id = ?',
+            [status, alasan_tolak || '', getNamaFromToken(req), id]
+        );
+
+        // Jika diterima, masukkan ke tabel jadwal
+        if (status === 'diterima') {
+            await pool.query(
+                'INSERT INTO jadwal (penanggung_jawab, kegiatan, kelas, tanggal, jam_mulai, jam_selesai, lab_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [pengajuan.penanggung_jawab, pengajuan.kegiatan, pengajuan.kelas, pengajuan.tanggal, pengajuan.jam_mulai, pengajuan.jam_selesai, pengajuan.lab_id]
+            );
+        }
+
+        // Kirim notif ke guru via chatbot
+        const guruMsg = status === 'diterima'
+            ? `✅ *Pengajuan Jadwal DITERIMA*\n\nKegiatan: ${pengajuan.kegiatan}\nTanggal: ${pengajuan.tanggal}\nJam: ${pengajuan.jam_mulai}-${pengajuan.jam_selesai}\n\nSilakan cek jadwal di:\n🔗 https://lab.mugalearning.web.id`
+            : `❌ *Pengajuan Jadwal DITOLAK*\n\nKegiatan: ${pengajuan.kegiatan}\nAlasan: ${alasan_tolak || 'Tidak disebutkan'}`;
+
+        await sendWANotificationToGuru(pengajuan.nomor_wa, guruMsg);
+
+        return res.status(200).json({ message: `Pengajuan ${status}` });
+    } catch (error) {
+        console.error('Error proses pengajuan:', error);
+        return res.status(500).json({ message: 'Gagal memproses pengajuan' });
+    }
+});
+
+// Notif ke Admin
+async function sendWANotificationToAdmin(message) {
+    try {
+        await fetch('https://api.fonnte.com/send', {
+            method: 'POST',
+            headers: {
+                'Authorization': process.env.TOKEN_FONNTE,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                target: process.env.ADMIN_WA,
+                message: message,
+                countryCode: '62'
+            })
+        });
+    } catch (err) {
+        console.error('Gagal kirim WA ke admin:', err.message);
+    }
+}
+
+// Notif ke Guru
+async function sendWANotificationToGuru(nomorWa, message) {
+    if (!nomorWa) return;
+    try {
+        await fetch('https://api.fonnte.com/send', {
+            method: 'POST',
+            headers: {
+                'Authorization': process.env.TOKEN_FONNTE,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                target: nomorWa.replace(/\D/g, ''),
+                message: message,
+                countryCode: '62'
+            })
+        });
+    } catch (err) {
+        console.error('Gagal kirim WA ke guru:', err.message);
+    }
+}
+
+// Helper: ambil nama dari token
+function getNamaFromToken(req) {
+    try {
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        if (!token) return 'Unknown';
+        const jwt = require('jsonwebtoken');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        return decoded.nama || 'Unknown';
+    } catch (e) {
+        return 'Unknown';
+    }
+}
 
 // 404 handler (harus diletakkan paling bawah)
 app.use((req, res) => {

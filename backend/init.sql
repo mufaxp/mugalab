@@ -13,3 +13,25 @@ CREATE TABLE IF NOT EXISTS users (
     nama VARCHAR(100) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Tabel pengajuan_jadwal
+USE `lab-db`;
+
+CREATE TABLE IF NOT EXISTS pengajuan_jadwal (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    pengaju VARCHAR(100),
+    nomor_wa VARCHAR(20),
+    penanggung_jawab VARCHAR(100),
+    mata_pelajaran VARCHAR(100),
+    kegiatan VARCHAR(255),
+    kelas VARCHAR(50),
+    tanggal DATE,
+    jam_mulai INT,
+    jam_selesai INT,
+    lab_id INT,
+    status ENUM('pending', 'diterima', 'ditolak') DEFAULT 'pending',
+    alasan_tolak TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    processed_at TIMESTAMP NULL,
+    processed_by VARCHAR(100)
+);

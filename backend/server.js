@@ -161,13 +161,14 @@ app.post('/api/jadwal', verifyToken, async (req, res) => {
             [penanggung_jawab, kegiatan, kelas || '-', tanggal, jam_mulai, jam_selesai, lab_id || 1]
         );
 
+        // Kirim notif WA
+        const jadwalBaru = { kegiatan, penanggung_jawab, tanggal, jam_mulai, jam_selesai, lab_id };
+        sendWANotification(jadwalBaru, 'Baru');
+
         return res.status(201).json({
             message: 'Jadwal berhasil ditambahkan',
             id: result.insertId
         });
-        // Kirim notif WA
-        const jadwalBaru = { kegiatan, penanggung_jawab, tanggal, jam_mulai, jam_selesai, lab_id };
-        sendWANotification(jadwalBaru, 'Baru');
     } catch (error) {
         console.error('Error menambahkan jadwal:', error);
         return res.status(500).json({ message: 'Gagal menambahkan jadwal' });
@@ -218,10 +219,11 @@ app.put('/api/jadwal/:id', verifyToken, async (req, res) => {
             return res.status(404).json({ message: 'Jadwal tidak ditemukan' });
         }
 
-        return res.status(200).json({ message: 'Jadwal berhasil diperbarui' });
         // Kirim notif WA
         const jadwalEdit = { kegiatan, penanggung_jawab, tanggal, jam_mulai, jam_selesai, lab_id };
         sendWANotification(jadwalEdit, 'Diperbarui');
+
+        return res.status(200).json({ message: 'Jadwal berhasil diperbarui' });
     } catch (error) {
         console.error('Error memperbarui jadwal:', error);
         return res.status(500).json({ message: 'Gagal mengupdate jadwal' });

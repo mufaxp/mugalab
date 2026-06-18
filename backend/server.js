@@ -171,6 +171,29 @@ app.post('/api/jadwal', verifyToken, async (req, res) => {
     }
 });
 
+async function sendWhatsappNotification(jadwal, action) {
+    try {
+        const message = `*Jadwal Laboratorium ${actoin}*\n`
+        + `*Kegiatan:* ${jadwal.kegiatan}\n`
+        + `*Penanggung Jawab:* ${jadwal.penanggung_jawab}\n`
+        + `*Tanggal:* ${jadwal.tanggal}\n`
+        + `*Jam:* ${jadwal.jam_mulai} - ${jadwal.jam_selesai}\n`
+        + `*Ruangan:* ${jadwal.lab_id == 1 ? 'Ruang Laboratorium Biologi dan Kimia' : 'Ruang Laboratorium Fisika'}\n`
+        + `https://lab.mugalearning.web.id`
+
+        await fetch('http://localhost:3000/send-message', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                number: '6289688422795@s.whatsapp.net',
+                message: message
+            })
+        });
+    } catch (error) {
+        console.error('Gagal kirim notif WA:', error.message);
+    }
+}
+
 // delete jadwal
 app.delete('/api/jadwal/:id', verifyToken, async (req, res) => {
     const { id } = req.params;

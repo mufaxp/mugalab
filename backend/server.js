@@ -165,10 +165,6 @@ app.post('/api/jadwal', verifyToken, async (req, res) => {
             message: 'Jadwal berhasil ditambahkan',
             id: result.insertId
         });
-        sendWhatsappNotification(
-                { kegiatan, penanggung_jawab, tanggal, jam_mulai, jam_selesai, lab_id},
-                editMode ? 'Diperbarui' : 'Baru'
-            );
     } catch (error) {
         console.error('Error menambahkan jadwal:', error);
         return res.status(500).json({ message: 'Gagal menambahkan jadwal' });
@@ -177,24 +173,30 @@ app.post('/api/jadwal', verifyToken, async (req, res) => {
 
 async function sendWhatsappNotification(jadwal, action) {
     try {
-        const message = `*Jadwal Laboratorium ${actoin}*\n`
-        + `*Kegiatan:* ${jadwal.kegiatan}\n`
-        + `*Penanggung Jawab:* ${jadwal.penanggung_jawab}\n`
-        + `*Tanggal:* ${jadwal.tanggal}\n`
-        + `*Jam:* ${jadwal.jam_mulai} - ${jadwal.jam_selesai}\n`
-        + `*Ruangan:* ${jadwal.lab_id == 1 ? 'Ruang Laboratorium Biologi dan Kimia' : 'Ruang Laboratorium Fisika'}\n`
-        + `https://lab.mugalearning.web.id`
+        const message = `*Jadwal Lab ${action}*\n\n`
+            + `*Kegiatan:* ${jadwal.kegiatan}\n`
+            + `*Penanggung jawab:* ${jadwal.penanggung_jawab}\n`
+            + `*Tanggal:* ${jadwal.tanggal}\n`
+            + `*Jam:* ${jadwal.jam_mulai}-${jadwal.jam_selesai}\n`
+            + `*Lab:* ${jadwal.lab_id == 1 ? 'Biologi-Kimia' : 'Fisika'}\n\n`
+            + `🔗 https://lab.mugalearning.web.id`;
 
-        await fetch('http://localhost:3000/send-message', {
+        // kirim via API Fonnte
+        await fetch('https://api.fonnte.com/send', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Authorization': 'TOKEN_FONNTE',
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({
-                number: '6289688422795@s.whatsapp.net',
-                message: message
+                target: '6289688422795',
+                message: message,
+                countryCode: '62'
             })
         });
+        console.log('Notifikasi whatsapp terkirim');
     } catch (error) {
-        console.error('Gagal kirim notif WA:', error.message);
+        console.error('Gagal kirim notifikasi ke whatsapp', error.message);
     }
 }
 
@@ -243,10 +245,6 @@ app.put('/api/jadwal/:id', verifyToken, async (req, res) => {
         }
 
         return res.status(200).json({ message: 'Jadwal berhasil diperbarui' });
-        sendWhatsappNotification(
-                { kegiatan, penanggung_jawab, tanggal, jam_mulai, jam_selesai, lab_id},
-                editMode ? 'Diperbarui' : 'Baru'
-            );
     } catch (error) {
         console.error('Error memperbarui jadwal:', error);
         return res.status(500).json({ message: 'Gagal mengupdate jadwal' });

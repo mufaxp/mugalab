@@ -8,17 +8,17 @@ let alatEditId = null;
 let allAlatData = [];
 
 function initAlat() {
-    const invLabFilter = document.getElementById('invLabFilter');
+    // const invLabFilter = document.getElementById('invLabFilter');
 
-    function getInvLabFilter() {
-        if (!invLabFilter) return null;
-        const v = invLabFilter.value;
-        return v === 'all' ? null : parseInt(v);
-    }
+    // function getInvLabFilter() {
+    //     if (!invLabFilter) return null;
+    //     const v = invLabFilter.value;
+    //     return v === 'all' ? null : parseInt(v);
+    // }
 
-    if (invLabFilter) {
-        invLabFilter.addEventListener('change', () => loadAlat());
-    }
+    // if (invLabFilter) {
+    //     invLabFilter.addEventListener('change', () => loadAlat());
+    // }
 
     // Tombol Tambah Alat
     document.getElementById('btnTambahAlat').addEventListener('click', function() {

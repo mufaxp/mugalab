@@ -72,9 +72,21 @@ function initTabs() {
     });
 }
 
+function initInvLabFilter() {
+    const invLabFilter = document.getElementById('invLabFilter');
+    if (!invLabFilter) return;
+
+    invLabFilter.addEventListener('change', function() {
+        if (typeof loadAlat === 'function') loadAlat();
+        if (typeof loadBahan === 'function') loadBahan();
+        if (typeof loadSarana === 'function') loadSarana();
+    });
+}
+
 function initApp() {
     initSidebar();
     initHamburger();
     initTabs();
+    initInvLabFilter();
     console.log('✅ Core app siap');
 }

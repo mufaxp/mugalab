@@ -93,6 +93,7 @@
                 <div class="inv-tabs">
                     <button class="inv-tab active" data-tab="alat">Alat</button>
                     <button class="inv-tab" data-tab="bahan">Bahan</button>
+                    <button class="inv-tab" data-tab="sarana">Sarana</button>
                 </div>
                 
                 <!-- Tabel Alat -->
@@ -128,7 +129,25 @@
                         <p style="color:#999; text-align:center; padding:20px;">Memuat data bahan...</p>
                     </div>
                 </div>
+
+                <!-- Tabel Sarana -->
+                <div id="saranaPanel" class="inv-panel">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:10px; flex-wrap:wrap;">
+                        <h3>Daftar Sarana</h3>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <button class="btn-tambah" id="btnTambahSarana">Tambah Sarana</button>
+                            <div class="search-wrapper">
+                                <input type="text" id="searchSarana" class="search-input" placeholder="Cari sarana...">
+                                <div id="suggestSarana" class="search-suggest"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="saranaList" style="overflow-x:auto;">
+                        <p style="color:#999; text-align:center; padding:20px;">Memuat data sarana...</p>
+                    </div>
+                </div>
             </div>
+
             <!-- Panel Laporan Kerusakan -->
             <div id="laporan" class="panel">
                 <div class="panel-header">
@@ -545,6 +564,59 @@
             </form>
         </div>
     </div>
+
+    <!-- Modal Tambah/Edit Sarana -->
+    <div id="modalSarana" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <h3 class="modal-title" id="modalSaranaTitle">Tambah Sarana</h3>
+            <form id="formSarana">
+                <div class="form-group">
+                    <label for="sarana_kode">Kode Sarana</label>
+                    <input type="text" id="sarana_kode" class="form-input" placeholder="SRN-001" required>
+                </div>
+                <div class="form-group">
+                    <label for="sarana_nama">Nama Sarana</label>
+                    <input type="text" id="sarana_nama" class="form-input" placeholder="Nama sarana" required>
+                </div>
+                <div class="form-group">
+                    <label for="sarana_produsen">Produsen</label>
+                    <input type="text" id="sarana_produsen" class="form-input" placeholder="Nama produsen (isi - jika tidak ada)">
+                </div>
+                <div class="form-group">
+                    <label for="sarana_jumlah">Jumlah Total</label>
+                    <input type="number" id="sarana_jumlah" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="sarana_jumlah_rusak">Jumlah Rusak</label>
+                    <input type="number" id="sarana_jumlah_rusak" class="form-input" value="0" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="sarana_kondisi">Kondisi</label>
+                    <select id="sarana_kondisi" class="form-input">
+                        <option value="baik">✅ Baik</option>
+                        <option value="rusak">🔴 Rusak</option>
+                        <option value="diperbaiki">🟡 Diperbaiki</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="sarana_lab">Laboratorium</label>
+                    <select id="sarana_lab" class="form-input">
+                        <option value="1">Lab Biologi-Kimia</option>
+                        <option value="2">Lab Fisika</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="sarana_keterangan">Keterangan</label>
+                    <input type="text" id="sarana_keterangan" class="form-input" placeholder="Catatan tambahan">
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-simpan">Simpan</button>
+                    <button type="button" class="btn-batal" onclick="document.getElementById('modalSarana').style.display='none'">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Library eksternal -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -563,6 +635,7 @@
     <script src="/dashboard/assets/js/modules/riwayatBahan/riwayatBahan.js"></script>
     <script src="/dashboard/assets/js/modules/laprak/laprak.js"></script>
     <script src="/dashboard/assets/js/modules/pengajuan/pengajuan.js"></script>
+    <script src="/dashboard/assets/js/modules/inventaris/sarana.js"></script>
     <!-- Orchestrator -->
     <script src="/dashboard/assets/js/main.js"></script>
 </body>

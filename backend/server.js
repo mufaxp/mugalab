@@ -796,6 +796,67 @@ function getNamaFromToken(req) {
     }
 }
 
+// GET semua sarana
+app.get('/api/sarana', verifyToken, async (req, res) => {
+    const { lab_id } = req.query;
+    try {
+        let query = 'SELECT * FROM sarana';
+        const params = [];
+        if (lab_id) {
+            query += ' WHERE lab_id = ?';
+            params.push(lab_id);
+        }
+        query += ' ORDER BY kode_sarana';
+        const [rows] = await pool.query(query, params);
+        return res.status(200).json(rows);
+    } catch (error) {
+        return res.status(500).json({ message: 'Gagal mengambil data sarana' });
+    }
+});
+
+// POST tambah sarana
+app.post('/api/sarana', verifyToken, async (req, res) => {
+    const { kode_sarana, nama_sarana, produsen, jumlah, lab_id, keterangan } = req.body;
+    if (!kode_sarana || !nama_sarana || !jumlah) {
+        return res.status(400).json({ message: 'Kode, nama, dan jumlah wajib diisi' });
+    }
+    try {
+        const [result] = await pool.query(
+            'INSERT INTO sarana (kode_sarana, nama_sarana, produsen, jumlah, lab_id, keterangan) VALUES (?, ?, ?, ?, ?, ?)',
+            [kode_sarana, nama_sarana, produsen || '-', jumlah, lab_id || 1, keterangan || '']
+        );
+        return res.status(201).json({ message: 'Sarana berhasil ditambahkan', id: result.insertId });
+    } catch (error) {
+        return res.status(500).json({ message: 'Gagal menambahkan sarana' });
+    }
+});
+
+// PUT edit sarana
+app.put('/api/sarana/:id', verifyToken, async (req, res) => {
+    const { id } = req.params;
+    const { kode_sarana, nama_sarana, produsen, jumlah, jumlah_rusak, kondisi, lab_id, keterangan } = req.body;
+    try {
+        await pool.query(
+            'UPDATE sarana SET kode_sarana=?, nama_sarana=?, produsen=?, jumlah=?, jumlah_rusak=?, kondisi=?, lab_id=?, keterangan=? WHERE id=?',
+            [kode_sarana, nama_sarana, produsen || '-', jumlah, jumlah_rusak || 0, kondisi || 'baik', lab_id || 1, keterangan || '', id]
+        );
+        return res.status(200).json({ message: 'Sarana berhasil diperbarui' });
+    } catch (error) {
+        return res.status(500).json({ message: 'Gagal memperbarui sarana' });
+    }
+});
+
+// DELETE sarana
+app.delete('/api/sarana/:id', verifyToken, async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM sarana WHERE id=?', [id]);
+        return res.status(200).json({ message: 'Sarana berhasil dihapus' });
+    } catch (error) {
+        return res.status(500).json({ message: 'Gagal menghapus sarana' });
+    }
+});
+
 // 404 handler (harus diletakkan paling bawah)
 app.use((req, res) => {
     res.status(404).json({ error: 'Route tidak ditemukan', path: req.originalUrl });

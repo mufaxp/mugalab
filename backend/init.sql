@@ -35,3 +35,20 @@ CREATE TABLE IF NOT EXISTS pengajuan_jadwal (
     processed_at TIMESTAMP NULL,
     processed_by VARCHAR(100)
 );
+
+USE lab-db;
+
+CREATE TABLE IF NOT EXISTS sarana (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    kode_sarana VARCHAR(20) NOT NULL UNIQUE,
+    nama_sarana VARCHAR(150) NOT NULL,
+    produsen VARCHAR(100) DEFAULT '-',
+    jumlah INT NOT NULL DEFAULT 0,
+    jumlah_rusak INT NOT NULL DEFAULT 0,
+    kondisi ENUM('baik', 'rusak', 'diperbaiki') DEFAULT 'baik',
+    lab_id INT DEFAULT 1,
+    keterangan TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (lab_id) REFERENCES lab(id)
+);

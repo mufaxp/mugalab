@@ -857,6 +857,122 @@ app.delete('/api/sarana/:id', verifyToken, async (req, res) => {
     }
 });
 
+// Upload foto peminjaman
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+const uploadDir = path.join(__dirname, '..', 'frontend', 'uploads', 'peminjaman');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadDir),
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + '.webp');
+    }
+});
+const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
+
+// GET semua peminjaman
+app.get('/api/peminjaman', verifyToken, async (req, res) => {
+    const { status, jenis, lab_id } = req.query;
+    try {
+        let query = `SELECT p.*,
+            CASE WHEN p.jenis = 'alat' THEN a.kode_alat ELSE s.kode_sarana END as kode_item,
+            CASE WHEN p.jenis = 'alat' THEN a.nama_alat ELSE s.nama_sarana END as nama_item
+            FROM peminjaman p
+            LEFT JOIN alat a ON p.jenis = 'alat' AND p.alat_id = a.id
+            LEFT JOIN sarana s ON p.jenis = 'sarana' AND p.sarana_id = s.id`;
+        const params = [];
+        const conditions = [];
+        if (status) { conditions.push('p.status = ?'); params.push(status); }
+        if (jenis) { conditions.push('p.jenis = ?'); params.push(jenis); }
+        if (lab_id) {
+            conditions.push('(a.lab_id = ? OR s.lab_id = ?)');
+            params.push(lab_id, lab_id);
+        }
+        if (conditions.length) query += ' WHERE ' + conditions.join(' AND ');
+        query += ' ORDER BY p.created_at DESC';
+        const [rows] = await pool.query(query, params);
+        return res.status(200).json(rows);
+    } catch (error) {
+        return res.status(500).json({ message: 'Gagal mengambil data peminjaman' });
+    }
+});
+
+// POST pinjam (dengan foto)
+app.post('/api/peminjaman', verifyToken, upload.single('foto'), async (req, res) => {
+    const { pemohon, jenis, alat_id, sarana_id, jumlah, kebutuhan, tanggal_pinjam, tanggal_kembali } = req.body;
+    const foto_pinjam = req.file ? '/uploads/peminjaman/' + req.file.filename : null;
+    const itemId = jenis === 'alat' ? alat_id : sarana_id;
+
+    if (!pemohon || !jenis || !itemId || !tanggal_pinjam || !tanggal_kembali) {
+        return res.status(400).json({ message: 'Field wajib diisi' });
+    }
+
+    try {
+        await pool.query(
+            'INSERT INTO peminjaman (pemohon, jenis, alat_id, sarana_id, jumlah, kebutuhan, tanggal_pinjam, tanggal_kembali, foto_pinjam) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [pemohon, jenis, jenis === 'alat' ? itemId : null, jenis === 'sarana' ? itemId : null, jumlah || 1, kebutuhan || '', tanggal_pinjam, tanggal_kembali, foto_pinjam]
+        );
+
+        if (jenis === 'alat') {
+            await pool.query('UPDATE alat SET jumlah = jumlah - ? WHERE id = ?', [jumlah || 1, itemId]);
+        } else {
+            await pool.query('UPDATE sarana SET jumlah = jumlah - ? WHERE id = ?', [jumlah || 1, itemId]);
+        }
+
+        return res.status(201).json({ message: 'Peminjaman berhasil dicatat' });
+    } catch (error) {
+        return res.status(500).json({ message: 'Gagal mencatat peminjaman' });
+    }
+});
+
+// PUT pengembalian (dengan foto + auto lapor kerusakan)
+app.put('/api/peminjaman/:id/kembali', verifyToken, upload.single('foto'), async (req, res) => {
+    const { id } = req.params;
+    const { jumlah_rusak } = req.body;
+    const foto_kembali = req.file ? '/uploads/peminjaman/' + req.file.filename : null;
+    const rusak = parseInt(jumlah_rusak) || 0;
+
+    try {
+        const [rows] = await pool.query('SELECT * FROM peminjaman WHERE id = ?', [id]);
+        if (!rows.length) return res.status(404).json({ message: 'Peminjaman tidak ditemukan' });
+
+        const p = rows[0];
+        const today = new Date().toISOString().split('T')[0];
+
+        // Update peminjaman
+        await pool.query(
+            'UPDATE peminjaman SET status = ?, tanggal_kembali = ?, foto_kembali = ? WHERE id = ?',
+            ['dikembalikan', today, foto_kembali, id]
+        );
+
+        // Kembalikan stok (dikurangi rusak)
+        const kembali = p.jumlah - rusak;
+        if (p.jenis === 'alat') {
+            await pool.query('UPDATE alat SET jumlah = jumlah + ?, jumlah_rusak = jumlah_rusak + ? WHERE id = ?', [kembali, rusak, p.alat_id]);
+        } else {
+            await pool.query('UPDATE sarana SET jumlah = jumlah + ?, jumlah_rusak = jumlah_rusak + ? WHERE id = ?', [kembali, rusak, p.sarana_id]);
+        }
+
+        // Auto lapor kerusakan jika ada yang rusak
+        if (rusak > 0) {
+            const itemId = p.jenis === 'alat' ? p.alat_id : p.sarana_id;
+            await pool.query(
+                'INSERT INTO laporan_kerusakan (alat_id, jumlah_rusak, pelapor, tanggal_lapor, keterangan) VALUES (?, ?, ?, ?, ?)',
+                [itemId, rusak, p.pemohon, today, '']
+            );
+        }
+
+        return res.status(200).json({ message: 'Pengembalian berhasil' });
+    } catch (error) {
+        return res.status(500).json({ message: 'Gagal memproses pengembalian' });
+    }
+});
+
 // 404 handler (harus diletakkan paling bawah)
 app.use((req, res) => {
     res.status(404).json({ error: 'Route tidak ditemukan', path: req.originalUrl });

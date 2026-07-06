@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (typeof initLaprak === 'function') initLaprak();
     if (typeof initPengajuan === 'function') initPengajuan();
     if (typeof initSarana === 'function') initSarana();
+    if (typeof initPeminjaman === 'function') initPeminjaman();
 
     console.log('✅ Dashboard siap - semua modul telah terinisialisasi.');
 });

@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS pengajuan_jadwal (
     processed_by VARCHAR(100)
 );
 
-USE lab-db;
+USE `lab-db`;
 
 CREATE TABLE IF NOT EXISTS sarana (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -51,4 +51,24 @@ CREATE TABLE IF NOT EXISTS sarana (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (lab_id) REFERENCES lab(id)
+);
+
+USE `lab-db`;
+
+CREATE TABLE IF NOT EXISTS peminjaman (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    pemohon VARCHAR(100) NOT NULL,
+    jenis ENUM('alat', 'sarana') NOT NULL,
+    alat_id INT NULL,
+    sarana_id INT NULL,
+    jumlah INT DEFAULT 1,
+    kebutuhan VARCHAR(255),
+    tanggal_pinjam DATE NOT NULL,
+    tanggal_kembali DATE NULL,
+    foto_pinjam VARCHAR(255),
+    foto_kembali VARCHAR(255),
+    status ENUM('dipinjam', 'dikembalikan') DEFAULT 'dipinjam',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (alat_id) REFERENCES alat(id),
+    FOREIGN KEY (sarana_id) REFERENCES sarana(id)
 );

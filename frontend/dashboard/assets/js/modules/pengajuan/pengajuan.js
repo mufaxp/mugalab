@@ -51,7 +51,7 @@ function renderPengajuan(data) {
         </tr></thead><tbody>`;
 
     data.forEach(item => {
-        const tgl = item.tanggal ? item.tanggal.substring(0, 10) : '-';
+        const tgl = item.tanggal ? item.tanggal.split('T')[0] : '-';
         const labName = item.lab_id == 1 ? 'Bio-Kim' : 'Fisika';
         const isPending = item.status === 'pending';
 

@@ -36,7 +36,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const hariMap = { 'Ahad': 0, 'Senin': 1, 'Selasa': 2, 'Rabu': 3, 'Kamis': 4, 'Jumat': 5, 'Sabtu': 6 };
         const target = new Date(currentSunday);
         target.setDate(target.getDate() + hariMap[hari]);
-        return target;
+        const yyyy = target.getFullYear();
+        const mm = String(target.getMonth() + 1).padStart(2, '0');
+        const dd = String(target.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
     }
     
     // data lab dan navigasi
@@ -127,8 +130,8 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         jadwalList.forEach(item => {
-            const tanggal = new Date(item.tanggal);
-            const hari = tanggal.toLocaleDateString('id-ID', { weekday: 'long' });
+            const tglItem = new Date(item.tanggal);
+            const hari = tglItem.toLocaleDateString('id-ID', { weekday: 'long' });
             const hariKapital = hari.charAt(0).toUpperCase() + hari.slice(1); // Ahad, Senin, dll
             const kolomIndex = hariKeKolom[hariKapital] + 1; // +1 karena kolom pertama Jam
 
@@ -188,7 +191,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     const tanggal = hitungTanggalDariHari(hari, currentSunday);
 
                     // Isi modal
-                    document.getElementById('pengajuan_hari_tanggal').textContent = `${hari}, ${tanggal.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+                    const tglObj = new Date(tanggal + 'T00:00:00');
+                    document.getElementById('pengajuan_hari_tanggal').textContent = `${hari}, ${tglObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`;
                     document.getElementById('pengajuan_lab').textContent = labs[currentLabIndex]?.nama || 'Lab';
                     document.getElementById('pengajuan_jam_mulai').value = jamMulai;
 
@@ -199,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('pengajuan_jam_selesai').value = Math.min(jamMulai + 1, 10);
 
                     // Simpan data tersembunyi
-                    document.getElementById('modalPengajuan').setAttribute('data-tanggal', tanggal.toISOString().split('T')[0]);
+                    document.getElementById('modalPengajuan').setAttribute('data-tanggal', tanggal);
                     document.getElementById('modalPengajuan').setAttribute('data-lab-id', labs[currentLabIndex]?.id || 1);
 
                     // Tampilkan modal

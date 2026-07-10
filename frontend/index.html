@@ -17,7 +17,6 @@
                     <option value="next">Pekan Depan</option>
                 </select>
             </div>
-            <a href="https://wa.me/6285156792053?text=%23jadwal%0ANama%3A%20%0APenanggung%20Jawab%3A%20%0AMata%20Pelajaran%3A%20%0AKegiatan%3A%20%0AKelas%3A%20%0ATanggal%3A%20YYYY-MM-DD%0AJam%3A%20...-...%0ALab%3A%201%20(Bio-Kim)%20atau%202%20(Fisika)" target="_blank" class="btn-ajukan">Ajukan Jadwal</a>
         </div>
         <!-- navigasi lab -->
         <div class="lab-navigation">
@@ -52,6 +51,62 @@
                     <tr><td>10</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
                 </tbody>
             </table>
+        </div>
+    </div>
+    <!-- Modal Pengajuan dari Tabel -->
+    <div id="modalPengajuan" class="modal-overlay" style="display:none;">
+        <div class="modal-content" style="max-width:520px;">
+            <h3 class="modal-title">Ajukan Peminjaman Ruangan</h3>
+            <form id="formPengajuan">
+                <!-- Info Otomatis -->
+                <div style="background:#f0f7f2;padding:12px;border-radius:8px;margin-bottom:16px;">
+                    <p style="margin:0;font-size:13px;"><strong>📅 Hari/Tanggal:</strong> <span id="pengajuan_hari_tanggal">-</span></p>
+                    <p style="margin:4px 0 0;font-size:13px;"><strong>🏠 Ruang:</strong> <span id="pengajuan_lab">-</span></p>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group form-group-half">
+                        <label for="pengajuan_jam_mulai">Jam Mulai</label>
+                        <select id="pengajuan_jam_mulai" class="form-input" required>
+                            <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                            <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                            <option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option>
+                        </select>
+                    </div>
+                    <div class="form-group form-group-half">
+                        <label for="pengajuan_jam_selesai">Jam Selesai (≥ Jam Mulai)</label>
+                        <select id="pengajuan_jam_selesai" class="form-input" required></select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="pengajuan_nama">Nama Lengkap</label>
+                    <input type="text" id="pengajuan_nama" class="form-input" placeholder="Nama Anda" required>
+                </div>
+                <div class="form-group">
+                    <label for="pengajuan_wa">Nomor WhatsApp</label>
+                    <input type="text" id="pengajuan_wa" class="form-input" placeholder="628xxxxxxxxxx" required>
+                </div>
+                <div class="form-group">
+                    <label for="pengajuan_mapel">Mata Pelajaran</label>
+                    <input type="text" id="pengajuan_mapel" class="form-input" placeholder="Mata pelajaran">
+                </div>
+                <div class="form-group">
+                    <label for="pengajuan_kegiatan">Kegiatan</label>
+                    <input type="text" id="pengajuan_kegiatan" class="form-input" placeholder="Nama kegiatan" required>
+                </div>
+                <div class="form-group">
+                    <label for="pengajuan_kelas">Kelas</label>
+                    <input type="text" id="pengajuan_kelas" class="form-input" placeholder="Kelas (isi - untuk umum)">
+                </div>
+
+                <p style="font-size:12px;color:#888;margin-top:8px;">⚠️ Pengajuan akan ditinjau oleh admin. Notifikasi akan dikirim via WhatsApp.</p>
+
+                <div class="modal-actions">
+                    <button type="submit" class="btn-simpan">Kirim Pengajuan</button>
+                    <button type="button" class="btn-batal" onclick="document.getElementById('modalPengajuan').style.display='none'">Batal</button>
+                </div>
+            </form>
         </div>
     </div>
     <script src="js/main.js?v=4"></script>

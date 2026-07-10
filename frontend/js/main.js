@@ -36,6 +36,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let labs = [];
     let currentLabIndex = 0;
     let currentSunday = getCurrentSunday();
+    const modalPengajuan = document.getElementById('modalPengajuan');
+    const formPengajuan = document.getElementById('formPengajuan');
 
     async function loadLabs() {
         try {
@@ -164,7 +166,101 @@ document.addEventListener('DOMContentLoaded', function() {
             selTarget.style.position = 'relative';
             selTarget.appendChild(card);
         });
+
+        // Event listener klik sel kosong
+        const allTd = tbody.querySelectorAll('td:not(:first-child)');
+            allTd.forEach(td => {
+                td.addEventListener('click', function() {
+                    // Cek apakah sel ini berisi card (sudah terisi jadwal)
+                    if (this.querySelector('.jadwal-card')) return; // Abaikan jika sudah terisi
+
+                    const row = this.closest('tr');
+                    const jamMulai = parseInt(row.querySelector('td:first-child').textContent);
+                    const colIndex = Array.from(row.children).indexOf(this);
+                    const hari = ['Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][colIndex - 1];
+                    const tanggal = hitungTanggalDariHari(hari, currentSunday);
+
+                    // Isi modal
+                    document.getElementById('pengajuan_hari_tanggal').textContent = `${hari}, ${tanggal.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+                    document.getElementById('pengajuan_lab').textContent = labs[currentLabIndex]?.nama || 'Lab';
+                    document.getElementById('pengajuan_jam_mulai').value = jamMulai;
+
+                    // Reset form
+                    formPengajuan.reset();
+                    document.getElementById('pengajuan_jam_mulai').value = jamMulai;
+                    updateJamSelesaiOptions(jamMulai);
+                    document.getElementById('pengajuan_jam_selesai').value = Math.min(jamMulai + 1, 10);
+
+                    // Simpan data tersembunyi
+                    document.getElementById('modalPengajuan').setAttribute('data-tanggal', tanggal.toISOString().split('T')[0]);
+                    document.getElementById('modalPengajuan').setAttribute('data-lab-id', labs[currentLabIndex]?.id || 1);
+
+                    // Tampilkan modal
+                    document.getElementById('modalPengajuan').style.display = 'flex';
+                });
+            });
+        }
+
+        function updateJamSelesaiOptions(jamMulai) {
+        const sel = document.getElementById('pengajuan_jam_selesai');
+        sel.innerHTML = '';
+        for (let i = jamMulai; i <= 10; i++) {
+            const opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = i;
+            sel.appendChild(opt);
+        }
     }
+
+    document.getElementById('pengajuan_jam_mulai').addEventListener('change', function() {
+        const mulai = parseInt(this.value);
+        updateJamSelesaiOptions(mulai);
+        document.getElementById('pengajuan_jam_selesai').value = Math.min(mulai + 1, 10);
+    });
+
+    // submit form pengajuan
+    formPengajuan.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const body = {
+            pengaju: document.getElementById('pengajuan_nama').value,
+            nomor_wa: document.getElementById('pengajuan_wa').value,
+            penanggung_jawab: document.getElementById('pengajuan_nama').value,
+            mata_pelajaran: document.getElementById('pengajuan_mapel').value,
+            kegiatan: document.getElementById('pengajuan_kegiatan').value,
+            kelas: document.getElementById('pengajuan_kelas').value || '-',
+            tanggal: document.getElementById('modalPengajuan').getAttribute('data-tanggal'),
+            jam_mulai: parseInt(document.getElementById('pengajuan_jam_mulai').value),
+            jam_selesai: parseInt(document.getElementById('pengajuan_jam_selesai').value),
+            lab_id: parseInt(document.getElementById('modalPengajuan').getAttribute('data-lab-id'))
+        };
+
+        if (!body.pengaju || !body.nomor_wa || !body.kegiatan) {
+            return alert('Nama, No WA, dan Kegiatan wajib diisi!');
+        }
+
+        try {
+            const res = await fetch('/api/pengajuan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            alert(data.message || 'Pengajuan berhasil dikirim!');
+            if (res.ok) {
+                document.getElementById('modalPengajuan').style.display = 'none';
+            }
+        } catch (err) {
+            alert('Gagal mengirim pengajuan. Silakan coba lagi.');
+        }
+    });
+
+    // tutup modal saat klik di luar konten
+    window.addEventListener('click', function(e) {
+        if (e.target === document.getElementById('modalPengajuan')) {
+            document.getElementById('modalPengajuan').style.display = 'none';
+        }
+    });
 
     // load labs
     loadLabs().then(() => {
@@ -188,4 +284,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const labId = labs.length > 0 ? labs[currentLabIndex].id : null;
         loadJadwal(formatDateISO(currentSunday), labId);
     });
+
+    function hitungTanggalDariHari(hari, currentSunday) {
+        const hariMap = { 'Ahad': 0, 'Senin': 1, 'Selasa': 2, 'Rabu': 3, 'Kamis': 4, 'Jumat': 5, 'Sabtu': 6 };
+        const target = new Date(currentSunday);
+        target.setDate(target.getDate() + hariMap[hari]);
+        return target;
+    }
 });

@@ -243,6 +243,43 @@ td:not(:first-child)::after {
     min-width: 180px;
     text-align: center;
 }
+
+/* modal pengajuan */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+.modal-content {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    padding: 24px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+}
+.modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0e703f;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+/* Sel kosong bisa diklik */
+td:not(:first-child) {
+    cursor: pointer;
+}
+td:not(:first-child):hover {
+    background-color: #e8f5e9;
+}
+
 @media (max-width: 1024px) {
     body {
         padding: 8px;

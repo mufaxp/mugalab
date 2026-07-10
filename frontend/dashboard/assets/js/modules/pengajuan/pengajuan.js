@@ -51,7 +51,10 @@ function renderPengajuan(data) {
         </tr></thead><tbody>`;
 
     data.forEach(item => {
-        const tgl = item.tanggal ? item.tanggal.split('T')[0] : '-';
+        const d = new Date(item.tanggal);
+        const tgl = item.tanggal 
+            ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+            : '-';
         const labName = item.lab_id == 1 ? 'Bio-Kim' : 'Fisika';
         const isPending = item.status === 'pending';
 

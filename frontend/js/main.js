@@ -31,6 +31,13 @@ document.addEventListener('DOMContentLoaded', function() {
         saturday.setDate(sunday.getDate() + 6);
         return { start: formatDate(sunday), end: formatDate(saturday) };
     }
+
+    function hitungTanggalDariHari(hari, currentSunday) {
+        const hariMap = { 'Ahad': 0, 'Senin': 1, 'Selasa': 2, 'Rabu': 3, 'Kamis': 4, 'Jumat': 5, 'Sabtu': 6 };
+        const target = new Date(currentSunday);
+        target.setDate(target.getDate() + hariMap[hari]);
+        return target;
+    }
     
     // data lab dan navigasi
     let labs = [];
@@ -284,11 +291,4 @@ document.addEventListener('DOMContentLoaded', function() {
         const labId = labs.length > 0 ? labs[currentLabIndex].id : null;
         loadJadwal(formatDateISO(currentSunday), labId);
     });
-
-    function hitungTanggalDariHari(hari, currentSunday) {
-        const hariMap = { 'Ahad': 0, 'Senin': 1, 'Selasa': 2, 'Rabu': 3, 'Kamis': 4, 'Jumat': 5, 'Sabtu': 6 };
-        const target = new Date(currentSunday);
-        target.setDate(target.getDate() + hariMap[hari]);
-        return target;
-    }
 });

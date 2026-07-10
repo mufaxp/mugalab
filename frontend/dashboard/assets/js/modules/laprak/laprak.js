@@ -84,7 +84,7 @@ window.bukaModalLaporan = function(item) {
 
     document.getElementById('lp_jadwal_id').value = item.id || '';
     document.getElementById('lp_kelas').value = item.kelas !== '-' ? item.kelas : '';
-    document.getElementById('lp_mapel').value = '';
+    document.getElementById('lp_mapel').value = item.mata_pelajaran || '';
     document.getElementById('lp_guru').value = item.penanggung_jawab || '';
     document.getElementById('lp_jam_mulai').value = item.jam_mulai || '';
     document.getElementById('lp_jam_selesai').value = item.jam_selesai || '';

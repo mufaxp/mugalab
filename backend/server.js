@@ -722,14 +722,14 @@ app.put('/api/pengajuan/:id', verifyToken, async (req, res) => {
         // Jika diterima, masukkan ke tabel jadwal
         if (status === 'diterima') {
             await pool.query(
-                'INSERT INTO jadwal (penanggung_jawab, kegiatan, kelas, tanggal, jam_mulai, jam_selesai, lab_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                [pengajuan.penanggung_jawab, pengajuan.kegiatan, pengajuan.kelas, pengajuan.tanggal, pengajuan.jam_mulai, pengajuan.jam_selesai, pengajuan.lab_id]
+                'INSERT INTO jadwal (penanggung_jawab, kegiatan, mata_pelajaran, kelas, tanggal, jam_mulai, jam_selesai, lab_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                [pengajuan.penanggung_jawab, pengajuan.kegiatan, pengajuan.mata_pelajaran || '', pengajuan.kelas || '', pengajuan.tanggal, pengajuan.jam_mulai, pengajuan.jam_selesai, pengajuan.lab_id]
             );
         }
 
         // Kirim notif ke guru via chatbot
         const guruMsg = status === 'diterima'
-            ? `✅ *Pengajuan Jadwal DITERIMA*\n\nKegiatan: ${pengajuan.kegiatan}\nTanggal: ${pengajuan.tanggal}\nJam: ${pengajuan.jam_mulai}-${pengajuan.jam_selesai}\n\nSilakan cek jadwal di:\n🔗 https://lab.mugalearning.web.id`
+            ? `✅ *Pengajuan Jadwal DITERIMA*\n\nKegiatan: ${pengajuan.kegiatan}\nMata Pelajaran: ${pengajuan.mata_pelajaran || '-'}\nTanggal: ${pengajuan.tanggal}\nJam: ${pengajuan.jam_mulai}-${pengajuan.jam_selesai}\n\nSilakan cek jadwal di:\n🔗 https://lab.mugalearning.web.id`
             : `❌ *Pengajuan Jadwal DITOLAK*\n\nKegiatan: ${pengajuan.kegiatan}\nAlasan: ${alasan_tolak || 'Tidak disebutkan'}`;
 
         await sendWANotificationToGuru(pengajuan.nomor_wa, guruMsg);

@@ -1,7 +1,3 @@
-/**
- * main.js - Orchestrator Dashboard
- */
-
 document.addEventListener('DOMContentLoaded', async function() {
     // Auth
     if (!checkAuth()) return;
@@ -11,27 +7,35 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Core
     initApp();
 
-    await loadLabOptions('lab_id');
-    await loadLabOptions('labFilterSelect', true);
-    await loadLabOptions('alat_lab');
-    await loadLabOptions('bahan_lab');
-    await loadLabOptions('sarana_lab');
-    await loadLabOptions('laporanLabFilter', true);
-    await loadLabOptions('riwayatLabFilter', true);
-    await loadLabOptions('lpLabFilter', true);
-    await loadLabOptions('pinjamLabFilter', true);
+    // Load semua dropdown lab
+    const labSelects = [
+        { id: 'lab_id', all: false },
+        { id: 'labFilterSelect', all: true },
+        { id: 'alat_lab', all: false },
+        { id: 'bahan_lab', all: false },
+        { id: 'sarana_lab', all: false },
+        { id: 'laporanLabFilter', all: true },
+        { id: 'riwayatLabFilter', all: true },
+        { id: 'lpLabFilter', all: true },
+        { id: 'lp_lab_id', all: false },
+        { id: 'pinjamLabFilter', all: true }
+    ];
 
-    // Modules (akan diisi bertahap)
-    if (typeof initJadwal === 'function') initJadwal();
-    if (typeof initAlat === 'function') initAlat();
-    if (typeof initBahan === 'function') initBahan();
-    if (typeof initLaporanKerusakan === 'function') initLaporanKerusakan();
-    if (typeof initRiwayatBahan === 'function') initRiwayatBahan();
-    if (typeof initLaprak === 'function') initLaprak();
-    if (typeof initPengajuan === 'function') initPengajuan();
-    if (typeof initSarana === 'function') initSarana();
-    if (typeof initPeminjaman === 'function') initPeminjaman();
-    if (typeof initKelolaLab === 'function') initKelolaLab();
+    for (const s of labSelects) {
+        await loadLabOptions(s.id, s.all);
+    }
 
-    console.log('✅ Dashboard siap - semua modul telah terinisialisasi.');
+    // Modules
+    if (typeof initJadwal === 'function') await initJadwal();
+    if (typeof initAlat === 'function') await initAlat();
+    if (typeof initBahan === 'function') await initBahan();
+    if (typeof initSarana === 'function') await initSarana();
+    if (typeof initLaporanKerusakan === 'function') await initLaporanKerusakan();
+    if (typeof initRiwayatBahan === 'function') await initRiwayatBahan();
+    if (typeof initLaprak === 'function') await initLaprak();
+    if (typeof initPengajuan === 'function') await initPengajuan();
+    if (typeof initPeminjaman === 'function') await initPeminjaman();
+    if (typeof initKelolaLab === 'function') await initKelolaLab();
+
+    console.log('✅ Dashboard siap — semua modul terinisialisasi');
 });

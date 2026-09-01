@@ -4,6 +4,7 @@
  */
 
 async function initLaporanKerusakan() {
+    await loadLabOptions('laporanLabFilter', true);
     const laporanLabFilter = document.getElementById('laporanLabFilter');
 
     function getLaporanLabFilter() {
@@ -99,8 +100,6 @@ async function initLaporanKerusakan() {
     if (sidebar) sidebar.addEventListener('click', loadLaporan);
 
     console.log('✅ Modul Laporan Kerusakan siap');
-
-    await loadLabOptions('laporanLabFilter', true);
 }
 
 // method load dan render

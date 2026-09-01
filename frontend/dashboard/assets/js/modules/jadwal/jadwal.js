@@ -12,6 +12,9 @@ async function initJadwal() {
     const formTambahJadwal = document.getElementById('formTambahJadwal');
     const labFilterSelect = document.getElementById('labFilterSelect');
 
+    await loadLabOptions('lab_id');
+    await loadLabOptions('labFilterSelect', true);
+    
     // filter ruang lab
     function getCurrentLabFilter() {
         if (!labFilterSelect) return null;
@@ -85,9 +88,6 @@ async function initJadwal() {
     // pemanggilan method load jadwal
     await loadDashboardJadwal();
     console.log('✅ Modul Jadwal siap');
-
-    await loadLabOptions('lab_id');
-    await loadLabOptions('labFilterSelect', true);
 }
 
 // fungsi edit jadwal (buka modal)

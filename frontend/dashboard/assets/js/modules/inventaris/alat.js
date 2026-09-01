@@ -8,6 +8,8 @@ let alatEditId = null;
 let allAlatData = [];
 
 async function initAlat() {
+    await loadLabOptions('alat_lab');
+    await loadLabOptions('invLabFilter', true);
     // Tombol Tambah Alat
     document.getElementById('btnTambahAlat').addEventListener('click', function() {
         alatEditMode = false;
@@ -67,9 +69,6 @@ async function initAlat() {
 
     loadAlat();
     console.log('✅ Modul Alat siap');
-
-    await loadLabOptions('alat_lab');
-    await loadLabOptions('invLabFilter', true);
 }
 
 async function loadAlat() {

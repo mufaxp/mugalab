@@ -1,14 +1,10 @@
 /**
  * apiClient.js - Fetch Wrapper
- * Semua HTTP request ke backend melalui fungsi ini.
- * Otomatis menyertakan token JWT.
  */
-
-const API_BASE = '';
 
 async function apiGet(url, params = {}) {
     const query = new URLSearchParams(params).toString();
-    const fullUrl = query ? `${API_BASE}${url}?${query}` : `${API_BASE}${url}`;
+    const fullUrl = query ? `${url}?${query}` : url;
     const res = await fetch(fullUrl, {
         headers: { 'Authorization': `Bearer ${getToken()}` }
     });
@@ -16,7 +12,7 @@ async function apiGet(url, params = {}) {
 }
 
 async function apiPost(url, body = {}) {
-    const res = await fetch(`${API_BASE}${url}`, {
+    const res = await fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -28,7 +24,7 @@ async function apiPost(url, body = {}) {
 }
 
 async function apiPut(url, body = {}) {
-    const res = await fetch(`${API_BASE}${url}`, {
+    const res = await fetch(url, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -40,9 +36,14 @@ async function apiPut(url, body = {}) {
 }
 
 async function apiDelete(url) {
-    const res = await fetch(`${API_BASE}${url}`, {
+    const res = await fetch(url, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${getToken()}` }
     });
     return res.json();
 }
+
+window.apiGet = apiGet;
+window.apiPost = apiPost;
+window.apiPut = apiPut;
+window.apiDelete = apiDelete;

@@ -10,7 +10,7 @@ let lpBahanList = [];
 let allAlatForLP = [];
 let allBahanForLP = [];
 
-function initLaprak() {
+async function initLaprak() {
     const lpLabFilter = document.getElementById('lpLabFilter');
 
     function getLpLabFilter() {
@@ -69,6 +69,8 @@ function initLaprak() {
     if (sidebar) sidebar.addEventListener('click', loadLaporanPraktikum);
 
     console.log('✅ Modul Laprak siap');
+    await loadLabOptions('lpLabFilter', true);
+    await loadLabOptions('lp_lab_id');
 }
 
 // fitur membuka modal untuk membuat jadwal praktikum

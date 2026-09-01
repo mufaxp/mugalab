@@ -6,7 +6,7 @@ let saranaEditMode = false;
 let saranaEditId = null;
 let allSaranaData = [];
 
-function initSarana() {
+async function initSarana() {
     document.getElementById('btnTambahSarana').addEventListener('click', () => {
         saranaEditMode = false;
         saranaEditId = null;
@@ -56,6 +56,8 @@ function initSarana() {
 
     loadSarana();
     console.log('✅ Modul Sarana siap');
+
+    await loadLabOptions('sarana_lab');
 }
 
 async function loadSarana() {

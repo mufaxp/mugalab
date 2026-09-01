@@ -2,7 +2,7 @@ let currentTab = 'alat'; // 'alat' atau 'sarana'
 let pinjamAlatData = [];
 let pinjamSaranaData = [];
 
-function initPeminjaman() {
+async function initPeminjaman() {
     // filter lab
     const pinjamLabFilter = document.getElementById('pinjamLabFilter');
     if (pinjamLabFilter) {
@@ -51,6 +51,8 @@ function initPeminjaman() {
     if (sidebar) sidebar.addEventListener('click', () => { loadPeminjaman('alat'); loadPeminjaman('sarana'); });
 
     console.log('✅ Modul Peminjaman siap');
+    await loadLabOptions('pinjamLabFilter', true);
+    await loadLabOptions('pinjam_jenis'); // jika dropdown jenis lab dipakai
 }
 
 // modal pinjam

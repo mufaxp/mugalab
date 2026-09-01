@@ -2,7 +2,7 @@
  * main.js - Orchestrator Dashboard
  */
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // Auth
     if (!checkAuth()) return;
     displayNama();
@@ -10,6 +10,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Core
     initApp();
+
+    await loadLabOptions('lab_id');
+    await loadLabOptions('labFilterSelect', true);
+    await loadLabOptions('alat_lab');
+    await loadLabOptions('bahan_lab');
+    await loadLabOptions('sarana_lab');
+    await loadLabOptions('laporanLabFilter', true);
+    await loadLabOptions('riwayatLabFilter', true);
+    await loadLabOptions('lpLabFilter', true);
+    await loadLabOptions('pinjamLabFilter', true);
 
     // Modules (akan diisi bertahap)
     if (typeof initJadwal === 'function') initJadwal();

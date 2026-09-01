@@ -44,3 +44,30 @@ function showAlert(message, type = 'info') {
 function confirmAction(message) {
     return confirm(message);
 }
+
+/**
+ * Isi dropdown lab secara dinamis dari API
+ * @param {string} selectId - ID elemen <select>
+ * @param {boolean} includeAll - Tambahkan opsi "Semua Lab"
+ */
+async function loadLabOptions(selectId, includeAll = false) {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+
+    try {
+        const labs = await apiGet('/api/lab');
+        
+        let html = '';
+        if (includeAll) {
+            html += '<option value="all">Semua Lab</option>';
+        }
+        
+        labs.forEach(lab => {
+            html += `<option value="${lab.id}">${lab.nama}</option>`;
+        });
+        
+        select.innerHTML = html;
+    } catch (error) {
+        console.error('Gagal load lab options:', error);
+    }
+}

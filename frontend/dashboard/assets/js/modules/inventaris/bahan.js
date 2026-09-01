@@ -7,7 +7,7 @@ let bahanEditMode = false;
 let bahanEditId = null;
 let allBahanData = [];
 
-function initBahan() {
+async function initBahan() {
     // Tombol Tambah Bahan
     document.getElementById('btnTambahBahan').addEventListener('click', function() {
         bahanEditMode = false;
@@ -86,6 +86,7 @@ function initBahan() {
 
     loadBahan();
     console.log('✅ Modul Bahan siap');
+    await loadLabOptions('bahan_lab');
 }
 
 async function loadBahan() {

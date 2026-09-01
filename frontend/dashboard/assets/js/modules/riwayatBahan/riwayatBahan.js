@@ -3,7 +3,7 @@
  * Tabel historis penggunaan bahan + export Excel
  */
 
-function initRiwayatBahan() {
+async function initRiwayatBahan() {
     const riwayatLabFilter = document.getElementById('riwayatLabFilter');
 
     function getRiwayatLabFilter() {
@@ -57,6 +57,8 @@ function initRiwayatBahan() {
     if (sidebar) sidebar.addEventListener('click', loadRiwayat);
 
     console.log('✅ Modul Riwayat Bahan siap');
+
+    await loadLabOptions('riwayatLabFilter', true);
 }
 
 // method load dan render

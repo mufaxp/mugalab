@@ -6,7 +6,7 @@
 let editMode = false;
 let editId = null;
 
-function initJadwal() {
+async function initJadwal() {
     const btnTambah = document.querySelector('.btn-tambah');
     const modalTambah = document.getElementById('modalTambah');
     const formTambahJadwal = document.getElementById('formTambahJadwal');
@@ -83,8 +83,11 @@ function initJadwal() {
     });
 
     // pemanggilan method load jadwal
-    loadDashboardJadwal();
+    await loadDashboardJadwal();
     console.log('✅ Modul Jadwal siap');
+
+    await loadLabOptions('lab_id');
+    await loadLabOptions('labFilterSelect', true);
 }
 
 // fungsi edit jadwal (buka modal)

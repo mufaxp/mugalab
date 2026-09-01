@@ -7,19 +7,7 @@ let alatEditMode = false;
 let alatEditId = null;
 let allAlatData = [];
 
-function initAlat() {
-    // const invLabFilter = document.getElementById('invLabFilter');
-
-    // function getInvLabFilter() {
-    //     if (!invLabFilter) return null;
-    //     const v = invLabFilter.value;
-    //     return v === 'all' ? null : parseInt(v);
-    // }
-
-    // if (invLabFilter) {
-    //     invLabFilter.addEventListener('change', () => loadAlat());
-    // }
-
+async function initAlat() {
     // Tombol Tambah Alat
     document.getElementById('btnTambahAlat').addEventListener('click', function() {
         alatEditMode = false;
@@ -79,6 +67,9 @@ function initAlat() {
 
     loadAlat();
     console.log('✅ Modul Alat siap');
+
+    await loadLabOptions('alat_lab');
+    await loadLabOptions('invLabFilter', true);
 }
 
 async function loadAlat() {

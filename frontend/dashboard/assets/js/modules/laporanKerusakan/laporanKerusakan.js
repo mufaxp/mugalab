@@ -3,7 +3,7 @@
  * Lapor alat rusak, update status, hapus
  */
 
-function initLaporanKerusakan() {
+async function initLaporanKerusakan() {
     const laporanLabFilter = document.getElementById('laporanLabFilter');
 
     function getLaporanLabFilter() {
@@ -99,6 +99,8 @@ function initLaporanKerusakan() {
     if (sidebar) sidebar.addEventListener('click', loadLaporan);
 
     console.log('✅ Modul Laporan Kerusakan siap');
+
+    await loadLabOptions('laporanLabFilter', true);
 }
 
 // method load dan render

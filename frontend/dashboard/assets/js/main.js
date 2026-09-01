@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (typeof initPengajuan === 'function') initPengajuan();
     if (typeof initSarana === 'function') initSarana();
     if (typeof initPeminjaman === 'function') initPeminjaman();
+    if (typeof initKelolaLab === 'function') initKelolaLab();
 
     console.log('✅ Dashboard siap - semua modul telah terinisialisasi.');
 });

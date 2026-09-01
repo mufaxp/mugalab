@@ -84,6 +84,81 @@ app.get('/api/lab', async (req, res) => {
     }
 });
 
+// KELOLA RUANG LAB (CRUD)
+// Tambah lab baru
+app.post('/api/lab', verifyToken, async (req, res) => {
+    const { nama, deskripsi } = req.body;
+
+    if (!nama) {
+        return res.status(400).json({ message: 'Nama lab wajib diisi' });
+    }
+
+    try {
+        const [result] = await pool.query(
+            'INSERT INTO lab (nama, deskripsi) VALUES (?, ?)',
+            [nama, deskripsi || '']
+        );
+        return res.status(201).json({ message: 'Lab berhasil ditambahkan', id: result.insertId });
+    } catch (error) {
+        console.error('Error tambah lab:', error);
+        return res.status(500).json({ message: 'Gagal menambahkan lab' });
+    }
+});
+
+// Edit lab
+app.put('/api/lab/:id', verifyToken, async (req, res) => {
+    const { id } = req.params;
+    const { nama, deskripsi } = req.body;
+
+    if (!nama) {
+        return res.status(400).json({ message: 'Nama lab wajib diisi' });
+    }
+
+    try {
+        const [result] = await pool.query(
+            'UPDATE lab SET nama = ?, deskripsi = ? WHERE id = ?',
+            [nama, deskripsi || '', id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Lab tidak ditemukan' });
+        }
+
+        return res.status(200).json({ message: 'Lab berhasil diperbarui' });
+    } catch (error) {
+        console.error('Error edit lab:', error);
+        return res.status(500).json({ message: 'Gagal memperbarui lab' });
+    }
+});
+
+// Hapus lab (cek dulu apakah masih dipakai)
+app.delete('/api/lab/:id', verifyToken, async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Cek referensi di tabel terkait
+        const [jadwal] = await pool.query('SELECT COUNT(*) as total FROM jadwal WHERE lab_id = ?', [id]);
+        const [alat] = await pool.query('SELECT COUNT(*) as total FROM alat WHERE lab_id = ?', [id]);
+        const [bahan] = await pool.query('SELECT COUNT(*) as total FROM bahan WHERE lab_id = ?', [id]);
+        const [sarana] = await pool.query('SELECT COUNT(*) as total FROM sarana WHERE lab_id = ?', [id]);
+        const [pengajuan] = await pool.query('SELECT COUNT(*) as total FROM pengajuan_jadwal WHERE lab_id = ?', [id]);
+
+        const totalPemakaian = jadwal[0].total + alat[0].total + bahan[0].total + sarana[0].total + pengajuan[0].total;
+
+        if (totalPemakaian > 0) {
+            return res.status(400).json({ 
+                message: `Lab tidak bisa dihapus karena masih digunakan di ${totalPemakaian} data terkait. Pindahkan datanya terlebih dahulu.` 
+            });
+        }
+
+        await pool.query('DELETE FROM lab WHERE id = ?', [id]);
+        return res.status(200).json({ message: 'Lab berhasil dihapus' });
+    } catch (error) {
+        console.error('Error hapus lab:', error);
+        return res.status(500).json({ message: 'Gagal menghapus lab' });
+    }
+});
+
 // API Jadwal publik
 app.get('/api/jadwal/public', async (req, res) => {
     const { minggu_mulai, lab_id } = req.query;

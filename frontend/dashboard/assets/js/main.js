@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Auth
     if (!checkAuth()) return;
     displayNama();
-    initLogoutButton();
+    initUserMenu();
 
     // Core
     initApp();

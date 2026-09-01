@@ -685,6 +685,7 @@ app.post('/api/pengajuan', async (req, res) => {
         // Kirim notif ke Bapak
         const notifMsg = `📩 *Pengajuan Jadwal Baru*\n\n`
             + `Pemohon: ${pengaju || '-'}\n`
+            + `Nomor WA: ${nomor_wa || '-'}\n`
             + `Kegiatan: ${kegiatan}\n`
             + `PJ: ${penanggung_jawab}\n`
             + `Mapel: ${mata_pelajaran || '-'}\n`

@@ -21,6 +21,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
             // simpan token dan nama ke localStorage
             localStorage.setItem('token', data.token);
             localStorage.setItem('nama', data.nama);
+            localStorage.setItem('role', data.role || 'guru');
             // redirect ke dashboard
             window.location.href = '/dashboard';
         } else {

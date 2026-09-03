@@ -51,7 +51,8 @@ app.post('/api/auth/login', async (req, res) => {
             { 
                 id: user.id, 
                 username: user.username, 
-                nama: user.nama 
+                nama: user.nama, 
+                role: user.role
             },
             process.env.JWT_SECRET,
             { expiresIn: '2h' }  // Token berlaku 2 jam
@@ -61,7 +62,8 @@ app.post('/api/auth/login', async (req, res) => {
         return res.status(200).json({
             message: 'Login berhasil',
             token: token,
-            nama: user.nama
+            nama: user.nama,
+            role: user.role
         });
     } catch (error) {
         console.error('Login error:', error);

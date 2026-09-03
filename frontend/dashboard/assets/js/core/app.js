@@ -5,7 +5,7 @@
 
 function initSidebar() {
     const currentRole = localStorage.getItem('role') || 'guru';
-    
+
     // Aturan akses panel berdasarkan role
     const menuRules = {
         admin: [
@@ -29,6 +29,7 @@ function initSidebar() {
             'peminjaman'
         ],
         guru: [
+            'jadwal',
             'inventaris',
             'laporan',
             'riwayat',

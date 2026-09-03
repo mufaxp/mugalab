@@ -7,7 +7,11 @@ let editMode = false;
 let editId = null;
 
 async function initJadwal() {
+    const currentRole = localStorage.getItem('role') || 'guru';
     const btnTambah = document.querySelector('.btn-tambah');
+    if (btnTambah && currentRole === 'guru') {
+        btnTambah.style.display = 'none';
+    }
     const modalTambah = document.getElementById('modalTambah');
     const formTambahJadwal = document.getElementById('formTambahJadwal');
     const labFilterSelect = document.getElementById('labFilterSelect');

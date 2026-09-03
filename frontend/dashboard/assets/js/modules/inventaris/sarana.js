@@ -9,6 +9,9 @@ let allSaranaData = [];
 async function initSarana() {
     const currentRole = localStorage.getItem('role') || 'guru';
 
+    await loadLabOptions('sarana_lab');
+    await loadLabOptions('invLabFilter', true);
+
     const btnTambahSarana = document.getElementById('btnTambahSarana');
     if (btnTambahSarana && currentRole === 'guru') {
         btnTambahSarana.style.display = 'none';
@@ -63,8 +66,6 @@ async function initSarana() {
 
     loadSarana();
     console.log('✅ Modul Sarana siap');
-
-    await loadLabOptions('sarana_lab');
 }
 
 async function loadSarana() {
@@ -80,6 +81,8 @@ async function loadSarana() {
 
 function renderSarana(data) {
     const container = document.getElementById('saranaList');
+    const currentRole = localStorage.getItem('role') || 'guru'; // ✅ deklarasi di sini
+
     if (!data.length) { container.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">Belum ada data sarana.</p>'; return; }
     let html = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead><tr style="background:#f0f7f2;">
@@ -88,20 +91,23 @@ function renderSarana(data) {
         </tr></thead><tbody>`;
     data.forEach(item => {
         const emoji = item.kondisi === 'baik' ? '✅' : item.kondisi === 'rusak' ? '🔴' : '🟡';
+        let aksi = '';
+        if (currentRole !== 'guru') {
+            aksi = `<button class="btn-edit" data-edit-sarana="${item.id}">Edit</button>
+            <button class="btn-delete" data-hapus-sarana="${item.id}">Hapus</button>`;
+        } else {
+            aksi = '<span style="color:#888;">-</span>';
+        }
         html += `<tr>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.kode_sarana}</td><td style="padding:8px;border:1px solid #d0e6d5;">${item.nama_sarana}</td><td style="padding:8px;border:1px solid #d0e6d5;">${item.produsen}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.jumlah} total<br><span style="color:#c62828;font-size:11px;">${item.jumlah_rusak||0} rusak</span></td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${emoji} ${item.kondisi}</td>
-            <td style="padding:8px;border:1px solid #d0e6d5;">
-                ${currentRole !== 'guru' ? `
-                    <button class="btn-edit" data-edit-sarana="${item.id}">Edit</button>
-                    <button class="btn-delete" data-hapus-sarana="${item.id}">Hapus</button>
-                ` : '<span style="color:#888;">-</span>'}
-            </td>
+            <td style="padding:8px;border:1px solid #d0e6d5;">${aksi}</td>
         </tr>`;
     });
     html += '</tbody></table>';
     container.innerHTML = html;
+
     if (currentRole !== 'guru') {
         container.querySelectorAll('[data-edit-sarana]').forEach(b => b.addEventListener('click', () => editSarana(parseInt(b.getAttribute('data-edit-sarana')))));
         container.querySelectorAll('[data-hapus-sarana]').forEach(b => b.addEventListener('click', () => hapusSarana(parseInt(b.getAttribute('data-hapus-sarana')))));

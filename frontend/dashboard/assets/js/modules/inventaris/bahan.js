@@ -1,6 +1,5 @@
 /**
  * bahan.js - Inventaris Bahan Module
- * CRUD bahan, search, pakai bahan
  */
 
 let bahanEditMode = false;
@@ -10,12 +9,14 @@ let allBahanData = [];
 async function initBahan() {
     const currentRole = localStorage.getItem('role') || 'guru';
 
+    await loadLabOptions('bahan_lab');
+    await loadLabOptions('invLabFilter', true);
+
     const btnTambahBahan = document.getElementById('btnTambahBahan');
     if (btnTambahBahan && currentRole === 'guru') {
         btnTambahBahan.style.display = 'none';
     }
 
-    // Tombol Tambah Bahan
     document.getElementById('btnTambahBahan').addEventListener('click', function() {
         bahanEditMode = false;
         bahanEditId = null;
@@ -24,7 +25,6 @@ async function initBahan() {
         openModal('modalBahan');
     });
 
-    // Submit form
     document.getElementById('formBahan').addEventListener('submit', async function(e) {
         e.preventDefault();
         const body = {
@@ -63,8 +63,7 @@ async function initBahan() {
     suggestBahan.addEventListener('click', function(e) {
         const item = e.target.closest('.search-suggest-item');
         if (item) {
-            const id = parseInt(item.getAttribute('data-id'));
-            renderBahan(allBahanData.filter(b => b.id === id));
+            renderBahan(allBahanData.filter(b => b.id === parseInt(item.getAttribute('data-id'))));
             suggestBahan.classList.remove('active');
             searchBahan.value = '';
         }
@@ -93,7 +92,6 @@ async function initBahan() {
 
     loadBahan();
     console.log('✅ Modul Bahan siap');
-    await loadLabOptions('bahan_lab');
 }
 
 async function loadBahan() {
@@ -111,6 +109,8 @@ async function loadBahan() {
 
 function renderBahan(data) {
     const container = document.getElementById('bahanList');
+    const currentRole = localStorage.getItem('role') || 'guru'; // ✅ deklarasi di sini
+
     if (!data.length) {
         container.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">Belum ada data bahan.</p>';
         return;
@@ -129,6 +129,15 @@ function renderBahan(data) {
 
     data.forEach(item => {
         const tgl = item.tanggal_kadaluarsa ? item.tanggal_kadaluarsa.substring(0, 10) : '-';
+        let aksi = '';
+        if (currentRole !== 'guru') {
+            aksi = `<button class="btn-edit" data-edit-bahan="${item.id}">Edit</button>
+                <button class="btn-delete" data-hapus-bahan="${item.id}">Hapus</button>
+                <button class="btn-pakai" data-pakai-bahan='${JSON.stringify({id:item.id,nama:item.nama_bahan,stok:item.jumlah,satuan:item.satuan})}'>Pakai</button>`;
+        } else {
+            aksi = '<span style="color:#888;">-</span>';
+        }
+
         html += `<tr>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.kode_bahan}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.nama_bahan}</td>
@@ -136,13 +145,8 @@ function renderBahan(data) {
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.jumlah}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.satuan}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${tgl}</td>
-            <td style="padding:8px;border:1px solid #d0e6d5;">
-                ${currentRole !== 'guru' ? `
-                    <button class="btn-edit" data-edit-bahan="${item.id}">Edit</button>
-                    <button class="btn-delete" data-hapus-bahan="${item.id}">Hapus</button>
-                    <button class="btn-pakai" data-pakai-bahan='${JSON.stringify({id:item.id,nama:item.nama_bahan,stok:item.jumlah,satuan:item.satuan})}'>Pakai</button>
-                ` : '<span style="color:#888;">-</span>'}
-            </td></tr>`;
+            <td style="padding:8px;border:1px solid #d0e6d5;">${aksi}</td>
+        </tr>`;
     });
 
     html += '</tbody></table>';

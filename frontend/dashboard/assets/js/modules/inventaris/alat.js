@@ -1,6 +1,5 @@
 /**
  * alat.js - Inventaris Alat Module
- * CRUD alat, search, render tabel
  */
 
 let alatEditMode = false;
@@ -10,14 +9,14 @@ let allAlatData = [];
 async function initAlat() {
     const currentRole = localStorage.getItem('role') || 'guru';
 
+    await loadLabOptions('alat_lab');
+    await loadLabOptions('invLabFilter', true);
+
     const btnTambahAlat = document.getElementById('btnTambahAlat');
     if (btnTambahAlat && currentRole === 'guru') {
         btnTambahAlat.style.display = 'none';
     }
 
-    await loadLabOptions('alat_lab');
-    await loadLabOptions('invLabFilter', true);
-    // Tombol Tambah Alat
     document.getElementById('btnTambahAlat').addEventListener('click', function() {
         alatEditMode = false;
         alatEditId = null;
@@ -26,7 +25,6 @@ async function initAlat() {
         openModal('modalAlat');
     });
 
-    // Submit form
     document.getElementById('formAlat').addEventListener('submit', async function(e) {
         e.preventDefault();
         const body = {
@@ -93,6 +91,8 @@ async function loadAlat() {
 
 function renderAlat(data) {
     const container = document.getElementById('alatList');
+    const currentRole = localStorage.getItem('role') || 'guru'; // ✅ deklarasi di sini
+
     if (!data.length) {
         container.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">Belum ada data alat.</p>';
         return;
@@ -110,18 +110,22 @@ function renderAlat(data) {
 
     data.forEach(item => {
         const kondisiEmoji = item.kondisi === 'baik' ? '✅' : item.kondisi === 'rusak' ? '🔴' : '🟡';
+        let aksi = '';
+        if (currentRole !== 'guru') {
+            aksi = `<button class="btn-edit" data-edit-alat="${item.id}">Edit</button>
+                <button class="btn-delete" data-hapus-alat="${item.id}">Hapus</button>`;
+        } else {
+            aksi = '<span style="color:#888;">-</span>';
+        }
+
         html += `<tr>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.kode_alat}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.nama_alat}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.produsen}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.jumlah} total<br><span style="color:#c62828;font-size:11px;">${item.jumlah_rusak||0} rusak</span></td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${kondisiEmoji} ${item.kondisi}</td>
-            <td style="padding:8px;border:1px solid #d0e6d5;">
-                ${currentRole !== 'guru' ? `
-                    <button class="btn-edit" data-edit-alat="${item.id}">Edit</button>
-                    <button class="btn-delete" data-hapus-alat="${item.id}">Hapus</button>
-                ` : '<span style="color:#888;">-</span>'}
-            </td></tr>`;
+            <td style="padding:8px;border:1px solid #d0e6d5;">${aksi}</td>
+        </tr>`;
     });
 
     html += '</tbody></table>';

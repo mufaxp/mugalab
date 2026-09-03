@@ -366,14 +366,14 @@ app.get('/api/alat', verifyToken, async (req, res) => {
 
 // POST tambah alat
 app.post('/api/alat', verifyToken, async (req, res) => {
-    const { kode_alat, nama_alat, produsen, jumlah, lab_id, keterangan } = req.body;
+    const { kode_alat, nama_alat, spek, produsen, jumlah, lab_id, keterangan } = req.body;
     if (!kode_alat || !nama_alat || !jumlah) {
         return res.status(400).json({ message: 'Kode, nama, dan jumlah wajib diisi' });
     }
     try {
         const [result] = await pool.query(
-            'INSERT INTO alat (kode_alat, nama_alat, produsen, jumlah, lab_id, keterangan) VALUES (?, ?, ?, ?, ?, ?)',
-            [kode_alat, nama_alat, produsen || '-', jumlah, lab_id || 1, keterangan || '']
+            'INSERT INTO alat (kode_alat, nama_alat, spek, produsen, jumlah, lab_id, keterangan) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [kode_alat, nama_alat, spek || '-', produsen || '-', jumlah, lab_id || 1, keterangan || '']
         );
         return res.status(201).json({ message: 'Data alat berhasil ditambahkan', id: result.insertId });
     } catch (error) {
@@ -385,11 +385,11 @@ app.post('/api/alat', verifyToken, async (req, res) => {
 // PUT edit alat
 app.put('/api/alat/:id', verifyToken, async (req, res) => {
     const { id } = req.params;
-    const { kode_alat, nama_alat, produsen, jumlah, jumlah_rusak, kondisi, lab_id, keterangan } = req.body;
+    const { kode_alat, nama_alat, spek, produsen, jumlah, jumlah_rusak, kondisi, lab_id, keterangan } = req.body;
     try {
         const [result] = await pool.query(
-            'UPDATE alat SET kode_alat=?, nama_alat=?, produsen=?, jumlah=?, jumlah_rusak=?, kondisi=?, lab_id=?, keterangan=? WHERE id=?',
-            [kode_alat, nama_alat, produsen || '-', jumlah, jumlah_rusak || 0, kondisi || 'baik', lab_id || 1, keterangan || '', id]
+            'UPDATE alat SET kode_alat=?, nama_alat=?, spek=?, produsen=?, jumlah=?, jumlah_rusak=?, kondisi=?, lab_id=?, keterangan=? WHERE id=?',
+            [kode_alat, nama_alat, spek || '-', produsen || '-', jumlah, jumlah_rusak || 0, kondisi || 'baik', lab_id || 1, keterangan || '', id]
         );
         return res.status(200).json({ message: 'Data alat berhasil diperbarui' });
     } catch (error) {
@@ -431,14 +431,14 @@ app.get('/api/bahan', verifyToken, async (req, res) => {
 
 // POST tambah bahan
 app.post('/api/bahan', verifyToken, async (req, res) => {
-    const { kode_bahan, nama_bahan, produsen, jumlah, satuan, tanggal_kadaluarsa, lab_id, keterangan } = req.body;
-    if (!kode_bahan || !nama_bahan || !jumlah) {
-        return res.status(400).json({ message: 'Kode, nama, dan jumlah wajib diisi' });
+    const { kode_bahan, nama_bahan, produsen, stok_awal, satuan, tanggal_kadaluarsa, lab_id, keterangan } = req.body;
+    if (!kode_bahan || !nama_bahan || !stok_awal) {
+        return res.status(400).json({ message: 'Kode, nama, dan stok awal wajib diisi' });
     }
     try {
         const [result] = await pool.query(
-            'INSERT INTO bahan (kode_bahan, nama_bahan, produsen, jumlah, satuan, tanggal_kadaluarsa, lab_id, keterangan) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [kode_bahan, nama_bahan, produsen || '-', jumlah, satuan, tanggal_kadaluarsa, lab_id || 1, keterangan || '']
+            'INSERT INTO bahan (kode_bahan, nama_bahan, produsen, stok_awal, stok_akhir, satuan, tanggal_kadaluarsa, lab_id, keterangan) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [kode_bahan, nama_bahan, produsen || '-', stok_awal, stok_awal, satuan, tanggal_kadaluarsa, lab_id || 1, keterangan || '']
         );
         return res.status(201).json({ message: 'Bahan berhasil ditambahkan', id: result.insertId });
     } catch (error) {
@@ -450,11 +450,11 @@ app.post('/api/bahan', verifyToken, async (req, res) => {
 // PUT edit bahan
 app.put('/api/bahan/:id', verifyToken, async (req, res) => {
     const { id } = req.params;
-    const { kode_bahan, nama_bahan, produsen, jumlah, satuan, tanggal_kadaluarsa, lab_id, keterangan } = req.body;
+    const { kode_bahan, nama_bahan, produsen, stok_awal, stok_akhir, satuan, tanggal_kadaluarsa, lab_id, keterangan } = req.body;
     try {
         const [result] = await pool.query(
-            'UPDATE bahan SET kode_bahan=?, nama_bahan=?, produsen=?, jumlah=?, satuan=?, tanggal_kadaluarsa=?, lab_id=?, keterangan=? WHERE id=?',
-            [kode_bahan, nama_bahan, produsen || '-', jumlah, satuan, tanggal_kadaluarsa, lab_id || 1, keterangan || '', id]
+            'UPDATE bahan SET kode_bahan=?, nama_bahan=?, produsen=?, stok_awal=?, stok_akhir=?, satuan=?, tanggal_kadaluarsa=?, lab_id=?, keterangan=? WHERE id=?',
+            [kode_bahan, nama_bahan, produsen || '-', stok_awal, stok_akhir, satuan, tanggal_kadaluarsa, lab_id || 1, keterangan || '', id]
         );
         return res.status(200).json({ message: 'Data bahan berhasil diperbarui' });
     } catch (error) {
@@ -485,10 +485,10 @@ app.post('/api/bahan/pakai', verifyToken, async (req, res) => {
 
     try {
         // cek stok
-        const [bahanRows] = await pool.query('SELECT jumlah FROM bahan WHERE id=?', [bahan_id]);
+        const [bahanRows] = await pool.query('SELECT stok_akhir FROM bahan WHERE id=?', [bahan_id]);
         if (bahanRows.length === 0) return res.status(404).json({ message: 'Bahan tidak ditemukan' });
 
-        if (bahanRows[0].jumlah < jumlah_digunakan) {
+        if (bahanRows[0].stok_akhir < jumlah_digunakan) {
             return res.status(400).json({ message: 'Stok tidak mencukupi' });
         }
 
@@ -498,7 +498,7 @@ app.post('/api/bahan/pakai', verifyToken, async (req, res) => {
         );
 
         // kurangi stok
-        await pool.query('UPDATE bahan SET jumlah = jumlah - ? WHERE id = ?', [jumlah_digunakan, bahan_id]);
+        await pool.query('UPDATE bahan SET stok_akhir = stok_akhir - ? WHERE id = ?', [jumlah_digunakan, bahan_id]);
 
         return res.status(200).json({ message: 'Data penggunaan berhasil dicatat, stok berkurang'})
     } catch (error) {
@@ -895,14 +895,14 @@ app.get('/api/sarana', verifyToken, async (req, res) => {
 
 // POST tambah sarana
 app.post('/api/sarana', verifyToken, async (req, res) => {
-    const { kode_sarana, nama_sarana, produsen, jumlah, lab_id, keterangan } = req.body;
+    const { kode_sarana, nama_sarana, spek, produsen, jumlah, lab_id, keterangan } = req.body;
     if (!kode_sarana || !nama_sarana || !jumlah) {
         return res.status(400).json({ message: 'Kode, nama, dan jumlah wajib diisi' });
     }
     try {
         const [result] = await pool.query(
-            'INSERT INTO sarana (kode_sarana, nama_sarana, produsen, jumlah, lab_id, keterangan) VALUES (?, ?, ?, ?, ?, ?)',
-            [kode_sarana, nama_sarana, produsen || '-', jumlah, lab_id || 1, keterangan || '']
+            'INSERT INTO sarana (kode_sarana, nama_sarana, spek, produsen, jumlah, lab_id, keterangan) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [kode_sarana, nama_sarana, spek || '-', produsen || '-', jumlah, lab_id || 1, keterangan || '']
         );
         return res.status(201).json({ message: 'Sarana berhasil ditambahkan', id: result.insertId });
     } catch (error) {
@@ -913,11 +913,11 @@ app.post('/api/sarana', verifyToken, async (req, res) => {
 // PUT edit sarana
 app.put('/api/sarana/:id', verifyToken, async (req, res) => {
     const { id } = req.params;
-    const { kode_sarana, nama_sarana, produsen, jumlah, jumlah_rusak, kondisi, lab_id, keterangan } = req.body;
+    const { kode_sarana, nama_sarana, spek, produsen, jumlah, jumlah_rusak, kondisi, lab_id, keterangan } = req.body;
     try {
         await pool.query(
-            'UPDATE sarana SET kode_sarana=?, nama_sarana=?, produsen=?, jumlah=?, jumlah_rusak=?, kondisi=?, lab_id=?, keterangan=? WHERE id=?',
-            [kode_sarana, nama_sarana, produsen || '-', jumlah, jumlah_rusak || 0, kondisi || 'baik', lab_id || 1, keterangan || '', id]
+            'UPDATE sarana SET kode_sarana=?, nama_sarana=?, spek=?, produsen=?, jumlah=?, jumlah_rusak=?, kondisi=?, lab_id=?, keterangan=? WHERE id=?',
+            [kode_sarana, nama_sarana, spek || '-', produsen || '-', jumlah, jumlah_rusak || 0, kondisi || 'baik', lab_id || 1, keterangan || '', id]
         );
         return res.status(200).json({ message: 'Sarana berhasil diperbarui' });
     } catch (error) {

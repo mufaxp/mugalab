@@ -345,6 +345,10 @@
                     <input type="text" id="alat_nama" class="form-input" placeholder="Nama alat" required>
                 </div>
                 <div class="form-group">
+                    <label for="alat_spek">Spek</label>
+                    <input type="text" id="alat_spek" class="form-input" placeholder="-">
+                </div>
+                <div class="form-group">
                     <label for="alat_produsen">Produsen</label>
                     <input type="text" id="alat_produsen" class="form-input" placeholder="Nama produsen (isi - jika tidak ada)">
                 </div>
@@ -401,8 +405,8 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group form-group-half">
-                        <label for="bahan_jumlah">Jumlah Stok</label>
-                        <input type="number" step="0.01" id="bahan_jumlah" class="form-input" required>
+                        <label for="bahan_stok_awal">Stok Awal</label>
+                        <input type="number" step="0.01" id="bahan_stok_awal" class="form-input" required>
                     </div>
                     <div class="form-group form-group-half">
                         <label for="bahan_satuan">Satuan</label>
@@ -611,6 +615,10 @@
                     <input type="text" id="sarana_nama" class="form-input" placeholder="Nama sarana" required>
                 </div>
                 <div class="form-group">
+                    <label for="sarana_spek">Spek</label>
+                    <input type="text" id="sarana_spek" class="form-input" placeholder="-">
+                </div>
+                <div class="form-group">
                     <label for="sarana_produsen">Produsen</label>
                     <input type="text" id="sarana_produsen" class="form-input" placeholder="Nama produsen (isi - jika tidak ada)">
                 </div>
@@ -796,13 +804,13 @@
     <!-- Modules (bertahap) -->
     <script src="/dashboard/assets/js/modules/lab/lab.js"></script>
     <script src="/dashboard/assets/js/modules/jadwal/jadwal.js?v=2.1"></script>
-    <script src="/dashboard/assets/js/modules/inventaris/alat.js?v=2.1"></script>
-    <script src="/dashboard/assets/js/modules/inventaris/bahan.js?v=2.1"></script>
+    <script src="/dashboard/assets/js/modules/inventaris/alat.js?v=2.2"></script>
+    <script src="/dashboard/assets/js/modules/inventaris/bahan.js?v=2.2"></script>
     <script src="/dashboard/assets/js/modules/laporanKerusakan/laporanKerusakan.js"></script>
     <script src="/dashboard/assets/js/modules/riwayatBahan/riwayatBahan.js"></script>
     <script src="/dashboard/assets/js/modules/laprak/laprak.js?v=2.1"></script>
     <script src="/dashboard/assets/js/modules/pengajuan/pengajuan.js?v=2.1"></script>
-    <script src="/dashboard/assets/js/modules/inventaris/sarana.js?v=2.1"></script>
+    <script src="/dashboard/assets/js/modules/inventaris/sarana.js?v=2.2"></script>
     <script src="/dashboard/assets/js/modules/peminjaman/peminjaman.js"></script>    
     <script src="/dashboard/assets/js/modules/user/user.js"></script>
     <!-- Orchestrator -->

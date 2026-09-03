@@ -30,6 +30,7 @@ async function initAlat() {
         const body = {
             kode_alat: document.getElementById('alat_kode').value,
             nama_alat: document.getElementById('alat_nama').value,
+            spek: document.getElementById('alat_spek').value || '-',
             produsen: document.getElementById('alat_produsen').value || '-',
             jumlah: parseInt(document.getElementById('alat_jumlah').value),
             jumlah_rusak: parseInt(document.getElementById('alat_jumlah_rusak').value) || 0,
@@ -102,6 +103,7 @@ function renderAlat(data) {
         <thead><tr style="background:#f0f7f2;">
             <th style="padding:8px;border:1px solid #d0e6d5;">Kode</th>
             <th style="padding:8px;border:1px solid #d0e6d5;">Nama Alat</th>
+            <th style="padding:8px;border:1px solid #d0e6d5;">Spek</th>
             <th style="padding:8px;border:1px solid #d0e6d5;">Produsen</th>
             <th style="padding:8px;border:1px solid #d0e6d5;">Jumlah</th>
             <th style="padding:8px;border:1px solid #d0e6d5;">Kondisi</th>
@@ -121,6 +123,7 @@ function renderAlat(data) {
         html += `<tr>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.kode_alat}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.nama_alat}</td>
+            <td style="padding:8px;border:1px solid #d0e6d5;">${item.spek}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.produsen}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.jumlah} total<br><span style="color:#c62828;font-size:11px;">${item.jumlah_rusak||0} rusak</span></td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${kondisiEmoji} ${item.kondisi}</td>
@@ -145,6 +148,7 @@ async function editAlat(id) {
     document.getElementById('modalAlatTitle').textContent = 'Edit Alat';
     document.getElementById('alat_kode').value = item.kode_alat;
     document.getElementById('alat_nama').value = item.nama_alat;
+    document.getElementById('alat_spek').value = item.spek || '-';
     document.getElementById('alat_produsen').value = item.produsen;
     document.getElementById('alat_jumlah').value = item.jumlah;
     document.getElementById('alat_jumlah_rusak').value = item.jumlah_rusak || 0;

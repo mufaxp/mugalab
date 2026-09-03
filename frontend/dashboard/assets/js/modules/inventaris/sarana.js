@@ -30,6 +30,7 @@ async function initSarana() {
         const body = {
             kode_sarana: document.getElementById('sarana_kode').value,
             nama_sarana: document.getElementById('sarana_nama').value,
+            spek: document.getElementById('sarana_spek').value || '-',
             produsen: document.getElementById('sarana_produsen').value || '-',
             jumlah: parseInt(document.getElementById('sarana_jumlah').value),
             jumlah_rusak: parseInt(document.getElementById('sarana_jumlah_rusak').value) || 0,
@@ -86,8 +87,13 @@ function renderSarana(data) {
     if (!data.length) { container.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">Belum ada data sarana.</p>'; return; }
     let html = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead><tr style="background:#f0f7f2;">
-            <th style="padding:8px;border:1px solid #d0e6d5;">Kode</th><th style="padding:8px;border:1px solid #d0e6d5;">Nama</th><th style="padding:8px;border:1px solid #d0e6d5;">Produsen</th>
-            <th style="padding:8px;border:1px solid #d0e6d5;">Jumlah</th><th style="padding:8px;border:1px solid #d0e6d5;">Kondisi</th><th style="padding:8px;border:1px solid #d0e6d5;">Aksi</th>
+            <th style="padding:8px;border:1px solid #d0e6d5;">Kode</th>
+            <th style="padding:8px;border:1px solid #d0e6d5;">Nama</th>
+            <th style="padding:8px;border:1px solid #d0e6d5;">Spek</th>
+            <th style="padding:8px;border:1px solid #d0e6d5;">Produsen</th>
+            <th style="padding:8px;border:1px solid #d0e6d5;">Jumlah</th>
+            <th style="padding:8px;border:1px solid #d0e6d5;">Kondisi</th>
+            <th style="padding:8px;border:1px solid #d0e6d5;">Aksi</th>
         </tr></thead><tbody>`;
     data.forEach(item => {
         const emoji = item.kondisi === 'baik' ? '✅' : item.kondisi === 'rusak' ? '🔴' : '🟡';
@@ -99,7 +105,10 @@ function renderSarana(data) {
             aksi = '<span style="color:#888;">-</span>';
         }
         html += `<tr>
-            <td style="padding:8px;border:1px solid #d0e6d5;">${item.kode_sarana}</td><td style="padding:8px;border:1px solid #d0e6d5;">${item.nama_sarana}</td><td style="padding:8px;border:1px solid #d0e6d5;">${item.produsen}</td>
+            <td style="padding:8px;border:1px solid #d0e6d5;">${item.kode_sarana}</td>
+            <td style="padding:8px;border:1px solid #d0e6d5;">${item.nama_sarana}</td>
+            <td style="padding:8px;border:1px solid #d0e6d5;">${item.spek || '-'}</td>
+            <td style="padding:8px;border:1px solid #d0e6d5;">${item.produsen}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.jumlah} total<br><span style="color:#c62828;font-size:11px;">${item.jumlah_rusak||0} rusak</span></td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${emoji} ${item.kondisi}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${aksi}</td>
@@ -120,6 +129,7 @@ async function editSarana(id) {
     document.getElementById('modalSaranaTitle').textContent = 'Edit Sarana';
     document.getElementById('sarana_kode').value = item.kode_sarana;
     document.getElementById('sarana_nama').value = item.nama_sarana;
+    document.getElementById('sarana_spek').value = item.spek || '-';
     document.getElementById('sarana_produsen').value = item.produsen;
     document.getElementById('sarana_jumlah').value = item.jumlah;
     document.getElementById('sarana_jumlah_rusak').value = item.jumlah_rusak || 0;

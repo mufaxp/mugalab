@@ -31,13 +31,13 @@ async function initBahan() {
             kode_bahan: document.getElementById('bahan_kode').value,
             nama_bahan: document.getElementById('bahan_nama').value,
             produsen: document.getElementById('bahan_produsen').value || '-',
-            jumlah: parseFloat(document.getElementById('bahan_jumlah').value),
+            stok_awal: parseFloat(document.getElementById('bahan_stok_awal').value),
             satuan: document.getElementById('bahan_satuan').value,
             tanggal_kadaluarsa: document.getElementById('bahan_kadaluarsa').value || null,
             lab_id: parseInt(document.getElementById('bahan_lab').value),
             keterangan: document.getElementById('bahan_keterangan').value
         };
-        if (!body.kode_bahan || !body.nama_bahan || !body.jumlah) return alert('Kode, nama, dan jumlah wajib diisi');
+        if (!body.kode_bahan || !body.nama_bahan || !body.stok_awal) return alert('Kode, nama, dan stok awal wajib diisi');
 
         const url = bahanEditMode ? `/api/bahan/${bahanEditId}` : '/api/bahan';
         const data = bahanEditMode ? await apiPut(url, body) : await apiPost(url, body);
@@ -121,7 +121,8 @@ function renderBahan(data) {
             <th style="padding:8px;border:1px solid #d0e6d5;">Kode</th>
             <th style="padding:8px;border:1px solid #d0e6d5;">Nama Bahan</th>
             <th style="padding:8px;border:1px solid #d0e6d5;">Produsen</th>
-            <th style="padding:8px;border:1px solid #d0e6d5;">Stok</th>
+            <th style="padding:8px;border:1px solid #d0e6d5;">Stok Awal</th>
+            <th style="padding:8px;border:1px solid #d0e6d5;">Stok Akhir</th>
             <th style="padding:8px;border:1px solid #d0e6d5;">Satuan</th>
             <th style="padding:8px;border:1px solid #d0e6d5;">Kadaluarsa</th>
             <th style="padding:8px;border:1px solid #d0e6d5;">Aksi</th>
@@ -142,7 +143,8 @@ function renderBahan(data) {
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.kode_bahan}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.nama_bahan}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.produsen}</td>
-            <td style="padding:8px;border:1px solid #d0e6d5;">${item.jumlah}</td>
+            <td style="padding:8px;border:1px solid #d0e6d5;">${item.stok_awal}</td>
+            <td style="padding:8px;border:1px solid #d0e6d5;">${item.stok_akhir}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.satuan}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${tgl}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${aksi}</td>
@@ -181,7 +183,8 @@ async function editBahan(id) {
     document.getElementById('bahan_kode').value = item.kode_bahan;
     document.getElementById('bahan_nama').value = item.nama_bahan;
     document.getElementById('bahan_produsen').value = item.produsen;
-    document.getElementById('bahan_jumlah').value = item.jumlah;
+    document.getElementById('bahan_stok_awal').value = item.stok_awal;
+    document.getElementById('bahan_stok_akhir').value = item.stok_akhir;
     document.getElementById('bahan_satuan').value = item.satuan;
     document.getElementById('bahan_kadaluarsa').value = item.tanggal_kadaluarsa ? item.tanggal_kadaluarsa.substring(0, 10) : '';
     document.getElementById('bahan_lab').value = item.lab_id;

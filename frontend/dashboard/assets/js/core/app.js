@@ -16,7 +16,8 @@ function initSidebar() {
             'pengajuan',
             'peminjaman',
             'kelola-lab',
-            'user'
+            'user',
+            'setting'
         ],
         laboran: [
             'jadwal',

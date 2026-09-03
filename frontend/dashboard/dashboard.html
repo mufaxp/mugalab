@@ -403,27 +403,31 @@
                     <label for="bahan_produsen">Produsen</label>
                     <input type="text" id="bahan_produsen" class="form-input" placeholder="Nama produsen (isi - jika tidak ada)">
                 </div>
+
+                <!-- Stok Awal & Stok Akhir sejajar -->
                 <div class="form-row">
                     <div class="form-group form-group-half">
                         <label for="bahan_stok_awal">Stok Awal</label>
                         <input type="number" step="0.01" id="bahan_stok_awal" class="form-input" required>
                     </div>
-                    </div>
-                        <div class="form-group form-group-half">
-                            <label for="bahan_stok_akhir">Stok Akhir</label>
-                            <input type="number" step="0.01" id="bahan_stok_akhir" class="form-input" readonly>
-                        </div>
                     <div class="form-group form-group-half">
-                        <label for="bahan_satuan">Satuan</label>
-                        <select id="bahan_satuan" class="form-input">
-                            <option value="gram">gram</option>
-                            <option value="ml">ml</option>
-                            <option value="liter">liter</option>
-                            <option value="kg">kg</option>
-                            <option value="buah">buah</option>
-                        </select>
+                        <label for="bahan_stok_akhir">Stok Akhir</label>
+                        <input type="number" step="0.01" id="bahan_stok_akhir" class="form-input" readonly>
                     </div>
                 </div>
+
+                <!-- Satuan -->
+                <div class="form-group">
+                    <label for="bahan_satuan">Satuan</label>
+                    <select id="bahan_satuan" class="form-input">
+                        <option value="gram">gram</option>
+                        <option value="ml">ml</option>
+                        <option value="liter">liter</option>
+                        <option value="kg">kg</option>
+                        <option value="buah">buah</option>
+                    </select>
+                </div>
+
                 <div class="form-group">
                     <label for="bahan_kadaluarsa">Tanggal Kadaluarsa</label>
                     <input type="date" id="bahan_kadaluarsa" class="form-input">

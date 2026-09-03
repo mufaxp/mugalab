@@ -6,52 +6,43 @@
 function initSidebar() {
     const currentRole = localStorage.getItem('role') || 'guru';
 
-    // Aturan akses panel berdasarkan role
     const menuRules = {
-        admin: [
-            'jadwal',
-            'inventaris',
-            'laporan',
-            'riwayat',
-            'laprak',
-            'pengajuan',
-            'peminjaman',
-            'kelola-lab',
-            'user'
-        ],
-        laboran: [
-            'jadwal',
-            'inventaris',
-            'laporan',
-            'riwayat',
-            'laprak',
-            'pengajuan',
-            'peminjaman'
-        ],
-        guru: [
-            'jadwal',
-            'inventaris',
-            'laporan',
-            'riwayat',
-            'laprak',
-            'peminjaman'
-        ]
+        admin: ['jadwal','inventaris','laporan','riwayat','laprak','pengajuan','peminjaman','kelola-lab','user'],
+        laboran: ['jadwal','inventaris','laporan','riwayat','laprak','pengajuan','peminjaman'],
+        guru: ['jadwal','inventaris','laporan','riwayat','laprak','peminjaman']
     };
 
     const allowedPanels = menuRules[currentRole] || menuRules.guru;
 
-    // Sembunyikan item sidebar yang tidak diizinkan
+    // Sembunyikan menu yang tidak diizinkan
     document.querySelectorAll('.sidebar-item').forEach(item => {
         const panel = item.getAttribute('data-panel');
         if (!allowedPanels.includes(panel)) {
             item.style.display = 'none';
+        } else {
+            item.style.display = '';
         }
     });
 
-    // Lanjutkan logika navigasi seperti biasa
-    const sidebarItems = document.querySelectorAll('.sidebar-item');
+    // Tentukan panel pertama yang boleh diakses
     const panels = document.querySelectorAll('.panel');
+    const firstAllowedPanel = allowedPanels[0] || 'inventaris';
 
+    // Sembunyikan semua panel lalu aktifkan panel pertama yang diizinkan
+    panels.forEach(p => p.classList.remove('active'));
+    const targetPanel = document.getElementById(firstAllowedPanel);
+    if (targetPanel) targetPanel.classList.add('active');
+
+    // Tandai menu aktif di sidebar
+    document.querySelectorAll('.sidebar-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('data-panel') === firstAllowedPanel) {
+            item.classList.add('active');
+        }
+    });
+
+    // Navigasi klik
+    const sidebarItems = document.querySelectorAll('.sidebar-item');
     window.activatePanel = function(panelId) {
         panels.forEach(p => p.classList.remove('active'));
         const target = document.getElementById(panelId);

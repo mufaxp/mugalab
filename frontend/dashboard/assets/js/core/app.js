@@ -134,9 +134,22 @@ function initTabs() {
     });
 }
 
+function initInvLabFilter() {
+    const filter = document.getElementById('invLabFilter');
+    if (!filter) return;
+
+    filter.addEventListener('change', function() {
+        // Panggil ulang semua modul inventaris yang memiliki filter lab
+        if (typeof loadAlat === 'function') loadAlat();
+        if (typeof loadBahan === 'function') loadBahan();
+        if (typeof loadSarana === 'function') loadSarana();
+    });
+}
+
 function initApp() {
     initSidebar();
     initHamburger();
     initTabs();
+    initInvLabFilter();
     console.log('✅ Core app siap');
 }

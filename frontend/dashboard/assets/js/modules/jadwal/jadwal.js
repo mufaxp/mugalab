@@ -144,6 +144,9 @@ async function loadDashboardJadwal(labId = null) {
 function renderJadwalSection(container, data, label) {
     if (!container) return;
 
+    const currentRole = localStorage.getItem('role') || 'guru';
+    const canModify = currentRole !== 'guru';
+
     if (!data || !data.length) {
         container.innerHTML = `<p style="color:#999;text-align:center;padding:20px;">Belum ada jadwal untuk ${label}.</p>`;
         return;
@@ -161,17 +164,25 @@ function renderJadwalSection(container, data, label) {
             </div>
             <div class="jadwal-card-actions">
                 <button class="btn-laporan" data-laporan='${JSON.stringify(item)}'>Laporan</button>
-                <button class="btn-edit">Edit</button>
-                <button class="btn-delete" data-id="${item.id}">Hapus</button>
+                ${canModify ? `
+                    <button class="btn-edit">Edit</button>
+                    <button class="btn-delete" data-id="${item.id}">Hapus</button>
+                ` : ''}
             </div>`;
 
-        // Event: Hapus
-        card.querySelector('.btn-delete').addEventListener('click', () => hapusJadwal(item.id, card));
+        // Event Hapus (hanya jika tombol ada)
+        const btnDelete = card.querySelector('.btn-delete');
+        if (btnDelete) {
+            btnDelete.addEventListener('click', () => hapusJadwal(item.id, card));
+        }
 
-        // Event: Edit
-        card.querySelector('.btn-edit').addEventListener('click', () => openEditModal(item));
+        // Event Edit (hanya jika tombol ada)
+        const btnEdit = card.querySelector('.btn-edit');
+        if (btnEdit) {
+            btnEdit.addEventListener('click', () => openEditModal(item));
+        }
 
-        // Event: Laporan
+        // Event Laporan
         const btnLaporan = card.querySelector('.btn-laporan');
         if (item.has_laporan) {
             btnLaporan.textContent = '✅ Ada Laporan';

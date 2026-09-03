@@ -4,8 +4,8 @@
  */
 
 function initSidebar() {
-    const currentRole = getRole(); // 'admin', 'laboran', 'guru'
-
+    const currentRole = localStorage.getItem('role') || 'guru';
+    
     // Aturan akses panel berdasarkan role
     const menuRules = {
         admin: [

@@ -1,60 +1,88 @@
 /**
  * app.js - Core Application
- * Sidebar navigasi, hamburger menu, tabs, koordinasi panel.
+ * Sidebar navigasi, hamburger menu, tabs, filter role.
  */
 
 function initSidebar() {
+    // Ambil role langsung dari localStorage
     const currentRole = localStorage.getItem('role') || 'guru';
 
+    // Aturan akses panel berdasarkan role
     const menuRules = {
-        admin: ['jadwal','inventaris','laporan','riwayat','laprak','pengajuan','peminjaman','kelola-lab','user'],
-        laboran: ['jadwal','inventaris','laporan','riwayat','laprak','pengajuan','peminjaman'],
-        guru: ['jadwal','inventaris','laporan','riwayat','laprak','peminjaman']
+        admin: [
+            'jadwal',
+            'inventaris',
+            'laporan',
+            'riwayat',
+            'laprak',
+            'pengajuan',
+            'peminjaman',
+            'kelola-lab',
+            'user'
+        ],
+        laboran: [
+            'jadwal',
+            'inventaris',
+            'laporan',
+            'riwayat',
+            'laprak',
+            'pengajuan',
+            'peminjaman'
+        ],
+        guru: [
+            'jadwal',
+            'inventaris',
+            'laporan',
+            'riwayat',
+            'laprak',
+            'peminjaman'
+        ]
     };
 
     const allowedPanels = menuRules[currentRole] || menuRules.guru;
 
-    // Sembunyikan menu yang tidak diizinkan
+    // Debug — lihat di console
+    console.log('Role aktif:', currentRole);
+    console.log('Panel diizinkan:', allowedPanels);
+
+    // Sembunyikan/tampilkan menu sesuai role
     document.querySelectorAll('.sidebar-item').forEach(item => {
         const panel = item.getAttribute('data-panel');
-        if (!allowedPanels.includes(panel)) {
+        if (panel && !allowedPanels.includes(panel)) {
             item.style.display = 'none';
         } else {
             item.style.display = '';
         }
     });
 
-    // Tentukan panel pertama yang boleh diakses
+    // Panel pertama yang diizinkan otomatis aktif
     const panels = document.querySelectorAll('.panel');
-    const firstAllowedPanel = allowedPanels[0] || 'inventaris';
-
-    // Sembunyikan semua panel lalu aktifkan panel pertama yang diizinkan
     panels.forEach(p => p.classList.remove('active'));
-    const targetPanel = document.getElementById(firstAllowedPanel);
-    if (targetPanel) targetPanel.classList.add('active');
 
-    // Tandai menu aktif di sidebar
+    const firstPanel = allowedPanels[0] || 'inventaris';
+    const firstPanelEl = document.getElementById(firstPanel);
+    if (firstPanelEl) firstPanelEl.classList.add('active');
+
+    // Menu aktif di sidebar
     document.querySelectorAll('.sidebar-item').forEach(item => {
         item.classList.remove('active');
-        if (item.getAttribute('data-panel') === firstAllowedPanel) {
+        if (item.getAttribute('data-panel') === firstPanel) {
             item.classList.add('active');
         }
     });
 
-    // Navigasi klik
-    const sidebarItems = document.querySelectorAll('.sidebar-item');
-    window.activatePanel = function(panelId) {
-        panels.forEach(p => p.classList.remove('active'));
-        const target = document.getElementById(panelId);
-        if (target) target.classList.add('active');
-    };
-
-    sidebarItems.forEach(item => {
+    // Navigasi sidebar
+    document.querySelectorAll('.sidebar-item').forEach(item => {
         item.addEventListener('click', function(e) {
             e.preventDefault();
-            sidebarItems.forEach(i => i.classList.remove('active'));
+
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
             this.classList.add('active');
-            activatePanel(this.getAttribute('data-panel'));
+
+            panels.forEach(p => p.classList.remove('active'));
+            const target = document.getElementById(this.getAttribute('data-panel'));
+            if (target) target.classList.add('active');
+
             if (window.innerWidth <= 640) closeSidebar();
         });
     });
@@ -63,7 +91,7 @@ function initSidebar() {
 function initHamburger() {
     const hamburgerBtn = document.getElementById('hamburgerBtn');
     const sidebarNav = document.getElementById('sidebarNav');
-    
+
     const overlay = document.createElement('div');
     overlay.className = 'sidebar-overlay';
     document.body.appendChild(overlay);
@@ -84,14 +112,13 @@ function initHamburger() {
 
     if (hamburgerBtn) {
         hamburgerBtn.addEventListener('click', function() {
-            sidebarNav?.classList.contains('active') ? closeSidebar() : openSidebar();
+            sidebarNav && sidebarNav.classList.contains('active') ? closeSidebar() : openSidebar();
         });
     }
 
     overlay.addEventListener('click', closeSidebar);
-
     window.addEventListener('resize', function() {
-        if (window.innerWidth > 640 && sidebarNav?.classList.contains('active')) {
+        if (window.innerWidth > 640 && sidebarNav && sidebarNav.classList.contains('active')) {
             closeSidebar();
         }
     });
@@ -102,20 +129,11 @@ function initTabs() {
         tab.addEventListener('click', function() {
             document.querySelectorAll('.inv-tab').forEach(t => t.classList.remove('active'));
             this.classList.add('active');
+
             document.querySelectorAll('.inv-panel').forEach(p => p.classList.remove('active'));
-            document.getElementById(this.getAttribute('data-tab') + 'Panel').classList.add('active');
+            const target = document.getElementById(this.getAttribute('data-tab') + 'Panel');
+            if (target) target.classList.add('active');
         });
-    });
-}
-
-function initInvLabFilter() {
-    const invLabFilter = document.getElementById('invLabFilter');
-    if (!invLabFilter) return;
-
-    invLabFilter.addEventListener('change', function() {
-        if (typeof loadAlat === 'function') loadAlat();
-        if (typeof loadBahan === 'function') loadBahan();
-        if (typeof loadSarana === 'function') loadSarana();
     });
 }
 
@@ -123,6 +141,5 @@ function initApp() {
     initSidebar();
     initHamburger();
     initTabs();
-    initInvLabFilter();
     console.log('✅ Core app siap');
 }

@@ -36,6 +36,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (typeof initPengajuan === 'function') await initPengajuan();
     if (typeof initPeminjaman === 'function') await initPeminjaman();
     if (typeof initKelolaLab === 'function') await initKelolaLab();
+    if (typeof initManajemenUser === 'function') {
+        await initManajemenUser();
+    } else {
+        console.warn('initManajemenUser tidak ditemukan');
+    }
 
     console.log('✅ Dashboard siap — semua modul terinisialisasi');
 });

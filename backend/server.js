@@ -3,6 +3,7 @@ const verifyToken = require('./shared/middleware/verifyToken');
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const pool = require('./config/db');
+const requireRole = require('./shared/middleware/requireRole');
 
 const app = express();
 
@@ -1046,6 +1047,82 @@ app.put('/api/peminjaman/:id/kembali', verifyToken, upload.single('foto'), async
         return res.status(200).json({ message: 'Pengembalian berhasil' });
     } catch (error) {
         return res.status(500).json({ message: 'Gagal memproses pengembalian' });
+    }
+});
+
+// Manajemen user (khusus admin)
+// GET semua user
+app.get('/api/users', verifyToken, requireRole('admin'), async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            'SELECT id, username, nama, role, created_at FROM users ORDER BY id'
+        );
+        return res.status(200).json(rows);
+    } catch (error) {
+        console.error('Error ambil user:', error);
+        return res.status(500).json({ message: 'Gagal mengambil data user' });
+    }
+});
+
+// POST tambah user baru
+app.post('/api/users', verifyToken, requireRole('admin'), async (req, res) => {
+    const { username, password, nama, role } = req.body;
+
+    if (!username || !password || !nama || !role) {
+        return res.status(400).json({ message: 'Semua field wajib diisi' });
+    }
+
+    try {
+        const hashed = await bcrypt.hash(password, 10);
+        const [result] = await pool.query(
+            'INSERT INTO users (username, password, nama, role) VALUES (?, ?, ?, ?)',
+            [username, hashed, nama, role]
+        );
+        return res.status(201).json({ message: 'User berhasil ditambahkan', id: result.insertId });
+    } catch (error) {
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({ message: 'Username sudah digunakan' });
+        }
+        console.error('Error tambah user:', error);
+        return res.status(500).json({ message: 'Gagal menambahkan user' });
+    }
+});
+
+// PUT update user
+app.put('/api/users/:id', verifyToken, requireRole('admin'), async (req, res) => {
+    const { id } = req.params;
+    const { nama, role, password } = req.body;
+
+    try {
+        if (password) {
+            const hashed = await bcrypt.hash(password, 10);
+            await pool.query(
+                'UPDATE users SET nama = ?, role = ?, password = ? WHERE id = ?',
+                [nama, role, hashed, id]
+            );
+        } else {
+            await pool.query(
+                'UPDATE users SET nama = ?, role = ? WHERE id = ?',
+                [nama, role, id]
+            );
+        }
+        return res.status(200).json({ message: 'User berhasil diperbarui' });
+    } catch (error) {
+        console.error('Error update user:', error);
+        return res.status(500).json({ message: 'Gagal memperbarui user' });
+    }
+});
+
+// DELETE user
+app.delete('/api/users/:id', verifyToken, requireRole('admin'), async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        await pool.query('DELETE FROM users WHERE id = ?', [id]);
+        return res.status(200).json({ message: 'User berhasil dihapus' });
+    } catch (error) {
+        console.error('Error hapus user:', error);
+        return res.status(500).json({ message: 'Gagal menghapus user' });
     }
 });
 

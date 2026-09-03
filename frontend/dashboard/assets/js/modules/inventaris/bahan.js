@@ -134,7 +134,7 @@ function renderBahan(data) {
         if (currentRole !== 'guru') {
             aksi = `<button class="btn-edit" data-edit-bahan="${item.id}">Edit</button>
                 <button class="btn-delete" data-hapus-bahan="${item.id}">Hapus</button>
-                <button class="btn-pakai" data-pakai-bahan='${JSON.stringify({id:item.id,nama:item.nama_bahan,stok:item.jumlah,satuan:item.satuan})}'>Pakai</button>`;
+                <button class="btn-pakai" data-pakai-bahan='${JSON.stringify({id:item.id,nama:item.nama_bahan,stok:item.stok_akhir,satuan:item.satuan})}'>Pakai</button>`;
         } else {
             aksi = '<span style="color:#888;">-</span>';
         }

@@ -21,6 +21,10 @@ function getNama() {
     return localStorage.getItem('nama');
 }
 
+function getRole() {
+    return localStorage.getItem('role') || 'guru';
+}
+
 function displayNama() {
     const el = document.getElementById('userNameDisplay');
     if (el) el.textContent = getNama();
@@ -29,6 +33,7 @@ function displayNama() {
 function logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('nama');
+    localStorage.removeItem('role'); // ✅ hapus role
     window.location.href = '/login';
 }
 
@@ -36,8 +41,12 @@ function initLogoutButton() {
     const btn = document.getElementById('logoutBtn');
     if (btn) btn.addEventListener('click', logout);
 }
-function getRole() {
-    return localStorage.getItem('role') || 'guru';
-}
 
+// ===== EXPORT GLOBAL =====
+window.checkAuth = checkAuth;
+window.getToken = getToken;
+window.getNama = getNama;
 window.getRole = getRole;
+window.displayNama = displayNama;
+window.logout = logout;
+window.initLogoutButton = initLogoutButton;

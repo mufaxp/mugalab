@@ -61,7 +61,7 @@ app.post('/api/auth/login', async (req, res) => {
         // Kirim token + nama
         return res.status(200).json({
             message: 'Login berhasil',
-            token: token,
+            token,
             nama: user.nama,
             role: user.role
         });

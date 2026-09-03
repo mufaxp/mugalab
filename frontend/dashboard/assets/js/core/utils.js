@@ -37,9 +37,7 @@ function getCurrentSunday() {
     return sunday;
 }
 
-// =============================================
 // LOAD LAB OPTIONS DINAMIS
-// =============================================
 async function loadLabOptions(selectId, includeAll = false) {
     const select = document.getElementById(selectId);
     if (!select) return;

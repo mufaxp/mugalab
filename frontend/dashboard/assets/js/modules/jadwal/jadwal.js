@@ -8,7 +8,7 @@ let editId = null;
 
 async function initJadwal() {
     const currentRole = localStorage.getItem('role') || 'guru';
-    const btnTambah = document.querySelector('.btn-tambah');
+    const btnTambah = document.querySelector('#jadwal .btn-tambah');
     if (btnTambah && currentRole === 'guru') {
         btnTambah.style.display = 'none';
     }

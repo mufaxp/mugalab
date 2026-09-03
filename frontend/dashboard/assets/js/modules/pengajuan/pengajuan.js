@@ -3,13 +3,30 @@
  * Tabel pengajuan + terima/tolak
  */
 
-function initPengajuan() {
+let allLabsData = [];
+
+async function initPengajuan() {
+    await loadlabsForPengajuan();
     loadPengajuan();
 
     const sidebar = document.querySelector('.sidebar-item[data-panel="pengajuan"]');
     if (sidebar) sidebar.addEventListener('click', loadPengajuan);
 
     console.log('✅ Modul Pengajuan Jadwal siap');
+}
+
+async function loadlabsForPengajuan() {
+    try {
+        allLabsData = await apiGet('/api/lab');
+    } catch (err) {
+        console.warn('Gagal memuat daftar lab:', err);
+        allLabsData = [];
+    }
+}
+
+function getLabName(labId) {
+    const lab = allLabsData.find(l => l.id == labId);
+    return lab ? lab.nama : `Lab #${labId}`;
 }
 
 async function loadPengajuan() {
@@ -55,7 +72,7 @@ function renderPengajuan(data) {
         const tgl = item.tanggal 
             ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
             : '-';
-        const labName = item.lab_id == 1 ? 'Bio-Kim' : 'Fisika';
+        const labName = getLabName(item.lab_id);
         const isPending = item.status === 'pending';
 
         let aksi = '';

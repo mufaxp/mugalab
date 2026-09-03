@@ -8,6 +8,13 @@ let alatEditId = null;
 let allAlatData = [];
 
 async function initAlat() {
+    const currentRole = localStorage.getItem('role') || 'guru';
+
+    const btnTambahAlat = document.getElementById('btnTambahAlat');
+    if (btnTambahAlat && currentRole === 'guru') {
+        btnTambahAlat.style.display = 'none';
+    }
+
     await loadLabOptions('alat_lab');
     await loadLabOptions('invLabFilter', true);
     // Tombol Tambah Alat
@@ -110,16 +117,20 @@ function renderAlat(data) {
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.jumlah} total<br><span style="color:#c62828;font-size:11px;">${item.jumlah_rusak||0} rusak</span></td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${kondisiEmoji} ${item.kondisi}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">
-                <button class="btn-edit" data-edit-alat="${item.id}">Edit</button>
-                <button class="btn-delete" data-hapus-alat="${item.id}">Hapus</button>
+                ${currentRole !== 'guru' ? `
+                    <button class="btn-edit" data-edit-alat="${item.id}">Edit</button>
+                    <button class="btn-delete" data-hapus-alat="${item.id}">Hapus</button>
+                ` : '<span style="color:#888;">-</span>'}
             </td></tr>`;
     });
 
     html += '</tbody></table>';
     container.innerHTML = html;
 
-    container.querySelectorAll('[data-edit-alat]').forEach(btn => btn.addEventListener('click', () => editAlat(parseInt(btn.getAttribute('data-edit-alat')))));
-    container.querySelectorAll('[data-hapus-alat]').forEach(btn => btn.addEventListener('click', () => hapusAlat(parseInt(btn.getAttribute('data-hapus-alat')))));
+    if (currentRole !== 'guru') {
+        container.querySelectorAll('[data-edit-alat]').forEach(btn => btn.addEventListener('click', () => editAlat(parseInt(btn.getAttribute('data-edit-alat')))));
+        container.querySelectorAll('[data-hapus-alat]').forEach(btn => btn.addEventListener('click', () => hapusAlat(parseInt(btn.getAttribute('data-hapus-alat')))));
+    }
 }
 
 async function editAlat(id) {

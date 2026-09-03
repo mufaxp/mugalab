@@ -7,6 +7,13 @@ let saranaEditId = null;
 let allSaranaData = [];
 
 async function initSarana() {
+    const currentRole = localStorage.getItem('role') || 'guru';
+
+    const btnTambahSarana = document.getElementById('btnTambahSarana');
+    if (btnTambahSarana && currentRole === 'guru') {
+        btnTambahSarana.style.display = 'none';
+    }
+
     document.getElementById('btnTambahSarana').addEventListener('click', () => {
         saranaEditMode = false;
         saranaEditId = null;
@@ -85,13 +92,20 @@ function renderSarana(data) {
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.kode_sarana}</td><td style="padding:8px;border:1px solid #d0e6d5;">${item.nama_sarana}</td><td style="padding:8px;border:1px solid #d0e6d5;">${item.produsen}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.jumlah} total<br><span style="color:#c62828;font-size:11px;">${item.jumlah_rusak||0} rusak</span></td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${emoji} ${item.kondisi}</td>
-            <td style="padding:8px;border:1px solid #d0e6d5;"><button class="btn-edit" data-edit-sarana="${item.id}">Edit</button> <button class="btn-delete" data-hapus-sarana="${item.id}">Hapus</button></td>
+            <td style="padding:8px;border:1px solid #d0e6d5;">
+                ${currentRole !== 'guru' ? `
+                    <button class="btn-edit" data-edit-sarana="${item.id}">Edit</button>
+                    <button class="btn-delete" data-hapus-sarana="${item.id}">Hapus</button>
+                ` : '<span style="color:#888;">-</span>'}
+            </td>
         </tr>`;
     });
     html += '</tbody></table>';
     container.innerHTML = html;
-    container.querySelectorAll('[data-edit-sarana]').forEach(b => b.addEventListener('click', () => editSarana(parseInt(b.getAttribute('data-edit-sarana')))));
-    container.querySelectorAll('[data-hapus-sarana]').forEach(b => b.addEventListener('click', () => hapusSarana(parseInt(b.getAttribute('data-hapus-sarana')))));
+    if (currentRole !== 'guru') {
+        container.querySelectorAll('[data-edit-sarana]').forEach(b => b.addEventListener('click', () => editSarana(parseInt(b.getAttribute('data-edit-sarana')))));
+        container.querySelectorAll('[data-hapus-sarana]').forEach(b => b.addEventListener('click', () => hapusSarana(parseInt(b.getAttribute('data-hapus-sarana')))));
+    }
 }
 
 async function editSarana(id) {

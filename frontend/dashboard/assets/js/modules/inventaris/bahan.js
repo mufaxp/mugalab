@@ -8,6 +8,13 @@ let bahanEditId = null;
 let allBahanData = [];
 
 async function initBahan() {
+    const currentRole = localStorage.getItem('role') || 'guru';
+
+    const btnTambahBahan = document.getElementById('btnTambahBahan');
+    if (btnTambahBahan && currentRole === 'guru') {
+        btnTambahBahan.style.display = 'none';
+    }
+
     // Tombol Tambah Bahan
     document.getElementById('btnTambahBahan').addEventListener('click', function() {
         bahanEditMode = false;
@@ -130,23 +137,27 @@ function renderBahan(data) {
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.satuan}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${tgl}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">
-                <button class="btn-edit" data-edit-bahan="${item.id}">Edit</button>
-                <button class="btn-delete" data-hapus-bahan="${item.id}">Hapus</button>
-                <button class="btn-pakai" data-pakai-bahan='${JSON.stringify({id:item.id,nama:item.nama_bahan,stok:item.jumlah,satuan:item.satuan})}'>Pakai</button>
+                ${currentRole !== 'guru' ? `
+                    <button class="btn-edit" data-edit-bahan="${item.id}">Edit</button>
+                    <button class="btn-delete" data-hapus-bahan="${item.id}">Hapus</button>
+                    <button class="btn-pakai" data-pakai-bahan='${JSON.stringify({id:item.id,nama:item.nama_bahan,stok:item.jumlah,satuan:item.satuan})}'>Pakai</button>
+                ` : '<span style="color:#888;">-</span>'}
             </td></tr>`;
     });
 
     html += '</tbody></table>';
     container.innerHTML = html;
 
-    container.querySelectorAll('[data-edit-bahan]').forEach(btn => btn.addEventListener('click', () => editBahan(parseInt(btn.getAttribute('data-edit-bahan')))));
-    container.querySelectorAll('[data-hapus-bahan]').forEach(btn => btn.addEventListener('click', () => hapusBahan(parseInt(btn.getAttribute('data-hapus-bahan')))));
-    container.querySelectorAll('[data-pakai-bahan]').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const d = JSON.parse(this.getAttribute('data-pakai-bahan'));
-            bukaModalPakai(d.id, d.nama, d.stok, d.satuan);
+    if (currentRole !== 'guru') {
+        container.querySelectorAll('[data-edit-bahan]').forEach(btn => btn.addEventListener('click', () => editBahan(parseInt(btn.getAttribute('data-edit-bahan')))));
+        container.querySelectorAll('[data-hapus-bahan]').forEach(btn => btn.addEventListener('click', () => hapusBahan(parseInt(btn.getAttribute('data-hapus-bahan')))));
+        container.querySelectorAll('[data-pakai-bahan]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const d = JSON.parse(this.getAttribute('data-pakai-bahan'));
+                bukaModalPakai(d.id, d.nama, d.stok, d.satuan);
+            });
         });
-    });
+    }
 }
 
 function bukaModalPakai(id, nama, stok, satuan) {

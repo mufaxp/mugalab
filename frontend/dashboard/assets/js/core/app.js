@@ -4,6 +4,50 @@
  */
 
 function initSidebar() {
+    const currentRole = getRole(); // 'admin', 'laboran', 'guru'
+
+    // Aturan akses panel berdasarkan role
+    const menuRules = {
+        admin: [
+            'jadwal',
+            'inventaris',
+            'laporan',
+            'riwayat',
+            'laprak',
+            'pengajuan',
+            'peminjaman',
+            'kelola-lab',
+            'user'
+        ],
+        laboran: [
+            'jadwal',
+            'inventaris',
+            'laporan',
+            'riwayat',
+            'laprak',
+            'pengajuan',
+            'peminjaman'
+        ],
+        guru: [
+            'inventaris',
+            'laporan',
+            'riwayat',
+            'laprak',
+            'peminjaman'
+        ]
+    };
+
+    const allowedPanels = menuRules[currentRole] || menuRules.guru;
+
+    // Sembunyikan item sidebar yang tidak diizinkan
+    document.querySelectorAll('.sidebar-item').forEach(item => {
+        const panel = item.getAttribute('data-panel');
+        if (!allowedPanels.includes(panel)) {
+            item.style.display = 'none';
+        }
+    });
+
+    // Lanjutkan logika navigasi seperti biasa
     const sidebarItems = document.querySelectorAll('.sidebar-item');
     const panels = document.querySelectorAll('.panel');
 

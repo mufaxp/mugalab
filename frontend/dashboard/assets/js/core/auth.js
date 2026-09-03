@@ -36,3 +36,8 @@ function initLogoutButton() {
     const btn = document.getElementById('logoutBtn');
     if (btn) btn.addEventListener('click', logout);
 }
+function getRole() {
+    return localStorage.getItem('role') || 'guru';
+}
+
+window.getRole = getRole;

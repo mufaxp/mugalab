@@ -295,4 +295,23 @@ document.addEventListener('DOMContentLoaded', function() {
         const labId = labs.length > 0 ? labs[currentLabIndex].id : null;
         loadJadwal(formatDateISO(currentSunday), labId);
     });
+
+    async function loadSettings() {
+        try {
+            const res = await fetch('/api/settings/public');
+            const data = await res.json();
+
+            if (data.nama_sekolah) {
+                document.getElementById('nama_sekolah_display').textContent = data.nama_sekolah;
+            }
+            if (data.nama_lab) {
+                document.getElementById('nama_lab_display').textContent = data.nama_lab;
+            }
+        } catch (err) {
+            console.warn('Gagal memuat pengaturan:', err);
+        }
+    }
+
+    // Panggil saat halaman dimuat
+    loadSettings();
 });

@@ -265,8 +265,22 @@
             <!-- Panel Pengaturan -->
             <div id="setting" class="panel">
                 <div class="panel-header">
-                    <h2>⚙️ Pengaturan</h2>
+                    <h2>⚙️ Pengaturan Web</h2>
                 </div>
+                <p>Atur nama sekolah dan nama lab yang tampil di landing page.</p>
+                <form id="formSettings" style="max-width:500px;margin-top:20px;">
+                    <div class="form-group">
+                        <label for="setting_nama_sekolah">Nama Sekolah</label>
+                        <input type="text" id="setting_nama_sekolah" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="setting_nama_lab">Nama Lab</label>
+                        <input type="text" id="setting_nama_lab" class="form-input" required>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="submit" class="btn-simpan">Simpan</button>
+                    </div>
+                </form>
             </div>
         </main>
     </div>
@@ -829,7 +843,8 @@
     <script src="/dashboard/assets/js/modules/inventaris/sarana.js?v=2.2"></script>
     <script src="/dashboard/assets/js/modules/peminjaman/peminjaman.js"></script>    
     <script src="/dashboard/assets/js/modules/user/user.js"></script>
+    <script src="/dashboard/assets/js/modules/setting/setting.js?v=1"></script>
     <!-- Orchestrator -->
-    <script src="/dashboard/assets/js/main.js?v=2.1"></script>
+    <script src="/dashboard/assets/js/main.js?v=2.2"></script>
 </body>
 </html>

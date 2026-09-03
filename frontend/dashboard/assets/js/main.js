@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     } else {
         console.warn('initManajemenUser tidak ditemukan');
     }
+    if (typeof initSetting === 'function') await initSetting();
 
     console.log('✅ Dashboard siap — semua modul terinisialisasi');
 });

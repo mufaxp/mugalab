@@ -1128,6 +1128,54 @@ app.delete('/api/users/:id', verifyToken, requireRole('admin'), async (req, res)
     }
 });
 
+// PENGATURAN WEB (SETTINGS)
+// GET pengaturan publik (untuk landing page)
+app.get('/api/settings/public', async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            "SELECT setting_key, setting_value FROM settings WHERE setting_key IN ('nama_sekolah', 'nama_lab')"
+        );
+        const settings = {};
+        rows.forEach(r => { settings[r.setting_key] = r.setting_value; });
+        return res.status(200).json(settings);
+    } catch (error) {
+        console.error('Error ambil settings:', error);
+        return res.status(500).json({ message: 'Gagal mengambil pengaturan' });
+    }
+});
+
+// GET pengaturan untuk dashboard (admin)
+app.get('/api/settings', verifyToken, requireRole('admin'), async (req, res) => {
+    try {
+        const [rows] = await pool.query("SELECT setting_key, setting_value FROM settings");
+        return res.status(200).json(rows);
+    } catch (error) {
+        console.error('Error ambil settings:', error);
+        return res.status(500).json({ message: 'Gagal mengambil pengaturan' });
+    }
+});
+
+// PUT update pengaturan (admin)
+app.put('/api/settings', verifyToken, requireRole('admin'), async (req, res) => {
+    const { nama_sekolah, nama_lab } = req.body;
+
+    if (!nama_sekolah || !nama_lab) {
+        return res.status(400).json({ message: 'Nama sekolah dan nama lab wajib diisi' });
+    }
+
+    try {
+        await pool.query(
+            "INSERT INTO settings (setting_key, setting_value) VALUES ('nama_sekolah', ?), ('nama_lab', ?) " +
+            "ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)",
+            [nama_sekolah, nama_lab]
+        );
+        return res.status(200).json({ message: 'Pengaturan berhasil disimpan' });
+    } catch (error) {
+        console.error('Error update settings:', error);
+        return res.status(500).json({ message: 'Gagal menyimpan pengaturan' });
+    }
+});
+
 // 404 handler (harus diletakkan paling bawah)
 app.use((req, res) => {
     res.status(404).json({ error: 'Route tidak ditemukan', path: req.originalUrl });

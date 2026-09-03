@@ -4,17 +4,15 @@
  */
 
 function initSidebar() {
-    // Ambil role langsung dari localStorage
-    const currentRole = localStorage.getItem('role') || 'guru';
+    const role = localStorage.getItem('role') || 'guru';
 
-    // Aturan akses panel berdasarkan role
     const menuRules = {
         admin: [
             'jadwal',
             'inventaris',
             'laporan',
             'riwayat',
-            'laprak',
+            'laporan-praktikum',
             'pengajuan',
             'peminjaman',
             'kelola-lab',
@@ -25,7 +23,7 @@ function initSidebar() {
             'inventaris',
             'laporan',
             'riwayat',
-            'laprak',
+            'laporan-praktikum',
             'pengajuan',
             'peminjaman'
         ],
@@ -34,15 +32,13 @@ function initSidebar() {
             'inventaris',
             'laporan',
             'riwayat',
-            'laprak',
+            'laporan-praktikum',
             'peminjaman'
         ]
     };
 
-    const allowedPanels = menuRules[currentRole] || menuRules.guru;
-
-    // Debug — lihat di console
-    console.log('Role aktif:', currentRole);
+    const allowedPanels = menuRules[role] || menuRules.guru;
+    console.log('Role aktif:', role);
     console.log('Panel diizinkan:', allowedPanels);
 
     // Sembunyikan/tampilkan menu sesuai role
@@ -63,7 +59,7 @@ function initSidebar() {
     const firstPanelEl = document.getElementById(firstPanel);
     if (firstPanelEl) firstPanelEl.classList.add('active');
 
-    // Menu aktif di sidebar
+    // Tandai menu aktif di sidebar
     document.querySelectorAll('.sidebar-item').forEach(item => {
         item.classList.remove('active');
         if (item.getAttribute('data-panel') === firstPanel) {
@@ -117,6 +113,7 @@ function initHamburger() {
     }
 
     overlay.addEventListener('click', closeSidebar);
+
     window.addEventListener('resize', function() {
         if (window.innerWidth > 640 && sidebarNav && sidebarNav.classList.contains('active')) {
             closeSidebar();

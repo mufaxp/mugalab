@@ -34,7 +34,8 @@ async function loadPengajuan() {
     if (!container) return;
 
     try {
-        const data = await apiGet('/api/pengajuan');
+        const response = await apiGet('/api/pengajuan');
+        const data = Array.isArray(response) ? response : (response.data || []);
         renderPengajuan(data);
     } catch (err) {
         container.innerHTML = '<p style="color:#c62828;text-align:center;">Gagal memuat data pengajuan.</p>';

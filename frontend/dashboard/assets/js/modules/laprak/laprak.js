@@ -105,7 +105,8 @@ async function loadLaporanPraktikum() {
     try {
         const labId = document.getElementById('lpLabFilter')?.value;
         const params = (labId && labId !== 'all') ? { lab_id: labId } : {};
-        const data = await apiGet('/api/laporan-praktikum', params);
+        const response = await apiGet('/api/laporan-praktikum', params);
+        const data = Array.isArray(response) ? response : (response.data || []);
         renderLaporanPraktikum(data);
     } catch (err) {
         container.innerHTML = '<p style="color:#c62828;text-align:center;">Gagal memuat data laporan.</p>';
@@ -202,8 +203,10 @@ async function hapusLaporanPraktikum(id) {
 // method search alat dan bahan untuk laporan kegiatan praktikum
 async function loadAlatBahanForLP() {
     try {
-        allAlatForLP = await apiGet('/api/alat');
-        allBahanForLP = await apiGet('/api/bahan');
+        const respAlat = await apiGet('/api/alat');
+        const respBahan = await apiGet('/api/bahan');
+        allAlatForLP = Array.isArray(respAlat) ? respAlat : (respAlat.data || []);
+        allBahanForLP = Array.isArray(respBahan) ? respBahan : (respBahan.data || []);
     } catch (err) {
         console.error('Gagal load alat/bahan:', err);
     }

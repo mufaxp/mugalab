@@ -61,7 +61,8 @@ async function loadUser() {
     const container = document.getElementById('userList');
     if (!container) return;
     try {
-        allUserData = await apiGet('/api/users');
+        const response = await apiGet('/api/users');
+        allUserData = Array.isArray(response) ? response : (response.data || []);
         renderUser(allUserData);
     } catch (err) {
         container.innerHTML = '<p style="color:#c62828;">Gagal memuat data user.</p>';

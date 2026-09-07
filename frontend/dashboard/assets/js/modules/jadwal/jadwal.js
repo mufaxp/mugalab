@@ -130,8 +130,11 @@ async function loadDashboardJadwal(labId = null) {
             paramsDepan.lab_id = labId;
         }
 
-        const dataIni = await apiGet('/api/jadwal', paramsIni);
-        const dataDepan = await apiGet('/api/jadwal', paramsDepan);
+        const responseIni = await apiGet('/api/jadwal', paramsIni);
+        const responseDepan = await apiGet('/api/jadwal', paramsDepan);
+
+        const dataIni = Array.isArray(responseIni) ? responseIni : (responseIni.data || []);
+        const dataDepan = Array.isArray(responseDepan) ? responseDepan : (responseDepan.data || []);
 
         renderJadwalSection(pekanIniEl, dataIni, 'pekan ini');
         renderJadwalSection(pekanDepanEl, dataDepan, 'pekan depan');

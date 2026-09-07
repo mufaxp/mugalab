@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const response = await fetch('/api/lab');
             const json = await response.json();
-            labs = json.data || json;
+            labs = json.data || [];   // ambil array dari property data
             if (labs.length > 0) {
                 updateLabDisplay();
             }
@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const response = await fetch(url);
             const json = await response.json();
-            const data = json.data || json;
+            const data = Array.isArray(json) ? json : (json.data || []);
             renderJadwal(data);
         } catch (error) {
             console.error('Gagal memuat jadwal:', error);
@@ -302,8 +302,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const res = await fetch('/api/settings/public');
             const json = await res.json();
-            const data = json.data || json;
-
+            const data = json.data || json;   // data berupa objek { nama_sekolah, nama_lab }
             if (data.nama_sekolah) {
                 document.getElementById('nama_sekolah_display').textContent = data.nama_sekolah;
             }

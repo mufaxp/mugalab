@@ -83,7 +83,8 @@ async function loadAlat() {
     try {
         const labId = document.getElementById('invLabFilter')?.value;
         const params = (labId && labId !== 'all') ? { lab_id: labId } : {};
-        allAlatData = await apiGet('/api/alat', params);
+        const response = await apiGet('/api/alat', params);
+        allAlatData = Array.isArray(response) ? response : (response.data || []);
         renderAlat(allAlatData);
     } catch (err) {
         container.innerHTML = '<p style="color:#c62828;text-align:center;">Gagal memuat data alat.</p>';

@@ -100,7 +100,8 @@ async function loadBahan() {
     try {
         const labId = document.getElementById('invLabFilter')?.value;
         const params = (labId && labId !== 'all') ? { lab_id: labId } : {};
-        allBahanData = await apiGet('/api/bahan', params);
+        const response = await apiGet('/api/bahan', params);
+        allBahanData = Array.isArray(response) ? response : (response.data || []);
         renderBahan(allBahanData);
     } catch (err) {
         container.innerHTML = '<p style="color:#c62828;text-align:center;">Gagal memuat data bahan.</p>';

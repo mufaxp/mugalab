@@ -75,9 +75,12 @@ async function loadSarana() {
     try {
         const labId = document.getElementById('invLabFilter')?.value;
         const params = (labId && labId !== 'all') ? { lab_id: labId } : {};
-        allSaranaData = await apiGet('/api/sarana', params);
+        const response = await apiGet('/api/sarana', params);
+        allSaranaData = Array.isArray(response) ? response : (response.data || []);
         renderSarana(allSaranaData);
-    } catch (err) { container.innerHTML = '<p style="color:#c62828;">Gagal memuat data sarana.</p>'; }
+    } catch (err) {
+        container.innerHTML = '<p style="color:#c62828;">Gagal memuat data sarana.</p>';
+    }
 }
 
 function renderSarana(data) {

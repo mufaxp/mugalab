@@ -43,7 +43,10 @@ async function loadLabOptions(selectId, includeAll = false) {
     if (!select) return;
 
     try {
-        const labs = await apiGet('/api/lab');
+        const response = await apiGet('/api/lab');
+        // respons bisa array langsung (jika belum diubah) atau { success, data }
+        const labs = Array.isArray(response) ? response : (response.data || []);
+
         let html = '';
         if (includeAll) {
             html += '<option value="all">Semua Lab</option>';

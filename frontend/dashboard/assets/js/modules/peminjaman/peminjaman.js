@@ -237,7 +237,8 @@ async function loadPeminjaman(jenis) {
         const params = { jenis };
         if (labId && labId !== 'all') params.lab_id = labId;
 
-        const data = await apiGet('/api/peminjaman', params);
+        const response = await apiGet('/api/peminjaman', params);
+        const data = Array.isArray(response) ? response : (response.data || []);
         if (jenis === 'alat') pinjamAlatData = data;
         else pinjamSaranaData = data;
 

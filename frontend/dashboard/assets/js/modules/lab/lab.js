@@ -53,7 +53,8 @@ async function loadLabData() {
     if (!container) return;
 
     try {
-        allLabData = await apiGet('/api/lab');
+        const response = await apiGet('/api/lab');
+        allLabData = Array.isArray(response) ? response : (response.data || []);
         renderLab(allLabData);
     } catch (err) {
         container.innerHTML = '<p style="color:#c62828;text-align:center;">Gagal memuat data lab.</p>';

@@ -109,7 +109,8 @@ async function loadLaporan() {
     try {
         const labId = document.getElementById('laporanLabFilter')?.value;
         const params = (labId && labId !== 'all') ? { lab_id: labId } : {};
-        const data = await apiGet('/api/laporan-kerusakan', params);
+        const response = await apiGet('/api/laporan-kerusakan', params);
+        const data = Array.isArray(response) ? response : (response.data || []);
         renderLaporan(data);
     } catch (err) {
         container.innerHTML = '<p style="color:#c62828;text-align:center;">Gagal memuat data laporan.</p>';

@@ -21,7 +21,8 @@ async function initRiwayatBahan() {
         try {
             const labId = getRiwayatLabFilter();
             const params = labId ? { lab_id: labId } : {};
-            const data = await apiGet('/api/bahan/pakai', params);
+            const response = await apiGet('/api/bahan/pakai', params);
+            const data = Array.isArray(response) ? response : (response.data || []);
             if (!data || !data.length) return alert('Tidak ada data untuk diexport');
 
             const excelData = data.map((item, index) => ({
@@ -68,7 +69,8 @@ async function loadRiwayat() {
     try {
         const labId = document.getElementById('riwayatLabFilter')?.value;
         const params = (labId && labId !== 'all') ? { lab_id: labId } : {};
-        const data = await apiGet('/api/bahan/pakai', params);
+        const response = await apiGet('/api/bahan/pakai', params);
+        const data = Array.isArray(response) ? response : (response.data || []);
         renderRiwayat(data);
     } catch (err) {
         container.innerHTML = '<p style="color:#c62828;text-align:center;">Gagal memuat data riwayat.</p>';

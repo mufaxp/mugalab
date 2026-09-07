@@ -16,18 +16,19 @@ async function initSetting() {
 
     // Muat data saat ini
     async function loadCurrentSettings() {
-        try {
-            const res = await apiGet('/api/settings');
-            if (Array.isArray(res)) {
-                const namaSekolah = res.find(s => s.setting_key === 'nama_sekolah')?.setting_value || '';
-                const namaLab = res.find(s => s.setting_key === 'nama_lab')?.setting_value || '';
-                inpSekolah.value = namaSekolah;
-                inpLab.value = namaLab;
-            }
-        } catch (err) {
-            console.warn('Gagal memuat pengaturan:', err);
+    try {
+        const res = await apiGet('/api/settings');
+        const settingsArray = Array.isArray(res) ? res : (res.data || []);
+        if (Array.isArray(settingsArray)) {
+            const namaSekolah = settingsArray.find(s => s.setting_key === 'nama_sekolah')?.setting_value || '';
+            const namaLab = settingsArray.find(s => s.setting_key === 'nama_lab')?.setting_value || '';
+            inpSekolah.value = namaSekolah;
+            inpLab.value = namaLab;
         }
+    } catch (err) {
+        console.warn('Gagal memuat pengaturan:', err);
     }
+}
 
     // Simpan perubahan
     form.addEventListener('submit', async function(e) {

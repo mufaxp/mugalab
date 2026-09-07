@@ -52,7 +52,8 @@ document.addEventListener('DOMContentLoaded', function() {
     async function loadLabs() {
         try {
             const response = await fetch('/api/lab');
-            labs = await response.json();
+            const json = await response.json();
+            labs = json.data || json;
             if (labs.length > 0) {
                 updateLabDisplay();
             }
@@ -107,7 +108,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (labId) url += `&lab_id=${labId}`;
 
             const response = await fetch(url);
-            const data = await response.json();
+            const json = await response.json();
+            const data = json.data || json;
             renderJadwal(data);
         } catch (error) {
             console.error('Gagal memuat jadwal:', error);

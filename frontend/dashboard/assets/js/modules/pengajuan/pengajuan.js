@@ -17,7 +17,9 @@ async function initPengajuan() {
 
 async function loadlabsForPengajuan() {
     try {
-        allLabsData = await apiGet('/api/lab');
+        const response = await apiGet('/api/lab');
+        // Ambil array lab dari respons baru { success, data }
+        allLabsData = Array.isArray(response) ? response : (response.data || []);
     } catch (err) {
         console.warn('Gagal memuat daftar lab:', err);
         allLabsData = [];
@@ -38,6 +40,8 @@ async function loadPengajuan() {
         const data = Array.isArray(response) ? response : (response.data || []);
         renderPengajuan(data);
     } catch (err) {
+        // Tampilkan error di console untuk memudahkan debugging
+        console.error('Error di loadPengajuan:', err);
         container.innerHTML = '<p style="color:#c62828;text-align:center;">Gagal memuat data pengajuan.</p>';
     }
 }

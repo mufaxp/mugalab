@@ -8,7 +8,8 @@ async function apiGet(url, params = {}) {
     const res = await fetch(fullUrl, {
         headers: { 'Authorization': `Bearer ${getToken()}` }
     });
-    return res.json();
+    const json = await res.json();
+    return json.data !== undefined ? json.data : json;
 }
 
 async function apiPost(url, body = {}) {
@@ -20,7 +21,8 @@ async function apiPost(url, body = {}) {
         },
         body: JSON.stringify(body)
     });
-    return res.json();
+    const json = await res.json();
+    return json.data !== undefined ? json.data : json;
 }
 
 async function apiPut(url, body = {}) {
@@ -32,7 +34,8 @@ async function apiPut(url, body = {}) {
         },
         body: JSON.stringify(body)
     });
-    return res.json();
+    const json = await res.json();
+    return json.data !== undefined ? json.data : json;
 }
 
 async function apiDelete(url) {
@@ -40,7 +43,8 @@ async function apiDelete(url) {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${getToken()}` }
     });
-    return res.json();
+    const json = await res.json();
+    return json.data !== undefined ? json.data : json;
 }
 
 window.apiGet = apiGet;

@@ -109,13 +109,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const response = await fetch(url);
             const json = await response.json();
-
-            // ==== LOG SEMENTARA ====
-            console.log('Respons /api/jadwal/public:', json);
-            console.log('Tipe json.data:', typeof json.data);
-            console.log('Isi json.data:', json.data);
-            // =======================
-
             const data = json.data || json;
             renderJadwal(data);
         } catch (error) {

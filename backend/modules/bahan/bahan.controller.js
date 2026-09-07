@@ -20,24 +20,38 @@ async function getAll(req, res) {
  * POST tambah bahan baru
  */
 async function create(req, res) {
-    const { kode_bahan, nama_bahan, produsen, stok_awal, satuan, tanggal_kadaluarsa, lab_id, keterangan } = req.body;
+    const {
+        kode_bahan,
+        nama_bahan,
+        produsen,
+        stok_awal,
+        stok_akhir,
+        satuan,
+        tanggal_kadaluarsa,
+        lab_id,
+        keterangan
+    } = req.body;
 
-    // Validasi field wajib
     if (!kode_bahan || !nama_bahan || !stok_awal) {
         return error(res, 'Kode, nama, dan stok awal wajib diisi', 400);
     }
 
     try {
+        const stokAwal = parseFloat(stok_awal) || 0;
+        const stokAkhir = stok_akhir !== undefined && stok_akhir !== '' ? parseFloat(stok_akhir) : stokAwal;
+
         const result = await bahanService.create(
             kode_bahan,
             nama_bahan,
             produsen || '-',
-            parseFloat(stok_awal),
+            stokAwal,
+            stokAkhir,
             satuan || 'gram',
             tanggal_kadaluarsa || null,
             lab_id || 1,
             keterangan || ''
         );
+
         return success(res, { id: result.insertId }, 'Bahan berhasil ditambahkan', 201);
     } catch (err) {
         if (err.code === 'ER_DUP_ENTRY') {

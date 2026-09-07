@@ -20,10 +20,10 @@ async function getAll(labId = null) {
 /**
  * Tambah bahan baru. stok_awal dan stok_akhir diisi sama.
  */
-async function create(kode_bahan, nama_bahan, produsen, stok_awal, satuan, tanggal_kadaluarsa, lab_id, keterangan) {
+async function create(kode_bahan, nama_bahan, produsen, stok_awal, stok_akhir, satuan, tanggal_kadaluarsa, lab_id, keterangan) {
     const [result] = await pool.query(
         'INSERT INTO bahan (kode_bahan, nama_bahan, produsen, stok_awal, stok_akhir, satuan, tanggal_kadaluarsa, lab_id, keterangan) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [kode_bahan, nama_bahan, produsen, stok_awal, stok_awal, satuan, tanggal_kadaluarsa, lab_id, keterangan]
+        [kode_bahan, nama_bahan, produsen, stok_awal, stok_akhir, satuan, tanggal_kadaluarsa, lab_id, keterangan]
     );
     return result;
 }

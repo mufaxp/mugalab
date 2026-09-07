@@ -22,6 +22,7 @@ async function initBahan() {
         bahanEditId = null;
         document.getElementById('modalBahanTitle').textContent = 'Tambah Bahan';
         document.getElementById('formBahan').reset();
+        document.getElementById('bahan_stok_akhir').value = '';  // ✅ pastikan kosong
         openModal('modalBahan');
     });
 

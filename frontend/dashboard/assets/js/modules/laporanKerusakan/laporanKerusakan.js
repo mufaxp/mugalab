@@ -28,7 +28,8 @@ async function initLaporanKerusakan() {
 
         // Load alat untuk search
         try {
-            window._laporanAlatList = await apiGet('/api/alat');
+            const response = await apiGet('/api/alat');
+            window._laporanAlatList = Array.isArray(response) ? response : (response.data || []);
         } catch (err) {
             window._laporanAlatList = [];
         }

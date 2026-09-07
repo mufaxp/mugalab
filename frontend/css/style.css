@@ -1,13 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-/* variabel warna muhammadiyah */
 :root {
-    --nm-color-primary: #009c48;     /* Hijau Utama */
+    --nm-color-primary: #009c48;
     --nm-color-dark: #1a1a1a;
     --nm-color-text: #444444;
     --nm-border: #e5e5e5;
-    --muh-green: #0e703f;            /* Hijau Muhammadiyah */
-    --muh-gold: #cda851;             /* Emas Muhammadiyah */
+    --muh-green: #0e703f;
+    --muh-gold: #cda851;
 }
 
 *, *::before, *::after {

@@ -1,4 +1,3 @@
-// Format response standar untuk API
 function success(res, data, message = 'OK', statusCode = 200) {
     return res.status(statusCode).json({
         success: true,

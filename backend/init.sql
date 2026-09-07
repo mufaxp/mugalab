@@ -1,16 +1,21 @@
+-- ============================================================
 -- MUGALAB - DATABASE INITIALIZATION SCRIPT
 -- Database: `lab-db`
+-- Versi: 0.51.0 (dengan penyesuaian skema)
+-- ============================================================
 
--- 1. Buat database jika belum ada
+-- Buat database jika belum ada
 CREATE DATABASE IF NOT EXISTS `lab-db`
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
 
--- 2. Gunakan database lab-db
+-- Gunakan database
 USE `lab-db`;
 
+-- ============================================================
 -- TABEL: lab
 -- Menyimpan data ruang laboratorium
+-- ============================================================
 CREATE TABLE IF NOT EXISTS `lab` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `nama` VARCHAR(100) NOT NULL,
@@ -18,19 +23,23 @@ CREATE TABLE IF NOT EXISTS `lab` (
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
+-- ============================================================
 -- TABEL: users
--- Menyimpan data pengguna yang bisa login ke dashboard
+-- Menyimpan data pengguna dashboard
+-- ============================================================
 CREATE TABLE IF NOT EXISTS `users` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `username` VARCHAR(50) NOT NULL UNIQUE,
-    `password` VARCHAR(255) NOT NULL,          -- Hash bcrypt
+    `password` VARCHAR(255) NOT NULL,
     `nama` VARCHAR(100) NOT NULL,
-    `role` ENUM('admin', 'laboran', 'guru') NOT NULL DEFAULT 'guru',
+    `role` ENUM('admin','laboran','guru') DEFAULT 'guru',
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
+-- ============================================================
 -- TABEL: jadwal
--- Menyimpan jadwal kegiatan lab per tanggal, jam, dan ruangan
+-- Menyimpan jadwal kegiatan lab
+-- ============================================================
 CREATE TABLE IF NOT EXISTS `jadwal` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `penanggung_jawab` VARCHAR(100) NOT NULL,
@@ -42,20 +51,22 @@ CREATE TABLE IF NOT EXISTS `jadwal` (
     `jam_selesai` INT NOT NULL,
     `lab_id` INT DEFAULT 1,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (`lab_id`) REFERENCES `lab`(`id`)
-        ON DELETE SET NULL
+    FOREIGN KEY (`lab_id`) REFERENCES `lab`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
+-- ============================================================
 -- TABEL: alat
 -- Inventaris alat laboratorium
+-- ============================================================
 CREATE TABLE IF NOT EXISTS `alat` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `kode_alat` VARCHAR(20) NOT NULL UNIQUE,
     `nama_alat` VARCHAR(150) NOT NULL,
+    `spek` VARCHAR(255) DEFAULT '-',          -- kolom baru
     `produsen` VARCHAR(100) DEFAULT '-',
     `jumlah` INT NOT NULL DEFAULT 0,
     `jumlah_rusak` INT NOT NULL DEFAULT 0,
-    `kondisi` ENUM('baik', 'rusak', 'diperbaiki') DEFAULT 'baik',
+    `kondisi` ENUM('baik','rusak','diperbaiki') DEFAULT 'baik',
     `lab_id` INT DEFAULT 1,
     `keterangan` TEXT,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -63,14 +74,17 @@ CREATE TABLE IF NOT EXISTS `alat` (
     FOREIGN KEY (`lab_id`) REFERENCES `lab`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
+-- ============================================================
 -- TABEL: bahan
 -- Inventaris bahan habis pakai
+-- ============================================================
 CREATE TABLE IF NOT EXISTS `bahan` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `kode_bahan` VARCHAR(20) NOT NULL UNIQUE,
     `nama_bahan` VARCHAR(150) NOT NULL,
     `produsen` VARCHAR(100) DEFAULT '-',
-    `jumlah` DECIMAL(10,2) NOT NULL DEFAULT 0,
+    `stok_awal` DECIMAL(10,2) NOT NULL DEFAULT 0,   -- pengganti jumlah
+    `stok_akhir` DECIMAL(10,2) NOT NULL DEFAULT 0,  -- stok terkini
     `satuan` VARCHAR(20) NOT NULL DEFAULT 'gram',
     `tanggal_kadaluarsa` DATE NULL,
     `lab_id` INT DEFAULT 1,
@@ -80,8 +94,10 @@ CREATE TABLE IF NOT EXISTS `bahan` (
     FOREIGN KEY (`lab_id`) REFERENCES `lab`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
+-- ============================================================
 -- TABEL: penggunaan_bahan
 -- Riwayat penggunaan bahan
+-- ============================================================
 CREATE TABLE IF NOT EXISTS `penggunaan_bahan` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `bahan_id` INT NOT NULL,
@@ -95,16 +111,19 @@ CREATE TABLE IF NOT EXISTS `penggunaan_bahan` (
     FOREIGN KEY (`bahan_id`) REFERENCES `bahan`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+-- ============================================================
 -- TABEL: sarana
 -- Inventaris sarana (jas lab, meja, kursi, dll)
+-- ============================================================
 CREATE TABLE IF NOT EXISTS `sarana` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `kode_sarana` VARCHAR(20) NOT NULL UNIQUE,
     `nama_sarana` VARCHAR(150) NOT NULL,
+    `spek` VARCHAR(255) DEFAULT '-',          -- kolom baru
     `produsen` VARCHAR(100) DEFAULT '-',
     `jumlah` INT NOT NULL DEFAULT 0,
     `jumlah_rusak` INT NOT NULL DEFAULT 0,
-    `kondisi` ENUM('baik', 'rusak', 'diperbaiki') DEFAULT 'baik',
+    `kondisi` ENUM('baik','rusak','diperbaiki') DEFAULT 'baik',
     `lab_id` INT DEFAULT 1,
     `keterangan` TEXT,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -112,23 +131,27 @@ CREATE TABLE IF NOT EXISTS `sarana` (
     FOREIGN KEY (`lab_id`) REFERENCES `lab`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
+-- ============================================================
 -- TABEL: laporan_kerusakan
 -- Laporan kerusakan alat/sarana
+-- ============================================================
 CREATE TABLE IF NOT EXISTS `laporan_kerusakan` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `alat_id` INT NOT NULL,                       -- Bisa alat atau sarana
+    `alat_id` INT NOT NULL,
     `jumlah_rusak` INT NOT NULL DEFAULT 1,
     `pelapor` VARCHAR(100) NOT NULL,
     `tanggal_lapor` DATE NOT NULL,
-    `status` ENUM('rusak', 'diperbaiki', 'selesai', 'dibuang') DEFAULT 'rusak',
+    `status` ENUM('rusak','diperbaiki','selesai','dibuang') DEFAULT 'rusak',
     `keterangan` TEXT,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (`alat_id`) REFERENCES `alat`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+-- ============================================================
 -- TABEL: laporan_praktikum
 -- Laporan kegiatan praktikum
+-- ============================================================
 CREATE TABLE IF NOT EXISTS `laporan_praktikum` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `jadwal_id` INT NULL,
@@ -149,8 +172,10 @@ CREATE TABLE IF NOT EXISTS `laporan_praktikum` (
     FOREIGN KEY (`lab_id`) REFERENCES `lab`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
+-- ============================================================
 -- TABEL: pengajuan_jadwal
--- Pengajuan jadwal dari pengguna (menunggu ACC admin)
+-- Pengajuan jadwal dari pengguna
+-- ============================================================
 CREATE TABLE IF NOT EXISTS `pengajuan_jadwal` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `pengaju` VARCHAR(100),
@@ -163,7 +188,7 @@ CREATE TABLE IF NOT EXISTS `pengajuan_jadwal` (
     `jam_mulai` INT,
     `jam_selesai` INT,
     `lab_id` INT,
-    `status` ENUM('pending', 'diterima', 'ditolak') DEFAULT 'pending',
+    `status` ENUM('pending','diterima','ditolak') DEFAULT 'pending',
     `alasan_tolak` TEXT,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `processed_at` TIMESTAMP NULL,
@@ -171,12 +196,14 @@ CREATE TABLE IF NOT EXISTS `pengajuan_jadwal` (
     FOREIGN KEY (`lab_id`) REFERENCES `lab`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
+-- ============================================================
 -- TABEL: peminjaman
 -- Peminjaman alat/sarana
+-- ============================================================
 CREATE TABLE IF NOT EXISTS `peminjaman` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `pemohon` VARCHAR(100) NOT NULL,
-    `jenis` ENUM('alat', 'sarana') NOT NULL,
+    `jenis` ENUM('alat','sarana') NOT NULL,
     `alat_id` INT NULL,
     `sarana_id` INT NULL,
     `jumlah` INT DEFAULT 1,
@@ -185,16 +212,44 @@ CREATE TABLE IF NOT EXISTS `peminjaman` (
     `tanggal_kembali` DATE NULL,
     `foto_pinjam` VARCHAR(255),
     `foto_kembali` VARCHAR(255),
-    `status` ENUM('dipinjam', 'dikembalikan') DEFAULT 'dipinjam',
+    `status` ENUM('dipinjam','dikembalikan') DEFAULT 'dipinjam',
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (`alat_id`) REFERENCES `alat`(`id`) ON DELETE SET NULL,
     FOREIGN KEY (`sarana_id`) REFERENCES `sarana`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
--- DATA AWAL: lab
+-- ============================================================
+-- TABEL: settings
+-- Pengaturan web (nama sekolah, nama lab)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `settings` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `setting_key` VARCHAR(100) NOT NULL UNIQUE,
+    `setting_value` TEXT,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- ============================================================
+-- DATA AWAL
+-- ============================================================
+
+-- Lab default
 INSERT INTO `lab` (`id`, `nama`, `deskripsi`) VALUES
     (1, 'Lab Biologi-Kimia', 'Praktikum Biologi dan Kimia'),
     (2, 'Lab Fisika', 'Praktikum Fisika')
 ON DUPLICATE KEY UPDATE
     `nama` = VALUES(`nama`),
     `deskripsi` = VALUES(`deskripsi`);
+
+-- Pengaturan default
+INSERT INTO `settings` (`setting_key`, `setting_value`) VALUES
+    ('nama_sekolah', 'SMA'),
+    ('nama_lab', 'Laboratorium IPA')
+ON DUPLICATE KEY UPDATE
+    `setting_value` = VALUES(`setting_value`);
+
+-- User admin default (password: admin123, di-hash dengan bcrypt)
+-- Jalankan sekali untuk membuat akun admin pertama
+-- Ganti password hash sesuai kebutuhan, atau buat melalui endpoint setelah server berjalan
+-- Contoh: INSERT INTO users (username, password, nama, role) VALUES
+-- ('admin', '$2a$10$...', 'Administrator', 'admin');

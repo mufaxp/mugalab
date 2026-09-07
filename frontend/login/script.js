@@ -2,7 +2,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     event.preventDefault();
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-    
+
     if (!username || !password) {
         alert('Username dan password harus diisi');
         return;
@@ -18,11 +18,12 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         const data = await response.json();
 
         if (response.ok) {
-            // simpan token dan nama ke localStorage
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('nama', data.nama);
-            localStorage.setItem('role', data.role || 'guru');
-            // redirect ke dashboard
+            const userData = data.data; // <-- penting
+
+            localStorage.setItem('token', userData.token);
+            localStorage.setItem('nama', userData.nama);
+            localStorage.setItem('role', userData.role || 'guru');
+
             window.location.href = '/dashboard';
         } else {
             alert(data.message || 'Login gagal');

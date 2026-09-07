@@ -32,6 +32,7 @@ async function initBahan() {
             nama_bahan: document.getElementById('bahan_nama').value,
             produsen: document.getElementById('bahan_produsen').value || '-',
             stok_awal: parseFloat(document.getElementById('bahan_stok_awal').value),
+            stok_akhir: parseFloat(document.getElementById('bahan_stok_akhir').value) || 0,
             satuan: document.getElementById('bahan_satuan').value,
             tanggal_kadaluarsa: document.getElementById('bahan_kadaluarsa').value || null,
             lab_id: parseInt(document.getElementById('bahan_lab').value),

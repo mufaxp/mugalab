@@ -56,13 +56,16 @@ async function update(req, res) {
     const { kode_bahan, nama_bahan, produsen, stok_awal, stok_akhir, satuan, tanggal_kadaluarsa, lab_id, keterangan } = req.body;
 
     try {
+        const stokAwal = parseFloat(stok_awal) || 0;
+        const stokAkhir = stok_akhir !== undefined && stok_akhir !== '' ? parseFloat(stok_akhir) : stokAwal;
+
         const result = await bahanService.update(
             id,
             kode_bahan,
             nama_bahan,
             produsen || '-',
-            parseFloat(stok_awal),
-            parseFloat(stok_akhir),
+            stokAwal,
+            stokAkhir,
             satuan || 'gram',
             tanggal_kadaluarsa || null,
             lab_id || 1,

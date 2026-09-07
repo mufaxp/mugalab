@@ -8,8 +8,8 @@ async function apiGet(url, params = {}) {
     const res = await fetch(fullUrl, {
         headers: { 'Authorization': `Bearer ${getToken()}` }
     });
-    const json = await res.json();
-    return json.data !== undefined ? json.data : json;
+    const data = await res.json().catch(() => ({}));
+    return data ?? {};
 }
 
 async function apiPost(url, body = {}) {
@@ -21,8 +21,8 @@ async function apiPost(url, body = {}) {
         },
         body: JSON.stringify(body)
     });
-    const json = await res.json();
-    return json.data !== undefined ? json.data : json;
+    const data = await res.json().catch(() => ({}));
+    return data ?? {};
 }
 
 async function apiPut(url, body = {}) {
@@ -34,8 +34,10 @@ async function apiPut(url, body = {}) {
         },
         body: JSON.stringify(body)
     });
-    const json = await res.json();
-    return json.data !== undefined ? json.data : json;
+
+    // Coba parse JSON, jika gagal atau null kembalikan objek kosong
+    const data = await res.json().catch(() => ({}));
+    return data ?? {};  // null/undefined diubah menjadi {}
 }
 
 async function apiDelete(url) {
@@ -43,8 +45,8 @@ async function apiDelete(url) {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${getToken()}` }
     });
-    const json = await res.json();
-    return json.data !== undefined ? json.data : json;
+    const data = await res.json().catch(() => ({}));
+    return data ?? {};
 }
 
 window.apiGet = apiGet;

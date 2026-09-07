@@ -301,7 +301,8 @@ document.addEventListener('DOMContentLoaded', function() {
     async function loadSettings() {
         try {
             const res = await fetch('/api/settings/public');
-            const data = await res.json();
+            const json = await res.json();
+            const data = json.data || json;
 
             if (data.nama_sekolah) {
                 document.getElementById('nama_sekolah_display').textContent = data.nama_sekolah;

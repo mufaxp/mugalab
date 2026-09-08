@@ -6,7 +6,6 @@ async function initPeminjaman() {
     // filter lab
     const pinjamLabFilter = document.getElementById('pinjamLabFilter');
     await loadLabOptions('pinjamLabFilter', true);
-    await loadLabOptions('pinjam_jenis'); // jika dropdown jenis lab dipakai
 
     if (pinjamLabFilter) {
         pinjamLabFilter.addEventListener('change', () => {

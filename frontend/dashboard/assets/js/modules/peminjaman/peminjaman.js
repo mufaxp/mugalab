@@ -128,8 +128,11 @@ let allSaranaForPinjam = [];
 
 async function loadAllItems() {
     try {
-        allAlatForPinjam = await apiGet('/api/alat');
-        allSaranaForPinjam = await apiGet('/api/sarana');
+        const respAlat = await apiGet('/api/alat');
+        const respSarana = await apiGet('/api/sarana');
+
+        allAlatForPinjam = Array.isArray(respAlat) ? respAlat : (respAlat.data || []);
+        allSaranaForPinjam = Array.isArray(respSarana) ? respSarana : (respSarana.data || []);
     } catch (err) {
         console.error('Gagal load item:', err);
     }

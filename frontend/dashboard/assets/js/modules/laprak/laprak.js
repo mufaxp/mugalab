@@ -9,6 +9,10 @@ let lpAlatList = [];
 let lpBahanList = [];
 let allAlatForLP = [];
 let allBahanForLP = [];
+let currentSettings = {
+    nama_sekolah: 'Nama Sekolah',
+    nama_lab: 'LABORATORIUM IPA'
+};
 
 async function initLaprak() {
     const lpLabFilter = document.getElementById('lpLabFilter');
@@ -70,6 +74,18 @@ async function initLaprak() {
     if (sidebar) sidebar.addEventListener('click', loadLaporanPraktikum);
 
     console.log('✅ Modul Laprak siap');
+}
+
+async function loadSettingsForPDF() {
+    try {
+        const res = await fetch('/api/settings/public');
+        const json = await res.json();
+        const data = json.data || json; // endpoint publik mengembalikan { success, data }
+        if (data.nama_sekolah) currentSettings.nama_sekolah = data.nama_sekolah;
+        if (data.nama_lab) currentSettings.nama_lab = data.nama_lab;
+    } catch (err) {
+        console.warn('Gagal load settings untuk PDF:', err);
+    }
 }
 
 // fitur membuka modal untuk membuat jadwal praktikum
@@ -328,7 +344,9 @@ function renderLPBahanList() {
 }
 
 // ekspor laprak ke dalam file PDF
-function generatePDF(item) {
+async function generatePDF(item) {
+    await loadSettingsForPDF();
+
     let alatBahan = { alat: [], bahan: [] };
     try { alatBahan = JSON.parse(item.daftar_alat_bahan || '{}'); } catch (e) {}
 
@@ -338,8 +356,8 @@ function generatePDF(item) {
     const pdfContent = `
     <div style="font-family:'Times New Roman',Georgia,serif;padding:30px 40px;max-width:700px;margin:auto;color:#000;line-height:1.5;">
         <div style="text-align:center;margin-bottom:20px;">
-            <h2 style="margin:0;font-size:15px;text-transform:uppercase;">LABORATORIUM IPA</h2>
-            <h3 style="margin:4px 0 0;font-size:13px;text-transform:uppercase;">SMA MUHAMMADIYAH 3 JAKARTA</h3>
+            <h2 style="margin:0;font-size:15px;text-transform:uppercase;">${currentSettings.nama_lab}</h2>
+            <h3 style="margin:4px 0 0;font-size:13px;text-transform:uppercase;">${currentSettings.nama_sekolah}</h3>
             <div style="border-bottom:2px solid #000;margin:10px 0;"></div>
             <h3 style="margin:10px 0 0;font-size:13px;text-transform:uppercase;">LAPORAN KEGIATAN PRAKTIKUM</h3>
         </div>

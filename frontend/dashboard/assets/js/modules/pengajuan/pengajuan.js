@@ -112,7 +112,11 @@ function renderPengajuan(data) {
         btn.addEventListener('click', () => {
             const id = btn.getAttribute('data-id');
             const alasan = prompt('Alasan penolakan (opsional):');
-            prosesPengajuan(id, 'ditolak', alasan || '');
+
+            // Jika user klik Cancel, jangan proses apa pun
+            if (alasan === null) return;
+
+            prosesPengajuan(id, 'ditolak', alasan.trim());
         });
     });
 }

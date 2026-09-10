@@ -262,12 +262,12 @@
                 </div>
                 <div id="userList" style="margin-top:16px;"></div>
             </div>
-            <!-- Panel Pengaturan -->
             <div id="setting" class="panel">
                 <div class="panel-header">
                     <h2>⚙️ Pengaturan Web</h2>
                 </div>
-                <p>Atur nama sekolah dan nama lab yang tampil di landing page.</p>
+                <p>Atur nama sekolah dan nama lab yang tampil di landing page, serta template laporan praktikum.</p>
+
                 <form id="formSettings" style="max-width:500px;margin-top:20px;">
                     <div class="form-group">
                         <label for="setting_nama_sekolah">Nama Sekolah</label>
@@ -281,6 +281,14 @@
                         <button type="submit" class="btn-simpan">Simpan</button>
                     </div>
                 </form>
+                <div style="max-width:500px; margin-top:24px;">
+                    <div class="form-group">
+                        <label for="setting_template">Template Laporan (DOCX)</label>
+                        <input type="file" id="setting_template" accept=".docx" class="form-input">
+                        <small>Unggah file .docx berisi placeholder: {{NAMA_LAB}}, {{NAMA_SEKOLAH}}, {{MATA_PELAJARAN}}, {{JUDUL}}, {{KELAS}}, {{JUMLAH_KELOMPOK}}, {{TANGGAL}}, {{JAM}}, {{GURU}}, {{TUJUAN}}, {{ALAT}}, {{BAHAN}}, {{DESKRIPSI}}.</small>
+                        <button type="button" id="btnUploadTemplate" class="btn-simpan" style="margin-top:8px;">Unggah Template</button>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -838,7 +846,7 @@
     <script src="/dashboard/assets/js/modules/inventaris/bahan.js?v=2.5"></script>
     <script src="/dashboard/assets/js/modules/laporanKerusakan/laporanKerusakan.js?v=2.4"></script>
     <script src="/dashboard/assets/js/modules/riwayatBahan/riwayatBahan.js?v=2.3"></script>
-    <script src="/dashboard/assets/js/modules/laprak/laprak.js?v=2.4"></script>
+    <script src="/dashboard/assets/js/modules/laprak/laprak.js?v=2.5"></script>
     <script src="/dashboard/assets/js/modules/pengajuan/pengajuan.js?v=2.5"></script>
     <script src="/dashboard/assets/js/modules/inventaris/sarana.js?v=2.3"></script>
     <script src="/dashboard/assets/js/modules/peminjaman/peminjaman.js?v=2.5"></script>    

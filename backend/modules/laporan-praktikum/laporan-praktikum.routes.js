@@ -15,4 +15,6 @@ router.put('/:id', verifyToken, laporanPraktikumController.update);
 // DELETE hapus laporan praktikum
 router.delete('/:id', verifyToken, laporanPraktikumController.remove);
 
+router.get('/:id/pdf', verifyToken, laporanPraktikumController.downloadPDF);
+
 module.exports = router;

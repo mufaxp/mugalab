@@ -1,6 +1,6 @@
 /**
  * laprak.js - Laporan Praktikum Module
- * CRUD, alat & bahan, PDF
+ * CRUD, alat & bahan, unduh PDF via backend
  */
 
 let lpEditMode = false;
@@ -9,15 +9,12 @@ let lpAlatList = [];
 let lpBahanList = [];
 let allAlatForLP = [];
 let allBahanForLP = [];
-let currentSettings = {
-    nama_sekolah: 'Nama Sekolah',
-    nama_lab: 'LABORATORIUM IPA'
-};
 
 async function initLaprak() {
     const lpLabFilter = document.getElementById('lpLabFilter');
     await loadLabOptions('lpLabFilter', true);
     await loadLabOptions('lp_lab_id');
+
     function getLpLabFilter() {
         if (!lpLabFilter) return null;
         const v = lpLabFilter.value;
@@ -28,7 +25,7 @@ async function initLaprak() {
         lpLabFilter.addEventListener('change', () => loadLaporanPraktikum());
     }
 
-    // fungsi submit form
+    // Submit form laporan praktikum
     document.getElementById('formLaporanPraktikum').addEventListener('submit', async function(e) {
         e.preventDefault();
         const body = {
@@ -62,11 +59,11 @@ async function initLaprak() {
         }
     });
 
-    // init search alat
+    // Init search alat dan bahan
     initSearchAlatLP();
     initSearchBahanLP();
 
-    // load
+    // Load data awal
     loadAlatBahanForLP();
     loadLaporanPraktikum();
 
@@ -76,19 +73,7 @@ async function initLaprak() {
     console.log('✅ Modul Laprak siap');
 }
 
-async function loadSettingsForPDF() {
-    try {
-        const res = await fetch('/api/settings/public');
-        const json = await res.json();
-        const data = json.data || json; // endpoint publik mengembalikan { success, data }
-        if (data.nama_sekolah) currentSettings.nama_sekolah = data.nama_sekolah;
-        if (data.nama_lab) currentSettings.nama_lab = data.nama_lab;
-    } catch (err) {
-        console.warn('Gagal load settings untuk PDF:', err);
-    }
-}
-
-// fitur membuka modal untuk membuat jadwal praktikum
+// Buka modal untuk membuat laporan praktikum dari jadwal
 window.bukaModalLaporan = function(item) {
     lpEditMode = false;
     lpEditId = null;
@@ -114,7 +99,7 @@ window.bukaModalLaporan = function(item) {
     openModal('modalLaporanPraktikum');
 };
 
-// method load dan render laporan praktikum
+// Load dan render daftar laporan praktikum
 async function loadLaporanPraktikum() {
     const container = document.getElementById('lpList');
     if (!container) return;
@@ -156,6 +141,7 @@ function renderLaporanPraktikum(data) {
 
     container.innerHTML = html;
 
+    // Event Edit
     container.querySelectorAll('[data-edit-lp]').forEach(btn => {
         btn.addEventListener('click', () => {
             const item = data.find(d => d.id === parseInt(btn.getAttribute('data-edit-lp')));
@@ -163,21 +149,48 @@ function renderLaporanPraktikum(data) {
         });
     });
 
+    // Event Hapus
     container.querySelectorAll('[data-hapus-lp]').forEach(btn => {
         btn.addEventListener('click', () => {
-            if (confirm('Yakin hapus laporan ini?')) hapusLaporanPraktikum(parseInt(btn.getAttribute('data-hapus-lp')));
+            if (confirm('Yakin hapus laporan ini?')) {
+                hapusLaporanPraktikum(parseInt(btn.getAttribute('data-hapus-lp')));
+            }
         });
     });
 
+    // Event Unduh PDF (via backend)
     container.querySelectorAll('[data-pdf-lp]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const item = data.find(d => d.id === parseInt(btn.getAttribute('data-pdf-lp')));
-            if (item) generatePDF(item);
+        btn.addEventListener('click', async () => {
+            const id = btn.getAttribute('data-pdf-lp');
+            const token = getToken();
+
+            btn.disabled = true;
+            btn.textContent = '⏳ Memuat...';
+
+            try {
+                const res = await fetch(`/api/laporan-praktikum/${id}/pdf`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error('Gagal mengunduh PDF');
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Laporan_Praktikum_${id}.pdf`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+            } catch (err) {
+                console.error('Error download PDF:', err);
+                alert('Gagal mengunduh PDF. Pastikan template sudah diunggah.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '📄 PDF';
+            }
         });
     });
 }
 
-// method edit dan hapus
+// Edit laporan praktikum
 function editLaporanPraktikum(item) {
     lpEditMode = true;
     lpEditId = item.id;
@@ -210,13 +223,14 @@ function editLaporanPraktikum(item) {
     openModal('modalLaporanPraktikum');
 }
 
+// Hapus laporan praktikum
 async function hapusLaporanPraktikum(id) {
     const data = await apiDelete(`/api/laporan-praktikum/${id}`);
     alert(data.message);
     if (!data.message.includes('Gagal')) loadLaporanPraktikum();
 }
 
-// method search alat dan bahan untuk laporan kegiatan praktikum
+// Muat data alat & bahan untuk keperluan pencarian di modal
 async function loadAlatBahanForLP() {
     try {
         const respAlat = await apiGet('/api/alat');
@@ -228,14 +242,21 @@ async function loadAlatBahanForLP() {
     }
 }
 
+// Pencarian alat pada modal laporan praktikum
 function initSearchAlatLP() {
     const lpSearchAlat = document.getElementById('lp_search_alat');
     const lpSuggestAlat = document.getElementById('lp_suggest_alat');
 
     lpSearchAlat.addEventListener('input', function() {
         const keyword = this.value.toLowerCase().trim();
-        if (!keyword) { lpSuggestAlat.classList.remove('active'); return; }
-        const filtered = allAlatForLP.filter(item => item.nama_alat.toLowerCase().includes(keyword) || item.kode_alat.toLowerCase().includes(keyword));
+        if (!keyword) {
+            lpSuggestAlat.classList.remove('active');
+            return;
+        }
+        const filtered = allAlatForLP.filter(item =>
+            item.nama_alat.toLowerCase().includes(keyword) ||
+            item.kode_alat.toLowerCase().includes(keyword)
+        );
         lpSuggestAlat.innerHTML = filtered.map(item => `
             <div class="search-suggest-item" data-id="${item.id}" data-nama="${item.nama_alat}" data-kode="${item.kode_alat}">
                 🔧 ${item.kode_alat} - ${item.nama_alat} (Stok: ${item.jumlah})
@@ -259,27 +280,38 @@ function initSearchAlatLP() {
         const nama = lpSearchAlat.getAttribute('data-selected-nama');
         const kode = lpSearchAlat.getAttribute('data-selected-kode');
         const jumlah = parseInt(document.getElementById('lp_jumlah_alat').value);
+
         if (!id || !jumlah || jumlah < 1) return alert('Pilih alat dan isi jumlah!');
         if (lpAlatList.find(a => a.id == id)) return alert('Alat ini sudah ada di daftar!');
+
         lpAlatList.push({ id: parseInt(id), kode, nama, jumlah, satuan: 'buah' });
         renderLPAlatList();
         lpSearchAlat.value = '';
         lpSearchAlat.removeAttribute('data-selected-id');
+        lpSearchAlat.removeAttribute('data-selected-nama');
+        lpSearchAlat.removeAttribute('data-selected-kode');
         document.getElementById('lp_jumlah_alat').value = '';
     });
 }
 
+// Pencarian bahan pada modal laporan praktikum
 function initSearchBahanLP() {
     const lpSearchBahan = document.getElementById('lp_search_bahan');
     const lpSuggestBahan = document.getElementById('lp_suggest_bahan');
 
     lpSearchBahan.addEventListener('input', function() {
         const keyword = this.value.toLowerCase().trim();
-        if (!keyword) { lpSuggestBahan.classList.remove('active'); return; }
-        const filtered = allBahanForLP.filter(item => item.nama_bahan.toLowerCase().includes(keyword) || item.kode_bahan.toLowerCase().includes(keyword));
+        if (!keyword) {
+            lpSuggestBahan.classList.remove('active');
+            return;
+        }
+        const filtered = allBahanForLP.filter(item =>
+            item.nama_bahan.toLowerCase().includes(keyword) ||
+            item.kode_bahan.toLowerCase().includes(keyword)
+        );
         lpSuggestBahan.innerHTML = filtered.map(item => `
             <div class="search-suggest-item" data-id="${item.id}" data-nama="${item.nama_bahan}" data-kode="${item.kode_bahan}" data-satuan="${item.satuan}">
-                🧪 ${item.kode_bahan} - ${item.nama_bahan} (Stok: ${item.jumlah} ${item.satuan})
+                🧪 ${item.kode_bahan} - ${item.nama_bahan} (Stok: ${item.stok_akhir} ${item.satuan})
             </div>`).join('');
         lpSuggestBahan.classList.add('active');
     });
@@ -302,17 +334,22 @@ function initSearchBahanLP() {
         const kode = lpSearchBahan.getAttribute('data-selected-kode');
         const jumlah = parseFloat(document.getElementById('lp_jumlah_bahan').value);
         const satuan = document.getElementById('lp_satuan_bahan').value;
+
         if (!id || !jumlah || jumlah <= 0 || !satuan) return alert('Pilih bahan, isi jumlah, dan satuan!');
         if (lpBahanList.find(b => b.id == id)) return alert('Bahan ini sudah ada di daftar!');
+
         lpBahanList.push({ id: parseInt(id), kode, nama, jumlah, satuan });
         renderLPBahanList();
         lpSearchBahan.value = '';
         lpSearchBahan.removeAttribute('data-selected-id');
+        lpSearchBahan.removeAttribute('data-selected-nama');
+        lpSearchBahan.removeAttribute('data-selected-kode');
         document.getElementById('lp_jumlah_bahan').value = '';
         document.getElementById('lp_satuan_bahan').value = '';
     });
 }
 
+// Render daftar alat yang sudah dipilih
 function renderLPAlatList() {
     const container = document.getElementById('lp_list_alat');
     container.innerHTML = lpAlatList.map((item, index) => `
@@ -328,6 +365,7 @@ function renderLPAlatList() {
     });
 }
 
+// Render daftar bahan yang sudah dipilih
 function renderLPBahanList() {
     const container = document.getElementById('lp_list_bahan');
     container.innerHTML = lpBahanList.map((item, index) => `
@@ -341,61 +379,4 @@ function renderLPBahanList() {
             renderLPBahanList();
         });
     });
-}
-
-// ekspor laprak ke dalam file PDF
-async function generatePDF(item) {
-    await loadSettingsForPDF();
-
-    let alatBahan = { alat: [], bahan: [] };
-    try { alatBahan = JSON.parse(item.daftar_alat_bahan || '{}'); } catch (e) {}
-
-    const tglPDF = item.tanggal ? new Date(item.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-';
-    const labName = item.lab_id == 1 ? 'Lab Biologi-Kimia' : 'Lab Fisika';
-
-    const pdfContent = `
-    <div style="font-family:'Times New Roman',Georgia,serif;padding:30px 40px;max-width:700px;margin:auto;color:#000;line-height:1.5;">
-        <div style="text-align:center;margin-bottom:20px;">
-            <h2 style="margin:0;font-size:15px;text-transform:uppercase;">${currentSettings.nama_lab}</h2>
-            <h3 style="margin:4px 0 0;font-size:13px;text-transform:uppercase;">${currentSettings.nama_sekolah}</h3>
-            <div style="border-bottom:2px solid #000;margin:10px 0;"></div>
-            <h3 style="margin:10px 0 0;font-size:13px;text-transform:uppercase;">LAPORAN KEGIATAN PRAKTIKUM</h3>
-        </div>
-        <table style="width:100%;font-size:12px;border-collapse:collapse;margin-bottom:12px;">
-            <tr><td style="width:28%;padding:2px 0;">Mata Pelajaran</td><td>:</td><td>${item.mata_pelajaran||'-'}</td></tr>
-            <tr><td>Judul Praktikum</td><td>:</td><td>${item.judul_praktikum||'-'}</td></tr>
-            <tr><td>Kelas</td><td>:</td><td>${item.kelas||'-'}</td></tr>
-            <tr><td>Jumlah Kelompok</td><td>:</td><td>${item.jumlah_kelompok||'-'}</td></tr>
-            <tr><td>Tanggal</td><td>:</td><td>${tglPDF}</td></tr>
-            <tr><td>Jam</td><td>:</td><td>${item.jam_mulai||'-'} - ${item.jam_selesai||'-'}</td></tr>
-            <tr><td>Guru Pengampu</td><td>:</td><td>${item.guru_mapel||'-'}</td></tr>
-            <tr><td>Laboratorium</td><td>:</td><td>${labName}</td></tr>
-        </table>
-        <div style="border-bottom:1px solid #000;margin:8px 0;"></div>
-        <h4 style="margin:10px 0 4px;font-size:12px;">A. TUJUAN PRAKTIKUM</h4>
-        <p style="font-size:12px;text-align:justify;">${item.tujuan_praktikum||'-'}</p>
-        <h4 style="margin:10px 0 4px;font-size:12px;">B. ALAT & BAHAN</h4>
-        ${alatBahan.alat?.length ? `<p style="font-size:12px;"><strong>Alat:</strong></p><ol style="font-size:12px;padding-left:25px;">${alatBahan.alat.map(a=>`<li>${a.nama} (${a.kode}) — ${a.jumlah} ${a.satuan}</li>`).join('')}</ol>` : ''}
-        ${alatBahan.bahan?.length ? `<p style="font-size:12px;"><strong>Bahan:</strong></p><ol style="font-size:12px;padding-left:25px;">${alatBahan.bahan.map(b=>`<li>${b.nama} (${b.kode}) — ${b.jumlah} ${b.satuan}</li>`).join('')}</ol>` : ''}
-        <h4 style="margin:10px 0 4px;font-size:12px;">C. DESKRIPSI KEGIATAN</h4>
-        <p style="font-size:12px;text-align:justify;">${item.deskripsi_kegiatan||'-'}</p>
-        <div style="border-bottom:1px solid #000;margin:15px 0;"></div>
-        <table style="width:100%;font-size:12px;margin-top:20px;">
-            <tr><td colspan="2" style="text-align:right;"><p style="margin:0;">Jakarta, ${tglPDF}</p><p style="margin:5px 0 0;">Mengetahui,</p></td></tr>
-            <tr><td style="height:15px;"></td></tr>
-            <tr>
-                <td style="width:50%;text-align:center;padding-right:10px;"><p style="margin:0;">Guru Pengampu</p><br><br><br><br><p style="margin:0;text-decoration:underline;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p><p style="margin:4px 0 0;">${item.guru_mapel||'........................'}</p></td>
-                <td style="width:50%;text-align:center;padding-left:10px;"><p style="margin:0;">Laboran</p><br><br><br><br><p style="margin:0;text-decoration:underline;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p><p style="margin:4px 0 0;">Mufadilah Hermansyah</p></td>
-            </tr>
-        </table>
-    </div>`;
-
-    const opt = {
-        margin: [5, 5, 5, 5],
-        filename: `Laporan_Praktikum_${item.judul_praktikum||'Tanpa_Judul'}_${new Date().toISOString().substring(0,10)}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-    html2pdf().set(opt).from(pdfContent).save();
 }

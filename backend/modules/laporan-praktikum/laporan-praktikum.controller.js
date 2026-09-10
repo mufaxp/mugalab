@@ -1,5 +1,6 @@
 const laporanPraktikumService = require('./laporan-praktikum.service');
 const { success, error } = require('../../shared/utils/response');
+const fs = require('fs');
 
 /**
  * GET semua laporan praktikum (filter lab_id opsional)
@@ -124,4 +125,21 @@ async function remove(req, res) {
     }
 }
 
-module.exports = { getAll, create, update, remove };
+const pdfService = require('./laporan-praktikum.pdf.service');
+
+async function downloadPDF(req, res) {
+    const { id } = req.params;
+    try {
+        const pdfPath = await pdfService.generatePDF(id);
+        res.download(pdfPath, `Laporan_Praktikum_${id}.pdf`, (err) => {
+            if (err) console.error('Error download:', err);
+            // hapus file setelah dikirim (opsional)
+            fs.unlinkSync(pdfPath);
+        });
+    } catch (err) {
+        console.error('Error generating PDF:', err);
+        return error(res, 'Gagal membuat PDF: ' + err.message);
+    }
+}
+
+module.exports = { getAll, create, update, remove, downloadPDF };

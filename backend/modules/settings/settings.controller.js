@@ -47,4 +47,16 @@ async function update(req, res) {
     }
 }
 
-module.exports = { getPublic, getAll, update };
+async function uploadTemplate(req, res) {
+    if (!req.file) return error(res, 'File template tidak ditemukan', 400);
+    try {
+        // Simpan path relatif di settings? Tidak perlu, karena file selalu di folder tetap.
+        // Kita hanya perlu memberi respons sukses.
+        return success(res, null, 'Template berhasil diunggah');
+    } catch (err) {
+        console.error('Error upload template:', err);
+        return error(res, 'Gagal mengunggah template');
+    }
+}
+
+module.exports = { getPublic, getAll, update, uploadTemplate };

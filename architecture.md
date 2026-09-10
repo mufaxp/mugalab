@@ -9,9 +9,12 @@ MUGALAB adalah aplikasi manajemen laboratorium sekolah yang terdiri dari:
 - **Backend** (`/backend`) – REST API utama (Express.js + MySQL)
 - **Chatbot WhatsApp** (`/opt/chatbot` di VPS) – layanan webhook Fonnte untuk pengaduan dan pengajuan jadwal
 
-Lokasi di VPS:
-- Web apps (frontend, dashboard, backend): `/var/www/mugalab`
+**Lokasi di VPS:**
+- Web apps (frontend, dashboard, backend): `/var/www/lab`
 - Chatbot: `/opt/chatbot`
+
+**Alur deployment:**
+Laptop → push ke GitHub → `git pull` di VPS → `npm install` (jika ada dependensi baru) → `pm2 restart mugalab-backend`.
 
 ---
 
@@ -51,6 +54,7 @@ backend/
 │   │   ├── verifyToken.js     # Verifikasi JWT
 │   │   ├── requireRole.js     # Pembatasan akses berdasarkan role
 │   │   ├── uploadPeminjaman.js# Konfigurasi multer untuk upload foto peminjaman
+│   │   ├── uploadTemplate.js  # Konfigurasi multer untuk upload template DOCX
 │   │   └── cors.js            # (opsional, saat ini belum dibuat)
 │   ├── utils/
 │   │   ├── response.js        # Format respons standar API
@@ -89,7 +93,8 @@ backend/
 │   ├── laporan-praktikum/
 │   │   ├── laporan-praktikum.routes.js
 │   │   ├── laporan-praktikum.controller.js
-│   │   └── laporan-praktikum.service.js
+│   │   ├── laporan-praktikum.service.js
+│   │   └── laporan-praktikum.pdf.service.js  # Generate PDF dari template DOCX
 │   ├── pengajuan/
 │   │   ├── pengajuan.routes.js
 │   │   ├── pengajuan.controller.js
@@ -106,6 +111,9 @@ backend/
 │       ├── settings.routes.js
 │       ├── settings.controller.js
 │       └── settings.service.js
+├── uploads/
+│   ├── templates/             # Template DOCX untuk laporan praktikum
+│   └── temp/                  # File sementara (docx sebelum dikonversi PDF)
 └── database/
     └── init.sql
 ```
@@ -183,6 +191,7 @@ Setiap modul memiliki:
 | POST | `/api/laporan-praktikum` | Buat laporan praktikum | Auth |
 | PUT | `/api/laporan-praktikum/:id` | Edit laporan | Auth (non-guru) |
 | DELETE | `/api/laporan-praktikum/:id` | Hapus laporan | Auth (non-guru) |
+| GET | `/api/laporan-praktikum/:id/pdf` | **Generate & unduh PDF dari template DOCX** | Auth |
 
 ### Pengajuan Jadwal (`/api/pengajuan`)
 | Method | Endpoint | Deskripsi | Akses |
@@ -212,6 +221,7 @@ Setiap modul memiliki:
 | GET | `/api/settings/public` | Ambil pengaturan publik (nama sekolah, lab) | Publik |
 | GET | `/api/settings` | Ambil semua pengaturan | Auth (admin) |
 | PUT | `/api/settings` | Update pengaturan | Auth (admin) |
+| POST | `/api/settings/template` | **Upload template laporan praktikum (DOCX)** | Auth (admin) |
 
 ---
 
@@ -242,6 +252,7 @@ Setiap modul memiliki:
 - `bahan` memiliki `stok_awal` dan `stok_akhir` (DECIMAL 10,2), bukan `jumlah`.
 - `jam_mulai` dan `jam_selesai` pada `jadwal`/`pengajuan_jadwal` adalah integer 1-10 (jam pelajaran).
 - `pengajuan_jadwal` memiliki `processed_by` untuk mencatat nama admin yang memproses.
+- Tabel `settings` menyimpan `nama_sekolah` dan `nama_lab` sebagai key-value.
 
 Skema lengkap tersedia di `backend/database/init.sql`.
 
@@ -269,6 +280,8 @@ Skema lengkap tersedia di `backend/database/init.sql`.
 
 Gunakan helper `shared/utils/response.js`.
 
+> **Catatan penting:** Semua pemanggilan `apiGet`, `apiPost`, `apiPut`, `apiDelete` di frontend harus membaca properti `.data` dari respons. Contoh: `const data = Array.isArray(response) ? response : (response.data || []);`
+
 ### 6.2 Autentikasi & Otorisasi
 - Token JWT dikirim via header `Authorization: Bearer <token>`.
 - `verifyToken` memeriksa token, payload disimpan di `req.user`.
@@ -292,12 +305,71 @@ Fungsi di `shared/utils/whatsapp.js`:
 Environment variables: `TOKEN_FONNTE`, `ADMIN_WA`.
 
 ### 6.6 Upload File
-Middleware upload tersedia di `shared/middleware/uploadPeminjaman.js`.
-Gunakan `upload.single('foto')` pada route yang membutuhkan upload gambar (peminjaman). Folder tujuan: `frontend/uploads/peminjaman`.
+Middleware upload tersedia di:
+- `shared/middleware/uploadPeminjaman.js` – untuk foto peminjaman (`upload.single('foto')`), disimpan di `frontend/uploads/peminjaman`.
+- `shared/middleware/uploadTemplate.js` – untuk template DOCX laporan praktikum (`upload.single('file')`), disimpan di `backend/uploads/templates/laprak-template.docx` (selalu overwrite).
 
 ---
 
-## 7. Integrasi Chatbot
+## 7. Fitur Template Laporan Praktikum (DOCX → PDF)
+
+Fitur ini memungkinkan admin mengunggah template laporan praktikum dalam format DOCX, dan guru mengunduh laporan yang sudah terisi sebagai PDF.
+
+### 7.1 Alur
+1. **Admin** mengunggah file `.docx` melalui panel Pengaturan di dashboard.
+2. File disimpan sebagai `backend/uploads/templates/laprak-template.docx`.
+3. **Guru** mengklik tombol PDF pada laporan praktikum.
+4. **Backend** (`laporan-praktikum.pdf.service.js`) melakukan:
+   - Mengambil data laporan dari database.
+   - Mengambil `nama_sekolah` dan `nama_lab` dari tabel `settings`.
+   - Membaca template DOCX dengan `pizzip` dan `docxtemplater`.
+   - Mengisi placeholder dengan data laporan.
+   - Menyimpan file DOCX sementara di `backend/uploads/temp/`.
+   - Mengonversi DOCX ke PDF menggunakan **LibreOffice headless**.
+   - Mengirim PDF ke klien, lalu menghapus file sementara.
+
+### 7.2 Placeholder Template DOCX
+Template harus memuat placeholder berikut (persis, termasuk kurung kurawal):
+
+| Placeholder | Data |
+|-------------|------|
+| `{{NAMA_LAB}}` | Nama lab dari settings (untuk kop surat) |
+| `{{NAMA_SEKOLAH}}` | Nama sekolah dari settings |
+| `{{MATA_PELAJARAN}}` | Mata pelajaran |
+| `{{JUDUL}}` | Judul praktikum |
+| `{{KELAS}}` | Kelas |
+| `{{JUMLAH_KELOMPOK}}` | Jumlah kelompok |
+| `{{TANGGAL}}` | Tanggal praktikum (format Indonesia) |
+| `{{TANGGAL_TTD}}` | Tanggal tanda tangan (bisa sama dengan `{{TANGGAL}}`) |
+| `{{RUANG_LAB}}` | Nama ruang lab (berdasarkan `lab_id` laporan) |
+| `{{JAM}}` | Jam mulai–selesai |
+| `{{GURU}}` | Nama guru pengampu |
+| `{{TUJUAN}}` | Tujuan praktikum |
+| `{{ALAT}}` | Daftar alat (satu per baris) |
+| `{{BAHAN}}` | Daftar bahan (satu per baris) |
+| `{{DESKRIPSI}}` | Deskripsi kegiatan |
+
+### 7.3 Dependensi
+- **Node.js**: `docxtemplater`, `pizzip`, `multer` (lihat `package.json`).
+- **Sistem**: LibreOffice (wajib diinstal manual di setiap VPS). Tanpa LibreOffice, konversi PDF akan gagal.
+
+Instalasi LibreOffice:
+```bash
+# Ubuntu / Debian
+sudo apt install -y libreoffice libreoffice-writer fonts-noto fonts-noto-cjk
+
+# Fedora / RHEL / Rocky
+sudo dnf install -y libreoffice libreoffice-writer
+```
+
+Setelah instalasi, pastikan binary `libreoffice` dapat dipanggil dari shell:
+```bash
+libreoffice --version
+```
+
+---
+
+## 8. Integrasi Chatbot
 
 - Chatbot berjalan di `/opt/chatbot`, port 3000.
 - Webhook dari Fonnte, menerima pesan dan merespons.
@@ -308,7 +380,7 @@ Gunakan `upload.single('foto')` pada route yang membutuhkan upload gambar (pemin
 
 ---
 
-## 8. Menambah Modul Baru
+## 9. Menambah Modul Baru
 
 1. Buat folder `backend/modules/nama-modul/`.
 2. Isi tiga file: `nama-modul.routes.js`, `nama-modul.controller.js`, `nama-modul.service.js`.
@@ -322,7 +394,7 @@ Gunakan `upload.single('foto')` pada route yang membutuhkan upload gambar (pemin
 
 ---
 
-## 9. Contoh Modul `lab`
+## 10. Contoh Modul `lab`
 
 Lihat `backend/modules/lab/` yang sudah dibuat sebagai template.
 
@@ -345,4 +417,30 @@ Untuk `lab.controller.js` dan `lab.service.js`, silakan lihat langsung di folder
 
 ---
 
-Dokumen ini menjadi acuan utama pengembangan backend. Simpan di root repositori sebagai `ARCHITECTURE.md`.
+## 11. Alur Deployment
+
+Alur kerja pengembangan dan deploy:
+
+1. **Di laptop:** tulis kode, commit, push ke GitHub.
+2. **Di VPS:** masuk via SSH.
+3. **Pull perubahan:**
+   ```bash
+   cd /var/www/lab
+   git fetch --all
+   git reset --hard origin/main   # jika ada perubahan lokal yang ingin dibuang
+   ```
+4. **Install dependensi Node.js (jika `package.json` berubah):**
+   ```bash
+   cd backend && npm install
+   ```
+5. **Restart aplikasi:**
+   ```bash
+   pm2 restart mugalab-backend
+   ```
+6. **Jika ada perubahan dependensi sistem (LibreOffice, font, dsb.), lakukan instalasi manual** di VPS.
+
+> **Penting:** Jangan pernah mengedit langsung di VPS. Semua perubahan harus melalui GitHub agar konsisten dan terhindar dari konflik `git pull`.
+
+---
+
+Dokumen ini menjadi acuan utama pengembangan proyek MUGALAB. Simpan di root repositori sebagai `ARCHITECTURE.md`.

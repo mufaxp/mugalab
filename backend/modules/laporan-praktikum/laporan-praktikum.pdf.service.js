@@ -33,7 +33,8 @@ async function generatePDF(laporanId) {
     const doc = new Docxtemplater(zip, {
         paragraphLoop: true,
         linebreaks: true,
-        nullGetter: () => '-'   // placeholder kosong diisi '-'
+        nullGetter: () => '-',   // placeholder kosong diisi '-'
+        delimiters: { start: '{{', end: '}}' }
     });
 
     // 5. Siapkan data untuk placeholder

@@ -116,6 +116,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    /**
+     * Reset field upload PDF di modal pengajuan.
+     * Dibuat global agar bisa dipanggil dari mana saja (termasuk di dalam renderJadwal).
+     */
+    function resetUpload() {
+        const fileInput = document.getElementById('pengajuan_file_pdf');
+        const uploadPreview = document.getElementById('uploadPreview');
+        const uploadArea = document.getElementById('uploadArea');
+        if (fileInput) fileInput.value = '';
+        if (uploadPreview) uploadPreview.style.display = 'none';
+        if (uploadArea) uploadArea.classList.remove('has-file');
+    }
+
+    // Ekspos ke window untuk berjaga-jaga
+    window.resetUpload = resetUpload;
+
     // render card jadwal ke tabel
     function renderJadwal(jadwalList) {
         // Reset semua sel (kecuali kolom Jam)
@@ -245,12 +261,6 @@ document.addEventListener('DOMContentLoaded', function() {
             uploadFileSize.textContent = formatFileSize(file.size);
             uploadPreview.style.display = 'flex';
             uploadArea.classList.add('has-file');
-        }
-
-        function resetUpload() {
-            fileInput.value = '';
-            uploadPreview.style.display = 'none';
-            uploadArea.classList.remove('has-file');
         }
 
         // Klik area untuk buka file dialog

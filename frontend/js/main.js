@@ -1,8 +1,44 @@
+/**
+ * main.js - Frontend Publik Halaman Jadwal
+ * Sudah termasuk fitur upload PDF pengajuan.
+ */
+
+// ================================================
+// FUNGSI GLOBAL — bisa dipanggil di mana saja
+// ================================================
+
+// Getter dinamis (selalu ambil elemen terbaru dari DOM)
+function getFileInput()      { return document.getElementById('pengajuan_file_pdf'); }
+function getUploadArea()     { return document.getElementById('uploadArea'); }
+function getUploadPreview()  { return document.getElementById('uploadPreview'); }
+function getUploadFileName() { return document.getElementById('uploadFileName'); }
+function getUploadFileSize() { return document.getElementById('uploadFileSize'); }
+function getUploadRemove()   { return document.getElementById('uploadRemove'); }
+
+/**
+ * Reset field upload PDF di modal pengajuan.
+ */
+function resetUpload() {
+    const fileInput = getFileInput();
+    const uploadPreview = getUploadPreview();
+    const uploadArea = getUploadArea();
+    if (fileInput) fileInput.value = '';
+    if (uploadPreview) uploadPreview.style.display = 'none';
+    if (uploadArea) uploadArea.classList.remove('has-file');
+}
+
+window.resetUpload = resetUpload;
+
+// ================================================
+// DOM READY
+// ================================================
 document.addEventListener('DOMContentLoaded', function() {
     const weekSelect = document.getElementById('weekSelect');
     const tbody = document.querySelector('tbody');
+    const modalPengajuan = document.getElementById('modalPengajuan');
+    const formPengajuan = document.getElementById('formPengajuan');
 
-    // fungsi getCurrentSunday
+    // ---------- UTIL TANGGAL ----------
     function getCurrentSunday() {
         const today = new Date();
         const day = today.getDay();
@@ -41,19 +77,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const dd = String(target.getDate()).padStart(2, '0');
         return `${yyyy}-${mm}-${dd}`;
     }
-    
-    // data lab dan navigasi
+
+    // ---------- STATE ----------
     let labs = [];
     let currentLabIndex = 0;
     let currentSunday = getCurrentSunday();
-    const modalPengajuan = document.getElementById('modalPengajuan');
-    const formPengajuan = document.getElementById('formPengajuan');
 
+    // ---------- LOAD LAB ----------
     async function loadLabs() {
         try {
             const response = await fetch('/api/lab');
             const json = await response.json();
-            labs = json.data || [];   // ambil array dari property data
+            labs = json.data || [];
             if (labs.length > 0) {
                 updateLabDisplay();
             }
@@ -70,21 +105,27 @@ document.addEventListener('DOMContentLoaded', function() {
         loadJadwal(formatDateISO(currentSunday), labs[currentLabIndex].id);
     }
 
-    // Event listener tombol panah
-    document.getElementById('labPrev').addEventListener('click', function() {
-        if (labs.length === 0) return;
-        currentLabIndex = (currentLabIndex - 1 + labs.length) % labs.length;
-        updateLabDisplay();
-    });
+    // ---------- NAVIGASI LAB ----------
+    const labPrevBtn = document.getElementById('labPrev');
+    const labNextBtn = document.getElementById('labNext');
 
-    document.getElementById('labNext').addEventListener('click', function() {
-        if (labs.length === 0) return;
-        currentLabIndex = (currentLabIndex + 1) % labs.length;
-        updateLabDisplay();
-    });
+    if (labPrevBtn) {
+        labPrevBtn.addEventListener('click', function() {
+            if (labs.length === 0) return;
+            currentLabIndex = (currentLabIndex - 1 + labs.length) % labs.length;
+            updateLabDisplay();
+        });
+    }
 
+    if (labNextBtn) {
+        labNextBtn.addEventListener('click', function() {
+            if (labs.length === 0) return;
+            currentLabIndex = (currentLabIndex + 1) % labs.length;
+            updateLabDisplay();
+        });
+    }
 
-    // hitung tanggal pekan lalu, ini, dan depan
+    // ---------- DROPDOWN PEKAN ----------
     const today = new Date();
     const prevSunday = new Date(currentSunday); prevSunday.setDate(currentSunday.getDate() - 7);
     const nextSunday = new Date(currentSunday); nextSunday.setDate(currentSunday.getDate() + 7);
@@ -93,17 +134,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const currentRange = getWeekRange(currentSunday);
     const nextRange = getWeekRange(nextSunday);
 
-    // isi dropdown dengan rentang tanggal
-    const options = weekSelect.options;
-    options[0].text = `Pekan Lalu (${prevRange.start} - ${prevRange.end})`;
-    options[1].text = `Pekan Ini (${currentRange.start} - ${currentRange.end})`;
-    options[2].text = `Pekan Depan (${nextRange.start} - ${nextRange.end})`;
-    weekSelect.value = 'current';
+    if (weekSelect) {
+        const options = weekSelect.options;
+        options[0].text = `Pekan Lalu (${prevRange.start} - ${prevRange.end})`;
+        options[1].text = `Pekan Ini (${currentRange.start} - ${currentRange.end})`;
+        options[2].text = `Pekan Depan (${nextRange.start} - ${nextRange.end})`;
+        weekSelect.value = 'current';
+    }
 
-    // ambil data jadwal dari backend
+    // ---------- LOAD JADWAL ----------
     async function loadJadwal(mingguMulai, labId) {
         try {
-            const token = localStorage.getItem('token');
             let url = `/api/jadwal/public?minggu_mulai=${mingguMulai}`;
             if (labId) url += `&lab_id=${labId}`;
 
@@ -116,32 +157,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    /**
-     * Reset field upload PDF di modal pengajuan.
-     * Dibuat global agar bisa dipanggil dari mana saja (termasuk di dalam renderJadwal).
-     */
-    function resetUpload() {
-        const fileInput = document.getElementById('pengajuan_file_pdf');
-        const uploadPreview = document.getElementById('uploadPreview');
-        const uploadArea = document.getElementById('uploadArea');
-        if (fileInput) fileInput.value = '';
-        if (uploadPreview) uploadPreview.style.display = 'none';
-        if (uploadArea) uploadArea.classList.remove('has-file');
-    }
-
-    // Ekspos ke window untuk berjaga-jaga
-    window.resetUpload = resetUpload;
-
-    // render card jadwal ke tabel
+    // ---------- RENDER JADWAL ----------
     function renderJadwal(jadwalList) {
-        // Reset semua sel (kecuali kolom Jam)
         const semuaSel = tbody.querySelectorAll('td:not(:first-child)');
         semuaSel.forEach(td => {
             td.innerHTML = '';
             td.style.position = 'relative';
         });
 
-        // Hari ke indeks kolom (Ahad=0, Senin=1, ..., Sabtu=6)
         const hariKeKolom = {
             'Ahad': 0, 'Minggu': 0, 'Senin': 1, 'Selasa': 2, 'Rabu': 3,
             'Kamis': 4, 'Jumat': 5, 'Sabtu': 6
@@ -150,21 +173,19 @@ document.addEventListener('DOMContentLoaded', function() {
         jadwalList.forEach(item => {
             const tglItem = new Date(item.tanggal);
             const hari = tglItem.toLocaleDateString('id-ID', { weekday: 'long' });
-            const hariKapital = hari.charAt(0).toUpperCase() + hari.slice(1); // Ahad, Senin, dll
-            const kolomIndex = hariKeKolom[hariKapital] + 1; // +1 karena kolom pertama Jam
+            const hariKapital = hari.charAt(0).toUpperCase() + hari.slice(1);
+            const kolomIndex = hariKeKolom[hariKapital] + 1;
 
             const jamMulai = item.jam_mulai;
             const jamSelesai = item.jam_selesai;
             const rentang = jamSelesai - jamMulai + 1;
 
-            // Cari baris jam_mulai
             const barisMulai = tbody.querySelectorAll('tr')[jamMulai - 1];
             if (!barisMulai) return;
 
             const selTarget = barisMulai.querySelectorAll('td')[kolomIndex];
             if (!selTarget) return;
 
-            // Buat card
             const card = document.createElement('div');
             card.className = 'jadwal-card';
             card.style.cssText = `
@@ -189,7 +210,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div style="color:#555; font-size:0.9em;">${item.penanggung_jawab}</div>
             `;
 
-            // Hapus placeholder "—"
             selTarget.innerHTML = '';
             selTarget.style.position = 'relative';
             selTarget.appendChild(card);
@@ -197,42 +217,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Event listener klik sel kosong
         const allTd = tbody.querySelectorAll('td:not(:first-child)');
-            allTd.forEach(td => {
-                td.addEventListener('click', function() {
-                    // Cek apakah sel ini berisi card (sudah terisi jadwal)
-                    if (this.querySelector('.jadwal-card')) return; // Abaikan jika sudah terisi
+        allTd.forEach(td => {
+            td.addEventListener('click', function() {
+                if (this.querySelector('.jadwal-card')) return;
 
-                    const row = this.closest('tr');
-                    const jamMulai = parseInt(row.querySelector('td:first-child').textContent);
-                    const colIndex = Array.from(row.children).indexOf(this);
-                    const hari = ['Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][colIndex - 1];
-                    const tanggal = hitungTanggalDariHari(hari, currentSunday);
+                const row = this.closest('tr');
+                const jamMulai = parseInt(row.querySelector('td:first-child').textContent);
+                const colIndex = Array.from(row.children).indexOf(this);
+                const hari = ['Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][colIndex - 1];
+                const tanggal = hitungTanggalDariHari(hari, currentSunday);
 
-                    // Isi modal
-                    const tglObj = new Date(tanggal + 'T00:00:00');
-                    document.getElementById('pengajuan_hari_tanggal').textContent = `${hari}, ${tglObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`;
-                    document.getElementById('pengajuan_lab').textContent = labs[currentLabIndex]?.nama || 'Lab';
-                    document.getElementById('pengajuan_jam_mulai').value = jamMulai;
+                const tglObj = new Date(tanggal + 'T00:00:00');
+                document.getElementById('pengajuan_hari_tanggal').textContent =
+                    `${hari}, ${tglObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+                document.getElementById('pengajuan_lab').textContent = labs[currentLabIndex]?.nama || 'Lab';
+                document.getElementById('pengajuan_jam_mulai').value = jamMulai;
 
-                    // Reset form
-                    formPengajuan.reset();
-                    resetUpload(); // Reset area upload file PDF
+                // Reset form + upload
+                formPengajuan.reset();
+                resetUpload();  // ⭐ global function
+                document.getElementById('pengajuan_jam_mulai').value = jamMulai;
+                updateJamSelesaiOptions(jamMulai);
+                document.getElementById('pengajuan_jam_selesai').value = Math.min(jamMulai + 1, 10);
 
-                    document.getElementById('pengajuan_jam_mulai').value = jamMulai;
-                    updateJamSelesaiOptions(jamMulai);
-                    document.getElementById('pengajuan_jam_selesai').value = Math.min(jamMulai + 1, 10);
+                modalPengajuan.setAttribute('data-tanggal', tanggal);
+                modalPengajuan.setAttribute('data-lab-id', labs[currentLabIndex]?.id || 1);
 
-                    // Simpan data tersembunyi
-                    document.getElementById('modalPengajuan').setAttribute('data-tanggal', tanggal);
-                    document.getElementById('modalPengajuan').setAttribute('data-lab-id', labs[currentLabIndex]?.id || 1);
-
-                    // Tampilkan modal
-                    document.getElementById('modalPengajuan').style.display = 'flex';
-                });
+                modalPengajuan.style.display = 'flex';
             });
-        }
+        });
+    }
 
-        function updateJamSelesaiOptions(jamMulai) {
+    // ---------- JAM SELESAI OPTIONS ----------
+    function updateJamSelesaiOptions(jamMulai) {
         const sel = document.getElementById('pengajuan_jam_selesai');
         sel.innerHTML = '';
         for (let i = jamMulai; i <= 10; i++) {
@@ -241,109 +258,102 @@ document.addEventListener('DOMContentLoaded', function() {
             opt.textContent = i;
             sel.appendChild(opt);
         }
+    }
 
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('pengajuan_file_pdf');
-        const uploadContent = document.getElementById('uploadContent');
-        const uploadPreview = document.getElementById('uploadPreview');
-        const uploadFileName = document.getElementById('uploadFileName');
-        const uploadFileSize = document.getElementById('uploadFileSize');
-        const uploadRemove = document.getElementById('uploadRemove');
+    const jamMulaiSelect = document.getElementById('pengajuan_jam_mulai');
+    if (jamMulaiSelect) {
+        jamMulaiSelect.addEventListener('change', function() {
+            const mulai = parseInt(this.value);
+            updateJamSelesaiOptions(mulai);
+            document.getElementById('pengajuan_jam_selesai').value = Math.min(mulai + 1, 10);
+        });
+    }
 
-        function formatFileSize(bytes) {
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
-        }
+    // ============================================
+    // UPLOAD PDF HANDLER
+    // ============================================
+    function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    }
 
-        function showFilePreview(file) {
-            uploadFileName.textContent = file.name;
-            uploadFileSize.textContent = formatFileSize(file.size);
-            uploadPreview.style.display = 'flex';
-            uploadArea.classList.add('has-file');
-        }
+    function showFilePreview(file) {
+        const uploadFileName = getUploadFileName();
+        const uploadFileSize = getUploadFileSize();
+        const uploadPreview = getUploadPreview();
+        const uploadArea = getUploadArea();
+        if (uploadFileName) uploadFileName.textContent = file.name;
+        if (uploadFileSize) uploadFileSize.textContent = formatFileSize(file.size);
+        if (uploadPreview) uploadPreview.style.display = 'flex';
+        if (uploadArea) uploadArea.classList.add('has-file');
+    }
 
-        // Klik area untuk buka file dialog
-        uploadArea.addEventListener('click', (e) => {
+    const uploadAreaEl = getUploadArea();
+    const fileInputEl = getFileInput();
+
+    if (uploadAreaEl && fileInputEl) {
+        uploadAreaEl.addEventListener('click', (e) => {
             if (e.target.closest('.upload-remove')) return;
-            if (uploadArea.classList.contains('has-file')) return;
-            fileInput.click();
+            if (uploadAreaEl.classList.contains('has-file')) return;
+            fileInputEl.click();
         });
 
-        // Saat file dipilih
-        fileInput.addEventListener('change', function() {
+        fileInputEl.addEventListener('change', function() {
             const file = this.files[0];
             if (!file) return;
-
-            // Validasi tipe
             if (file.type !== 'application/pdf') {
                 alert('Hanya file PDF yang diizinkan!');
                 resetUpload();
                 return;
             }
-
-            // Validasi ukuran (5 MB)
             if (file.size > 5 * 1024 * 1024) {
                 alert('Ukuran file maksimal 5 MB!');
                 resetUpload();
                 return;
             }
-
             showFilePreview(file);
         });
 
-        // Tombol hapus file
-        uploadRemove.addEventListener('click', (e) => {
-            e.stopPropagation();
-            resetUpload();
-        });
+        const uploadRemoveEl = getUploadRemove();
+        if (uploadRemoveEl) {
+            uploadRemoveEl.addEventListener('click', (e) => {
+                e.stopPropagation();
+                resetUpload();
+            });
+        }
 
-        // Drag & drop
-        ['dragenter', 'dragover'].forEach(eventName => {
-            uploadArea.addEventListener(eventName, (e) => {
+        ['dragenter', 'dragover'].forEach(evt => {
+            uploadAreaEl.addEventListener(evt, (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                uploadArea.classList.add('dragover');
+                uploadAreaEl.classList.add('dragover');
             });
         });
 
-        ['dragleave', 'drop'].forEach(eventName => {
-            uploadArea.addEventListener(eventName, (e) => {
+        ['dragleave', 'drop'].forEach(evt => {
+            uploadAreaEl.addEventListener(evt, (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                uploadArea.classList.remove('dragover');
+                uploadAreaEl.classList.remove('dragover');
             });
         });
 
-        uploadArea.addEventListener('drop', (e) => {
+        uploadAreaEl.addEventListener('drop', (e) => {
             const file = e.dataTransfer.files[0];
             if (!file) return;
-
-            if (file.type !== 'application/pdf') {
-                alert('Hanya file PDF yang diizinkan!');
-                return;
-            }
-
-            if (file.size > 5 * 1024 * 1024) {
-                alert('Ukuran file maksimal 5 MB!');
-                return;
-            }
-
-            // Masukkan ke input file via DataTransfer
+            if (file.type !== 'application/pdf') return alert('Hanya file PDF yang diizinkan!');
+            if (file.size > 5 * 1024 * 1024) return alert('Ukuran file maksimal 5 MB!');
             const dt = new DataTransfer();
             dt.items.add(file);
-            fileInput.files = dt.files;
+            fileInputEl.files = dt.files;
             showFilePreview(file);
         });
     }
 
-    document.getElementById('pengajuan_jam_mulai').addEventListener('change', function() {
-        const mulai = parseInt(this.value);
-        updateJamSelesaiOptions(mulai);
-        document.getElementById('pengajuan_jam_selesai').value = Math.min(mulai + 1, 10);
-    });
-
-    // submit form pengajuan
+    // ============================================
+    // SUBMIT FORM PENGAJUAN
+    // ============================================
     formPengajuan.addEventListener('submit', async function(e) {
         e.preventDefault();
 
@@ -360,13 +370,15 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('mata_pelajaran', document.getElementById('pengajuan_mapel').value);
         formData.append('kegiatan', document.getElementById('pengajuan_kegiatan').value);
         formData.append('kelas', document.getElementById('pengajuan_kelas').value || '-');
-        formData.append('tanggal', document.getElementById('modalPengajuan').getAttribute('data-tanggal'));
+        formData.append('tanggal', modalPengajuan.getAttribute('data-tanggal'));
         formData.append('jam_mulai', document.getElementById('pengajuan_jam_mulai').value);
         formData.append('jam_selesai', document.getElementById('pengajuan_jam_selesai').value);
-        formData.append('lab_id', document.getElementById('modalPengajuan').getAttribute('data-lab-id'));
+        formData.append('lab_id', modalPengajuan.getAttribute('data-lab-id'));
 
-        if (fileInput.files[0]) {
-            formData.append('file_pdf', fileInput.files[0]);
+        // Ambil file via getter global
+        const fi = getFileInput();
+        if (fi && fi.files[0]) {
+            formData.append('file_pdf', fi.files[0]);
         }
 
         const submitBtn = this.querySelector('.btn-simpan');
@@ -379,7 +391,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await res.json();
             alert(data.message || 'Pengajuan berhasil dikirim!');
             if (res.ok) {
-                document.getElementById('modalPengajuan').style.display = 'none';
+                modalPengajuan.style.display = 'none';
                 resetUpload();
             }
         } catch (err) {
@@ -390,14 +402,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // tutup modal saat klik di luar konten
+    // ---------- TUTUP MODAL KLIK LUAR ----------
     window.addEventListener('click', function(e) {
-        if (e.target === document.getElementById('modalPengajuan')) {
-            document.getElementById('modalPengajuan').style.display = 'none';
+        if (e.target === modalPengajuan) {
+            modalPengajuan.style.display = 'none';
         }
     });
 
-    // load labs
+    // ---------- LOAD AWAL ----------
     loadLabs().then(() => {
         if (labs.length > 0) {
             loadJadwal(formatDateISO(currentSunday), labs[currentLabIndex].id);
@@ -406,25 +418,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // event: dropdown berubah
-    weekSelect.addEventListener('change', function() {
-        if (this.value === 'prev') {
-            currentSunday = new Date(prevSunday);
-        } else if (this.value === 'current') {
-            currentSunday = getCurrentSunday();
-        } else if (this.value === 'next') {
-            currentSunday = new Date(nextSunday);
-        }
+    // ---------- EVENT DROPDOWN PEKAN ----------
+    if (weekSelect) {
+        weekSelect.addEventListener('change', function() {
+            if (this.value === 'prev') {
+                currentSunday = new Date(prevSunday);
+            } else if (this.value === 'current') {
+                currentSunday = getCurrentSunday();
+            } else if (this.value === 'next') {
+                currentSunday = new Date(nextSunday);
+            }
 
-        const labId = labs.length > 0 ? labs[currentLabIndex].id : null;
-        loadJadwal(formatDateISO(currentSunday), labId);
-    });
+            const labId = labs.length > 0 ? labs[currentLabIndex].id : null;
+            loadJadwal(formatDateISO(currentSunday), labId);
+        });
+    }
 
+    // ---------- LOAD SETTINGS ----------
     async function loadSettings() {
         try {
             const res = await fetch('/api/settings/public');
             const json = await res.json();
-            const data = json.data || json;   // data berupa objek { nama_sekolah, nama_lab }
+            const data = json.data || json;
             if (data.nama_sekolah) {
                 document.getElementById('nama_sekolah_display').textContent = data.nama_sekolah;
             }
@@ -436,6 +451,5 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Panggil saat halaman dimuat
     loadSettings();
 });

@@ -200,6 +200,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     // Reset form
                     formPengajuan.reset();
+                    resetUpload(); // Reset area upload file PDF
+
                     document.getElementById('pengajuan_jam_mulai').value = jamMulai;
                     updateJamSelesaiOptions(jamMulai);
                     document.getElementById('pengajuan_jam_selesai').value = Math.min(jamMulai + 1, 10);
@@ -223,6 +225,106 @@ document.addEventListener('DOMContentLoaded', function() {
             opt.textContent = i;
             sel.appendChild(opt);
         }
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('pengajuan_file_pdf');
+        const uploadContent = document.getElementById('uploadContent');
+        const uploadPreview = document.getElementById('uploadPreview');
+        const uploadFileName = document.getElementById('uploadFileName');
+        const uploadFileSize = document.getElementById('uploadFileSize');
+        const uploadRemove = document.getElementById('uploadRemove');
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+
+        function showFilePreview(file) {
+            uploadFileName.textContent = file.name;
+            uploadFileSize.textContent = formatFileSize(file.size);
+            uploadPreview.style.display = 'flex';
+            uploadArea.classList.add('has-file');
+        }
+
+        function resetUpload() {
+            fileInput.value = '';
+            uploadPreview.style.display = 'none';
+            uploadArea.classList.remove('has-file');
+        }
+
+        // Klik area untuk buka file dialog
+        uploadArea.addEventListener('click', (e) => {
+            if (e.target.closest('.upload-remove')) return;
+            if (uploadArea.classList.contains('has-file')) return;
+            fileInput.click();
+        });
+
+        // Saat file dipilih
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (!file) return;
+
+            // Validasi tipe
+            if (file.type !== 'application/pdf') {
+                alert('Hanya file PDF yang diizinkan!');
+                resetUpload();
+                return;
+            }
+
+            // Validasi ukuran (5 MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Ukuran file maksimal 5 MB!');
+                resetUpload();
+                return;
+            }
+
+            showFilePreview(file);
+        });
+
+        // Tombol hapus file
+        uploadRemove.addEventListener('click', (e) => {
+            e.stopPropagation();
+            resetUpload();
+        });
+
+        // Drag & drop
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadArea.classList.add('dragover');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadArea.classList.remove('dragover');
+            });
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            const file = e.dataTransfer.files[0];
+            if (!file) return;
+
+            if (file.type !== 'application/pdf') {
+                alert('Hanya file PDF yang diizinkan!');
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Ukuran file maksimal 5 MB!');
+                return;
+            }
+
+            // Masukkan ke input file via DataTransfer
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+            showFilePreview(file);
+        });
     }
 
     document.getElementById('pengajuan_jam_mulai').addEventListener('change', function() {
@@ -235,36 +337,46 @@ document.addEventListener('DOMContentLoaded', function() {
     formPengajuan.addEventListener('submit', async function(e) {
         e.preventDefault();
 
-        const body = {
-            pengaju: document.getElementById('pengajuan_nama').value,
-            nomor_wa: document.getElementById('pengajuan_wa').value,
-            penanggung_jawab: document.getElementById('pengajuan_nama').value,
-            mata_pelajaran: document.getElementById('pengajuan_mapel').value,
-            kegiatan: document.getElementById('pengajuan_kegiatan').value,
-            kelas: document.getElementById('pengajuan_kelas').value || '-',
-            tanggal: document.getElementById('modalPengajuan').getAttribute('data-tanggal'),
-            jam_mulai: parseInt(document.getElementById('pengajuan_jam_mulai').value),
-            jam_selesai: parseInt(document.getElementById('pengajuan_jam_selesai').value),
-            lab_id: parseInt(document.getElementById('modalPengajuan').getAttribute('data-lab-id'))
-        };
-
-        if (!body.pengaju || !body.nomor_wa || !body.kegiatan) {
+        if (!document.getElementById('pengajuan_nama').value ||
+            !document.getElementById('pengajuan_wa').value ||
+            !document.getElementById('pengajuan_kegiatan').value) {
             return alert('Nama, No WA, dan Kegiatan wajib diisi!');
         }
 
+        const formData = new FormData();
+        formData.append('pengaju', document.getElementById('pengajuan_nama').value);
+        formData.append('nomor_wa', document.getElementById('pengajuan_wa').value);
+        formData.append('penanggung_jawab', document.getElementById('pengajuan_nama').value);
+        formData.append('mata_pelajaran', document.getElementById('pengajuan_mapel').value);
+        formData.append('kegiatan', document.getElementById('pengajuan_kegiatan').value);
+        formData.append('kelas', document.getElementById('pengajuan_kelas').value || '-');
+        formData.append('tanggal', document.getElementById('modalPengajuan').getAttribute('data-tanggal'));
+        formData.append('jam_mulai', document.getElementById('pengajuan_jam_mulai').value);
+        formData.append('jam_selesai', document.getElementById('pengajuan_jam_selesai').value);
+        formData.append('lab_id', document.getElementById('modalPengajuan').getAttribute('data-lab-id'));
+
+        if (fileInput.files[0]) {
+            formData.append('file_pdf', fileInput.files[0]);
+        }
+
+        const submitBtn = this.querySelector('.btn-simpan');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Mengirim...';
+        submitBtn.disabled = true;
+
         try {
-            const res = await fetch('/api/pengajuan', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
+            const res = await fetch('/api/pengajuan', { method: 'POST', body: formData });
             const data = await res.json();
             alert(data.message || 'Pengajuan berhasil dikirim!');
             if (res.ok) {
                 document.getElementById('modalPengajuan').style.display = 'none';
+                resetUpload();
             }
         } catch (err) {
             alert('Gagal mengirim pengajuan. Silakan coba lagi.');
+        } finally {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
         }
     });
 

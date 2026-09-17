@@ -20,24 +20,17 @@ async function getAll(req, res) {
  */
 async function create(req, res) {
     const {
-        pengaju,
-        nomor_wa,
-        penanggung_jawab,
-        mata_pelajaran,
-        kegiatan,
-        kelas,
-        tanggal,
-        jam_mulai,
-        jam_selesai,
-        lab_id
+        pengaju, nomor_wa, penanggung_jawab, mata_pelajaran,
+        kegiatan, kelas, tanggal, jam_mulai, jam_selesai, lab_id
     } = req.body;
 
-    // Validasi field wajib
     if (!penanggung_jawab || !kegiatan || !tanggal) {
         return error(res, 'Data tidak lengkap', 400);
     }
 
     try {
+        const file_pdf = req.file ? req.file.filename : null;
+
         const result = await pengajuanService.create({
             pengaju: pengaju || '',
             nomor_wa: nomor_wa || '',
@@ -48,10 +41,10 @@ async function create(req, res) {
             tanggal,
             jam_mulai: parseInt(jam_mulai) || 0,
             jam_selesai: parseInt(jam_selesai) || 0,
-            lab_id: lab_id || 1
+            lab_id: lab_id || 1,
+            file_pdf
         });
 
-        // Kirim notifikasi ke admin
         const notifMsg =
             `📩 *Pengajuan Jadwal Baru*\n\n` +
             `Pemohon: ${pengaju || '-'}\n` +
@@ -60,13 +53,14 @@ async function create(req, res) {
             `PJ: ${penanggung_jawab}\n` +
             `Mapel: ${mata_pelajaran || '-'}\n` +
             `Tanggal: ${tanggal}\n` +
-            `Jam: ${jam_mulai}-${jam_selesai}\n\n` +
-            `Segera cek dashboard untuk terima/tolak.\n` +
+            `Jam: ${jam_mulai}-${jam_selesai}\n` +
+            (file_pdf ? `📄 *Lampiran PDF:* Ya\n` : '') +
+            `\nSegera cek dashboard untuk terima/tolak.\n` +
             `🔗 https://lab.mugalearning.web.id/dashboard`;
 
         sendWANotificationToAdmin(notifMsg);
 
-        return success(res, { id: result.insertId }, 'Pengajuan berhasil dikirim', 201);
+        return success(res, { id: result.insertId, file_pdf }, 'Pengajuan berhasil dikirim', 201);
     } catch (err) {
         console.error('Error pengajuan:', err);
         return error(res, 'Gagal menyimpan pengajuan');

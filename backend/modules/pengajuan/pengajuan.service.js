@@ -23,8 +23,8 @@ async function create(data) {
     const [result] = await pool.query(
         `INSERT INTO pengajuan_jadwal (
             pengaju, nomor_wa, penanggung_jawab, mata_pelajaran, kegiatan,
-            kelas, tanggal, jam_mulai, jam_selesai, lab_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            kelas, file_pdf, tanggal, jam_mulai, jam_selesai, lab_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
             data.pengaju,
             data.nomor_wa,
@@ -32,6 +32,7 @@ async function create(data) {
             data.mata_pelajaran,
             data.kegiatan,
             data.kelas,
+            data.file_pdf || null,
             data.tanggal,
             data.jam_mulai,
             data.jam_selesai,

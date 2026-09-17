@@ -184,6 +184,7 @@ CREATE TABLE IF NOT EXISTS `pengajuan_jadwal` (
     `mata_pelajaran` VARCHAR(100),
     `kegiatan` VARCHAR(255),
     `kelas` VARCHAR(50),
+    `file_pdf` VARCHAR(255) NULL,
     `tanggal` DATE,
     `jam_mulai` INT,
     `jam_selesai` INT,

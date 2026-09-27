@@ -1,2 +1,23 @@
 node_modules/
 .env
+# ============================================
+# Uploads — abaikan semua isi, tapi folder tetap ada
+# ============================================
+backend/uploads/**/*
+!backend/uploads/**/.gitkeep
+
+frontend/uploads/**/*
+!frontend/uploads/**/.gitkeep
+
+# ============================================
+# Node & environment
+# ============================================
+node_modules/
+.env
+.env.local
+*.log
+
+# ============================================
+# PM2
+# ============================================
+.pm2/

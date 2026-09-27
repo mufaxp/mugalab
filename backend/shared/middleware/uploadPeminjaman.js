@@ -3,7 +3,9 @@ const path = require('path');
 const fs = require('fs');
 
 // Tentukan folder tujuan upload
-const uploadDir = path.join(__dirname, '..', '..', '..', 'frontend', 'uploads', 'peminjaman');
+// __dirname = backend/shared/middleware/
+// ../../uploads/peminjaman → backend/uploads/peminjaman/
+const uploadDir = path.join(__dirname, '..', '..', 'uploads', 'peminjaman');
 
 // Buat folder jika belum ada
 if (!fs.existsSync(uploadDir)) {

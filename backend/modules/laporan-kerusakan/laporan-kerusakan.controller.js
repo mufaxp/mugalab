@@ -2,11 +2,10 @@ const laporanService = require('./laporan-kerusakan.service');
 const { success, error } = require('../../shared/utils/response');
 
 /**
- * GET semua laporan kerusakan (join alat, filter lab)
+ * GET semua laporan kerusakan (alat & sarana, filter lab)
  */
 async function getAll(req, res) {
     const { lab_id } = req.query;
-
     try {
         const data = await laporanService.getAll(lab_id || null);
         return success(res, data);
@@ -18,39 +17,38 @@ async function getAll(req, res) {
 
 /**
  * POST buat laporan kerusakan baru
+ * Terima: { jenis, item_id / alat_id / sarana_id, jumlah_rusak, pelapor, tanggal_lapor, keterangan }
  */
 async function create(req, res) {
-    const { alat_id, jumlah_rusak, pelapor, tanggal_lapor, keterangan } = req.body;
+    const { jumlah_rusak, pelapor, tanggal_lapor, keterangan } = req.body;
+    const jenis = req.body.jenis || 'alat';
 
-    // Validasi
-    if (!alat_id || !jumlah_rusak || !pelapor || !tanggal_lapor) {
+    // Terima dua format: item_id generik, atau alat_id/sarana_id spesifik
+    let item_id = req.body.item_id;
+    if (!item_id) {
+        item_id = jenis === 'alat' ? req.body.alat_id : req.body.sarana_id;
+    }
+
+    if (!item_id || !jumlah_rusak || !pelapor || !tanggal_lapor) {
         return error(res, 'Field wajib diisi', 400);
+    }
+    if (!['alat', 'sarana'].includes(jenis)) {
+        return error(res, 'Jenis harus "alat" atau "sarana"', 400);
     }
 
     try {
-        // Cek stok alat
-        const alat = await laporanService.getAlatStok(alat_id);
-        if (!alat) {
-            return error(res, 'Alat tidak ditemukan', 404);
+        const stok = await laporanService.getStokItem(jenis, item_id);
+        if (!stok) {
+            return error(res, `${jenis === 'alat' ? 'Alat' : 'Sarana'} tidak ditemukan`, 404);
+        }
+        if (stok.jumlah < parseInt(jumlah_rusak)) {
+            return error(res, 'Jumlah tidak mencukupi', 400);
         }
 
-        if (alat.jumlah < parseInt(jumlah_rusak)) {
-            return error(res, 'Jumlah alat tidak mencukupi', 400);
-        }
+        await laporanService.create(jenis, item_id, parseInt(jumlah_rusak), pelapor, tanggal_lapor, keterangan || '');
+        await laporanService.kurangiStok(jenis, item_id, parseInt(jumlah_rusak));
 
-        // Insert laporan
-        await laporanService.create(
-            alat_id,
-            parseInt(jumlah_rusak),
-            pelapor,
-            tanggal_lapor,
-            keterangan || ''
-        );
-
-        // Kurangi stok alat & tambah jumlah rusak
-        await laporanService.kurangiStokAlat(alat_id, parseInt(jumlah_rusak));
-
-        return success(res, null, 'Laporan berhasil dibuat, stok alat berkurang', 201);
+        return success(res, null, `Laporan berhasil dibuat, stok ${jenis} berkurang`, 201);
     } catch (err) {
         console.error('Error creating laporan:', err);
         return error(res, 'Gagal membuat laporan');
@@ -64,26 +62,26 @@ async function updateStatus(req, res) {
     const { id } = req.params;
     const { status } = req.body;
 
-    if (!status) {
-        return error(res, 'Status wajib diisi', 400);
-    }
+    if (!status) return error(res, 'Status wajib diisi', 400);
 
     try {
-        // Ambil data laporan
         const laporan = await laporanService.getById(id);
-        if (!laporan) {
-            return error(res, 'Laporan tidak ditemukan', 404);
-        }
+        if (!laporan) return error(res, 'Laporan tidak ditemukan', 404);
 
         const oldStatus = laporan.status;
+        const itemId = laporan.jenis === 'alat' ? laporan.alat_id : laporan.sarana_id;
 
-        // Update status
         await laporanService.updateStatus(id, status);
 
-        // Logika stok
+        // Selesai: perbaikan berhasil → stok kembali
         if (status === 'selesai' && (oldStatus === 'rusak' || oldStatus === 'diperbaiki')) {
-            // Kembalikan stok
-            await laporanService.kembalikanStokAlat(laporan.alat_id, laporan.jumlah_rusak);
+            await laporanService.kembalikanStok(laporan.jenis, itemId, laporan.jumlah_rusak);
+        }
+
+        // Dibuang: item fisik keluar dari inventaris
+        // → jumlah tetap (sudah dikurangi saat lapor), tapi jumlah_rusak dikurangi
+        if (status === 'dibuang' && (oldStatus === 'rusak' || oldStatus === 'diperbaiki')) {
+            await laporanService.kurangiJumlahRusak(laporan.jenis, itemId, laporan.jumlah_rusak);
         }
 
         return success(res, null, 'Status berhasil diperbarui');
@@ -101,13 +99,12 @@ async function remove(req, res) {
 
     try {
         const laporan = await laporanService.getById(id);
-        if (!laporan) {
-            return error(res, 'Laporan tidak ditemukan', 404);
-        }
+        if (!laporan) return error(res, 'Laporan tidak ditemukan', 404);
 
-        // Jika status masih rusak/diperbaiki, kembalikan stok (koreksi)
+        // Koreksi stok jika masih rusak/diperbaiki
         if (laporan.status === 'rusak' || laporan.status === 'diperbaiki') {
-            await laporanService.kembalikanStokAlat(laporan.alat_id, laporan.jumlah_rusak);
+            const itemId = laporan.jenis === 'alat' ? laporan.alat_id : laporan.sarana_id;
+            await laporanService.kembalikanStok(laporan.jenis, itemId, laporan.jumlah_rusak);
         }
 
         await laporanService.remove(id);

@@ -66,6 +66,10 @@ async function initSarana() {
     document.addEventListener('click', e => { if (!e.target.closest('.search-wrapper')) suggestSarana.classList.remove('active'); });
 
     loadSarana();
+
+    const sidebarInv = document.querySelector('.sidebar-item[data-panel="inventaris"]');
+    if (sidebarInv) sidebarInv.addEventListener('click', loadSarana);
+
     console.log('✅ Modul Sarana siap');
 }
 
@@ -112,7 +116,15 @@ function renderSarana(data) {
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.nama_sarana}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.spek || '-'}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.produsen}</td>
-            <td style="padding:8px;border:1px solid #d0e6d5;">${item.jumlah} total<br><span style="color:#c62828;font-size:11px;">${item.jumlah_rusak||0} rusak</span></td>
+            <td style="padding:8px;border:1px solid #d0e6d5;">
+                <span style="font-size:14px;">${item.jumlah}</span>
+                ${parseInt(item.dipinjam) > 0
+                    ? `<br><span style="color:#E65100;font-size:11px;font-weight:600;">${item.dipinjam} dipinjam</span>`
+                    : ''}
+                ${parseInt(item.jumlah_rusak) > 0
+                    ? `<br><span style="color:#c62828;font-size:11px;">${item.jumlah_rusak} rusak</span>`
+                    : ''}
+            </td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${emoji} ${item.kondisi}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${aksi}</td>
         </tr>`;

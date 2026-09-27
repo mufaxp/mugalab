@@ -1,18 +1,27 @@
 const pool = require('../../config/db');
 
 /**
- * Ambil semua alat, optional filter lab_id
+ * Ambil semua alat, optional filter lab_id.
+ * Menyertakan field "dipinjam" = jumlah yang sedang dipinjam.
  */
 async function getAll(labId = null) {
-    let query = 'SELECT * FROM alat';
+    let query = `
+        SELECT a.*,
+            COALESCE((
+                SELECT SUM(p.jumlah)
+                FROM peminjaman p
+                WHERE p.alat_id = a.id AND p.status = 'dipinjam'
+            ), 0) AS dipinjam
+        FROM alat a
+    `;
     const params = [];
 
     if (labId) {
-        query += ' WHERE lab_id = ?';
+        query += ' WHERE a.lab_id = ?';
         params.push(labId);
     }
 
-    query += ' ORDER BY kode_alat';
+    query += ' ORDER BY a.kode_alat';
     const [rows] = await pool.query(query, params);
     return rows;
 }

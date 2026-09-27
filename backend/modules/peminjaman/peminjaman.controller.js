@@ -103,13 +103,16 @@ async function kembali(req, res) {
         if (peminjaman.jenis === 'alat') {
             await peminjamanService.kembalikanStok('alat', peminjaman.alat_id, kembali, rusak);
 
-            // Auto lapor kerusakan jika ada rusak
             if (rusak > 0) {
                 await peminjamanService.laporKerusakan('alat', peminjaman.alat_id, rusak, peminjaman.pemohon, today, '');
             }
         } else {
             await peminjamanService.kembalikanStok('sarana', peminjaman.sarana_id, kembali, rusak);
-            // Sarana tidak punya laporan kerusakan otomatis
+
+            // Auto lapor kerusakan sarana
+            if (rusak > 0) {
+                await peminjamanService.laporKerusakan('sarana', peminjaman.sarana_id, rusak, peminjaman.pemohon, today, '');
+            }
         }
 
         return success(res, null, 'Pengembalian berhasil');

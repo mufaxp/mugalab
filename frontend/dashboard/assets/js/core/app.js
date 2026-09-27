@@ -15,8 +15,6 @@ function initSidebar() {
             'laporan-praktikum',
             'pengajuan',
             'peminjaman',
-            'kelola-lab',
-            'user',
             'setting'
         ],
         laboran: [

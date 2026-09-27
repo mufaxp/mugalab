@@ -718,6 +718,104 @@ body {
     background-color: #BBDEFB;
 }
 
+/* Panel setting */
+.settings-tabs {
+    display: flex;
+    gap: 6px;
+    margin: 20px 0 24px;
+    padding: 6px;
+    background: var(--muh-green-bg);
+    border: 1px solid var(--muh-green-light);
+    border-radius: 14px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.settings-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.settings-tab {
+    flex: 1;
+    min-width: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 18px;
+    border: none;
+    background: transparent;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: #557066;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    white-space: nowrap;
+}
+
+.settings-tab:hover {
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--muh-green-dark);
+}
+
+.settings-tab.active {
+    background: #FFFFFF;
+    color: var(--muh-green-dark);
+    box-shadow: 0 2px 10px rgba(14, 112, 63, 0.15);
+}
+
+.settings-tab-icon {
+    font-size: 16px;
+    line-height: 1;
+}
+.settings-panel {
+    display: none;
+    animation: settingsFadeIn 0.25s ease;
+}
+.settings-panel.active {
+    display: block;
+}
+@keyframes settingsFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.settings-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--muh-green-light);
+    flex-wrap: wrap;
+}
+
+.settings-section-header h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .settings-tabs {
+        flex-direction: column;
+        border-radius: 12px;
+    }
+    .settings-tab {
+        justify-content: flex-start;
+        min-width: unset;
+    }
+}
 @media (max-width: 640px) {
     .search-input {
         width: 150px;

@@ -223,6 +223,8 @@ async function submitPinjam(e) {
             document.getElementById('modalPinjam').style.display = 'none';
             loadPeminjaman('alat');
             loadPeminjaman('sarana');
+            if (typeof loadAlat === 'function') loadAlat();
+            if (typeof loadSarana === 'function') loadSarana();
         }
     } catch (err) {
         alert('Gagal terhubung ke server');

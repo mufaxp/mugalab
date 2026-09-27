@@ -42,8 +42,6 @@ function initKelolaLab() {
     loadLabData();
 
     // Load saat panel dibuka
-    const sidebar = document.querySelector('.sidebar-item[data-panel="kelola-lab"]');
-    if (sidebar) sidebar.addEventListener('click', loadLabData);
 
     console.log('✅ Modul Kelola Lab siap');
 }

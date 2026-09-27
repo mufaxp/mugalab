@@ -100,14 +100,17 @@ async function updateKembali(id, tanggalKembali, fotoKembali) {
 }
 
 /**
- * Auto lapor kerusakan alat
+ * Auto lapor kerusakan (untuk alat maupun sarana)
  */
 async function laporKerusakan(jenis, itemId, jumlahRusak, pelapor, tanggal, keterangan) {
-    if (jenis !== 'alat') return; // Hanya alat yang punya laporan kerusakan
+    const alat_id = jenis === 'alat' ? itemId : null;
+    const sarana_id = jenis === 'sarana' ? itemId : null;
 
     await pool.query(
-        'INSERT INTO laporan_kerusakan (alat_id, jumlah_rusak, pelapor, tanggal_lapor, keterangan) VALUES (?, ?, ?, ?, ?)',
-        [itemId, jumlahRusak, pelapor, tanggal, keterangan]
+        `INSERT INTO laporan_kerusakan
+            (jenis, alat_id, sarana_id, jumlah_rusak, pelapor, tanggal_lapor, keterangan)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [jenis, alat_id, sarana_id, jumlahRusak, pelapor, tanggal, keterangan || '']
     );
 }
 

@@ -1,6 +1,11 @@
 /**
  * setting.js - Modul Pengaturan Web
- * Hanya untuk admin
+ * Hanya untuk admin.
+ *
+ * Panel Pengaturan memiliki 3 tab:
+ *   - umum  : nama sekolah, nama lab, upload template
+ *   - lab   : CRUD ruangan lab   (delegasi ke lab.js)
+ *   - user  : CRUD user          (delegasi ke user.js)
  */
 
 async function initSetting() {
@@ -10,6 +15,18 @@ async function initSetting() {
         return;
     }
 
+    // -------- Tab Navigation --------
+    const tabs = document.querySelectorAll('.settings-tab');
+    const panels = document.querySelectorAll('.settings-panel');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabName = tab.getAttribute('data-settings-tab');
+            activateSettingsTab(tabName, tabs, panels);
+        });
+    });
+
+    // -------- Form Pengaturan Umum --------
     const form = document.getElementById('formSettings');
     const inpSekolah = document.getElementById('setting_nama_sekolah');
     const inpLab = document.getElementById('setting_nama_lab');
@@ -70,9 +87,40 @@ async function initSetting() {
         });
     }
 
+    // -------- Reload saat sidebar "Pengaturan" diklik --------
     const sidebar = document.querySelector('.sidebar-item[data-panel="setting"]');
-    if (sidebar) sidebar.addEventListener('click', loadCurrentSettings);
+    if (sidebar) {
+        sidebar.addEventListener('click', () => {
+            const activeTab = document.querySelector('.settings-tab.active');
+            const tabName = activeTab ? activeTab.getAttribute('data-settings-tab') : 'umum';
+            activateSettingsTab(tabName, tabs, panels);
+        });
+    }
 
+    // -------- Initial load --------
     loadCurrentSettings();
     console.log('✅ Modul Pengaturan Web siap');
+}
+
+/**
+ * Aktifkan tab + lazy load data yang dibutuhkan.
+ */
+function activateSettingsTab(tabName, tabs, panels) {
+    tabs = tabs || document.querySelectorAll('.settings-tab');
+    panels = panels || document.querySelectorAll('.settings-panel');
+
+    tabs.forEach(t => {
+        t.classList.toggle('active', t.getAttribute('data-settings-tab') === tabName);
+    });
+    panels.forEach(p => {
+        p.classList.toggle('active', p.id === 'setting-' + tabName);
+    });
+
+    // Lazy load / refresh data per tab
+    if (tabName === 'lab' && typeof loadLabData === 'function') {
+        loadLabData();
+    }
+    if (tabName === 'user' && typeof loadUser === 'function') {
+        loadUser();
+    }
 }

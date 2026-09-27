@@ -133,11 +133,13 @@ CREATE TABLE IF NOT EXISTS `sarana` (
 
 -- ============================================================
 -- TABEL: laporan_kerusakan
--- Laporan kerusakan alat/sarana
+-- Laporan kerusakan alat ATAU sarana
 -- ============================================================
 CREATE TABLE IF NOT EXISTS `laporan_kerusakan` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `alat_id` INT NOT NULL,
+    `jenis` ENUM('alat','sarana') NOT NULL DEFAULT 'alat',
+    `alat_id` INT NULL,
+    `sarana_id` INT NULL,
     `jumlah_rusak` INT NOT NULL DEFAULT 1,
     `pelapor` VARCHAR(100) NOT NULL,
     `tanggal_lapor` DATE NOT NULL,
@@ -145,7 +147,8 @@ CREATE TABLE IF NOT EXISTS `laporan_kerusakan` (
     `keterangan` TEXT,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (`alat_id`) REFERENCES `alat`(`id`) ON DELETE CASCADE
+    FOREIGN KEY (`alat_id`) REFERENCES `alat`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`sarana_id`) REFERENCES `sarana`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 -- ============================================================

@@ -1,19 +1,23 @@
 const pool = require('../../config/db');
 
 /**
- * Ambil semua laporan kerusakan (join alat)
- * dengan filter lab_id opsional
+ * Ambil semua laporan kerusakan (alat & sarana)
+ * dengan filter lab_id opsional.
  */
 async function getAll(labId = null) {
     let query = `
-        SELECT lk.*, a.kode_alat, a.nama_alat 
-        FROM laporan_kerusakan lk 
-        JOIN alat a ON lk.alat_id = a.id
+        SELECT lk.*,
+            CASE WHEN lk.jenis = 'alat' THEN a.kode_alat ELSE s.kode_sarana END AS kode_item,
+            CASE WHEN lk.jenis = 'alat' THEN a.nama_alat ELSE s.nama_sarana END AS nama_item,
+            COALESCE(a.lab_id, s.lab_id) AS lab_id
+        FROM laporan_kerusakan lk
+        LEFT JOIN alat a ON lk.jenis = 'alat' AND lk.alat_id = a.id
+        LEFT JOIN sarana s ON lk.jenis = 'sarana' AND lk.sarana_id = s.id
     `;
     const params = [];
 
     if (labId) {
-        query += ' WHERE a.lab_id = ?';
+        query += ' WHERE COALESCE(a.lab_id, s.lab_id) = ?';
         params.push(labId);
     }
 
@@ -23,40 +27,48 @@ async function getAll(labId = null) {
 }
 
 /**
- * Ambil stok alat berdasarkan id
+ * Ambil stok item (alat atau sarana)
  */
-async function getAlatStok(alatId) {
-    const [rows] = await pool.query('SELECT jumlah FROM alat WHERE id=?', [alatId]);
+async function getStokItem(jenis, itemId) {
+    const table = jenis === 'alat' ? 'alat' : 'sarana';
+    const [rows] = await pool.query(`SELECT jumlah FROM ${table} WHERE id=?`, [itemId]);
     return rows[0] || null;
 }
 
 /**
  * Tambah laporan kerusakan
  */
-async function create(alat_id, jumlah_rusak, pelapor, tanggal_lapor, keterangan) {
+async function create(jenis, itemId, jumlah_rusak, pelapor, tanggal_lapor, keterangan) {
+    const alat_id = jenis === 'alat' ? itemId : null;
+    const sarana_id = jenis === 'sarana' ? itemId : null;
+
     await pool.query(
-        'INSERT INTO laporan_kerusakan (alat_id, jumlah_rusak, pelapor, tanggal_lapor, keterangan) VALUES (?, ?, ?, ?, ?)',
-        [alat_id, jumlah_rusak, pelapor, tanggal_lapor, keterangan]
+        `INSERT INTO laporan_kerusakan
+            (jenis, alat_id, sarana_id, jumlah_rusak, pelapor, tanggal_lapor, keterangan)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [jenis, alat_id, sarana_id, jumlah_rusak, pelapor, tanggal_lapor, keterangan]
     );
 }
 
 /**
- * Kurangi stok alat & tambah jumlah_rusak
+ * Kurangi stok item & tambah jumlah_rusak
  */
-async function kurangiStokAlat(alatId, jumlahRusak) {
+async function kurangiStok(jenis, itemId, jumlahRusak) {
+    const table = jenis === 'alat' ? 'alat' : 'sarana';
     await pool.query(
-        'UPDATE alat SET jumlah = jumlah - ?, jumlah_rusak = jumlah_rusak + ? WHERE id = ?',
-        [jumlahRusak, jumlahRusak, alatId]
+        `UPDATE ${table} SET jumlah = jumlah - ?, jumlah_rusak = jumlah_rusak + ? WHERE id = ?`,
+        [jumlahRusak, jumlahRusak, itemId]
     );
 }
 
 /**
- * Kembalikan stok alat & kurangi jumlah_rusak
+ * Kembalikan stok item & kurangi jumlah_rusak
  */
-async function kembalikanStokAlat(alatId, jumlahRusak) {
+async function kembalikanStok(jenis, itemId, jumlahRusak) {
+    const table = jenis === 'alat' ? 'alat' : 'sarana';
     await pool.query(
-        'UPDATE alat SET jumlah = jumlah + ?, jumlah_rusak = jumlah_rusak - ? WHERE id = ?',
-        [jumlahRusak, jumlahRusak, alatId]
+        `UPDATE ${table} SET jumlah = jumlah + ?, jumlah_rusak = jumlah_rusak - ? WHERE id = ?`,
+        [jumlahRusak, jumlahRusak, itemId]
     );
 }
 
@@ -82,12 +94,25 @@ async function remove(id) {
     await pool.query('DELETE FROM laporan_kerusakan WHERE id=?', [id]);
 }
 
+/**
+ * Kurangi HANYA jumlah_rusak (untuk status "dibuang").
+ * `jumlah` tidak disentuh karena item sudah dianggap keluar dari inventaris.
+ */
+async function kurangiJumlahRusak(jenis, itemId, jumlah) {
+    const table = jenis === 'alat' ? 'alat' : 'sarana';
+    await pool.query(
+        `UPDATE ${table} SET jumlah_rusak = GREATEST(0, jumlah_rusak - ?) WHERE id = ?`,
+        [jumlah, itemId]
+    );
+}
+
 module.exports = {
     getAll,
-    getAlatStok,
+    getStokItem,
     create,
-    kurangiStokAlat,
-    kembalikanStokAlat,
+    kurangiStok,
+    kembalikanStok,
+    kurangiJumlahRusak,
     getById,
     updateStatus,
     remove

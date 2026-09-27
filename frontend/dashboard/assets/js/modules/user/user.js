@@ -51,8 +51,6 @@ function initManajemenUser() {
     });
 
     loadUser();
-    const sidebar = document.querySelector('.sidebar-item[data-panel="user"]');
-    if (sidebar) sidebar.addEventListener('click', loadUser);
 
     console.log('✅ Modul Manajemen User siap');
 }

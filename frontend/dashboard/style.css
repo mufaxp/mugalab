@@ -805,6 +805,115 @@ body {
     margin: 0;
 }
 
+/* ============================================
+   ROLE PERMISSIONS (Tab Manajemen User)
+   ============================================ */
+
+.role-permissions-section {
+    margin-top: 40px;
+    padding-top: 28px;
+    border-top: 2px dashed var(--muh-green-light);
+}
+
+.role-permissions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.role-permissions-header h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+}
+
+.role-permissions-header p {
+    font-size: 13px;
+    color: #777;
+    margin: 0;
+}
+
+.role-permission-card {
+    background: #FFFFFF;
+    border: 1px solid var(--muh-green-light);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    transition: box-shadow 0.2s ease;
+}
+
+.role-permission-card:hover {
+    box-shadow: 0 2px 12px rgba(14, 112, 63, 0.08);
+}
+
+.role-permission-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--muh-green-dark);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.role-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.role-chip {
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1.5px solid #d0e6d5;
+    background: #FFFFFF;
+    color: #557066;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.role-chip:hover {
+    border-color: var(--muh-green);
+    color: var(--muh-green-dark);
+    transform: translateY(-1px);
+}
+
+.role-chip.active {
+    background: var(--muh-green-light);
+    border-color: var(--muh-green);
+    color: var(--muh-green-dark);
+    box-shadow: 0 2px 8px rgba(14, 112, 63, 0.15);
+}
+
+.role-chip.locked {
+    opacity: 0.75;
+    cursor: not-allowed;
+}
+
+.role-chip.locked:hover {
+    transform: none;
+    border-color: var(--muh-green-light);
+}
+
+@media (max-width: 640px) {
+    .role-permissions-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .role-permissions-header .btn-simpan {
+        width: 100%;
+    }
+}
+
 /* Responsive */
 @media (max-width: 640px) {
     .settings-tabs {

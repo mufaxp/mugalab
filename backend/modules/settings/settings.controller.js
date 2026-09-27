@@ -59,4 +59,50 @@ async function uploadTemplate(req, res) {
     }
 }
 
-module.exports = { getPublic, getAll, update, uploadTemplate };
+/**
+ * GET konfigurasi izin per role
+ * Akses: semua user yang login (dibutuhkan untuk filter sidebar)
+ */
+async function getRolePermissions(req, res) {
+    try {
+        const data = await settingsService.getRolePermissions();
+        return success(res, data);
+    } catch (err) {
+        console.error('Error get role permissions:', err);
+        return error(res, 'Gagal mengambil izin role');
+    }
+}
+
+/**
+ * PUT update konfigurasi izin per role
+ * Akses: admin saja
+ */
+async function updateRolePermissions(req, res) {
+    const perms = req.body;
+
+    if (!perms || typeof perms !== 'object') {
+        return error(res, 'Data tidak valid', 400);
+    }
+
+    // Validasi: 3 role wajib ada
+    for (const role of ['admin', 'laboran', 'guru']) {
+        if (!Array.isArray(perms[role])) {
+            return error(res, `Role "${role}" harus berupa array`, 400);
+        }
+    }
+
+    // Kunci keamanan: panel "setting" WAJIB ada di admin
+    if (!perms.admin.includes('setting')) {
+        return error(res, 'Panel "Pengaturan" wajib aktif untuk admin', 400);
+    }
+
+    try {
+        await settingsService.updateRolePermissions(perms);
+        return success(res, null, 'Izin role berhasil disimpan');
+    } catch (err) {
+        console.error('Error update role permissions:', err);
+        return error(res, 'Gagal menyimpan izin role');
+    }
+}
+
+module.exports = { getPublic, getAll, update, uploadTemplate, getRolePermissions, updateRolePermissions };

@@ -17,4 +17,8 @@ router.put('/', verifyToken, requireRole('admin'), settingsController.update);
 // POST upload template DOCX (admin)
 router.post('/template', verifyToken, requireRole('admin'), upload.single('file'), settingsController.uploadTemplate);
 
+// Role permissions
+router.get('/role-permissions', verifyToken, settingsController.getRolePermissions);
+router.put('/role-permissions', verifyToken, requireRole('admin'), settingsController.updateRolePermissions);
+
 module.exports = router;

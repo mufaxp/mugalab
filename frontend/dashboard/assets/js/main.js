@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     initLogoutButton();
 
     // Core
-    initApp();
+    await initApp();
 
     // Load semua dropdown lab
     const labSelects = [

@@ -45,11 +45,11 @@ Panduan lengkap instalasi aplikasi MUGALAB dari nol di VPS Ubuntu 24.04 LTS.
 ### 1.2 Yang Perlu Disiapkan
 
 - [ ] VPS dengan Ubuntu 24.04 LTS
-- [ ] Akses SSH (user non-root, misal `adminlab`, dengan `sudo`)
+- [ ] Akses SSH (user non-root, mis. `adminlab`, dengan `sudo`)
 - [ ] Repositori GitHub (MUGALAB web + chatbot)
 - [ ] Token Fonnte (dari [dashboard Fonnte](https://fonnte.com))
 - [ ] Nomor WhatsApp admin (format: `6281234567890`)
-- [ ] Domain (opsional, untuk HTTPS) — misal `lab.mugalearning.web.id`
+- [ ] Domain (opsional, untuk HTTPS) — mis. `lab.mugalearning.web.id`
 
 ### 1.3 Login ke VPS
 
@@ -57,7 +57,7 @@ Panduan lengkap instalasi aplikasi MUGALAB dari nol di VPS Ubuntu 24.04 LTS.
 ssh adminlab@<IP_VPS>
 ```
 
-> **Catatan:** Semua perintah di panduan ini dijalankan sebagai user `adminlab` dengan `sudo`. Jika nama user Anda berbeda, sesuaikan.
+> **Catatan:** Semua perintah di panduan ini dijalankan sebagai user `adminlab` dengan `sudo`. Sesuaikan jika nama user Anda berbeda.
 
 ---
 
@@ -103,8 +103,8 @@ sudo apt install -y nodejs
 Verifikasi:
 
 ```bash
-node -v      # harus v20.x.x
-npm -v       # harus 10.x.x
+node -v      # v20.x.x
+npm -v       # 10.x.x
 ```
 
 ### 2.6 Instal PM2 (Global)
@@ -140,11 +140,11 @@ which libreoffice
 | MySQL Server | Database | Backend & chatbot |
 | LibreOffice | Konversi DOCX → PDF | Modul `laporan-praktikum` |
 | libreoffice-writer | Writer untuk DOCX/PDF | Modul `laporan-praktikum` |
-| fonts-noto | Font default (Latin, dll.) | Render PDF laporan |
+| fonts-noto | Font default (Latin) | Render PDF |
 | fonts-noto-cjk | Font CJK | (opsional) Render PDF |
 | git | Clone & update repo | Deployment |
-| ca-certificates | Verifikasi SSL (HTTPS ke Fonnte) | Notifikasi WA |
-| curl / wget | Testing endpoint & unduh file | Debugging |
+| ca-certificates | Verifikasi SSL ke Fonnte | Notifikasi WA |
+| curl / wget | Testing endpoint & unduh | Debugging |
 
 ### 2.9 Verifikasi Semua Dependensi
 
@@ -174,7 +174,7 @@ Rekomendasi jawaban:
 
 | Pertanyaan | Jawaban |
 |------------|---------|
-| VALIDATE PASSWORD COMPONENT | `0` (Low) — untuk kemudahan |
+| VALIDATE PASSWORD COMPONENT | `0` (Low) |
 | Set root password | **Ya** — catat passwordnya |
 | Remove anonymous users | **Ya** |
 | Disallow root login remotely | **Ya** |
@@ -234,11 +234,9 @@ sudo mysql -u root -p
 ```
 
 ```sql
--- Buat database
 CREATE DATABASE `lab-db` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE `chatbot` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- Buat user khusus (lebih aman daripada root)
 CREATE USER 'mugalab'@'localhost' IDENTIFIED BY 'PasswordMugalab';
 GRANT ALL PRIVILEGES ON `lab-db`.* TO 'mugalab'@'localhost';
 GRANT ALL PRIVILEGES ON `chatbot`.* TO 'mugalab'@'localhost';
@@ -247,7 +245,7 @@ FLUSH PRIVILEGES;
 EXIT;
 ```
 
-> **Catatan:** Ganti `PasswordMugalab` dengan password kuat. Password ini nanti dipakai di file `.env`.
+> **Catatan:** Ganti `PasswordMugalab` dengan password kuat. Password ini dipakai di `.env`.
 
 ---
 
@@ -271,9 +269,12 @@ sudo chmod -R 755 /opt/chatbot
 
 ### 4.3 Folder Uploads Backend
 
+Semua upload disimpan di sini:
+
 ```bash
 sudo mkdir -p /var/www/lab/backend/uploads/pengajuan
 sudo mkdir -p /var/www/lab/backend/uploads/templates
+sudo mkdir -p /var/www/lab/backend/uploads/peminjaman
 sudo mkdir -p /var/www/lab/backend/uploads/temp
 sudo chown -R adminlab:www-data /var/www/lab/backend/uploads
 sudo chmod -R 775 /var/www/lab/backend/uploads
@@ -285,28 +286,20 @@ sudo chmod -R 775 /var/www/lab/backend/uploads
 |--------|--------|
 | `pengajuan/` | Lampiran PDF dari pengajuan jadwal |
 | `templates/` | Template DOCX laporan praktikum |
+| `peminjaman/` | Foto pinjam & kembali (dari kamera) |
 | `temp/` | File sementara saat konversi DOCX → PDF |
 
-### 4.4 Folder Uploads Frontend
+> **Catatan:** Folder `frontend/uploads/` **sudah tidak dipakai** sejak foto peminjaman dipindah ke `backend/uploads/peminjaman/`.
 
-```bash
-sudo mkdir -p /var/www/lab/frontend/uploads/peminjaman
-sudo chown -R adminlab:www-data /var/www/lab/frontend/uploads
-sudo chmod -R 775 /var/www/lab/frontend/uploads
-```
-
-**Fungsi:** menyimpan foto peminjaman dari dashboard.
-
-### 4.5 Ringkasan Struktur Folder
+### 4.4 Ringkasan Struktur Folder
 
 ```
 /var/www/lab/                    ← user: adminlab, group: www-data
-├── frontend/
-│   └── uploads/peminjaman/      ← foto peminjaman
 └── backend/
     └── uploads/
         ├── pengajuan/           ← lampiran PDF pengajuan
         ├── templates/           ← template DOCX laprak
+        ├── peminjaman/          ← foto pinjam & kembali
         └── temp/                ← file sementara konversi
 
 /opt/chatbot/                    ← user: adminlab
@@ -323,7 +316,7 @@ cd /var/www/lab
 git clone https://github.com/<username>/<repo-mugalab>.git .
 ```
 
-> **Catatan:** Tanda titik (`.`) di akhir perintah berarti clone ke direktori saat ini (tidak membuat subfolder baru).
+> **Catatan:** Tanda titik (`.`) di akhir perintah berarti clone ke direktori saat ini.
 
 ### 5.2 Chatbot
 
@@ -338,11 +331,45 @@ git clone https://github.com/<username>/<repo-chatbot>.git .
 # Via HTTPS + PAT
 git clone https://<username>:<token>@github.com/<username>/<repo>.git .
 
-# Atau setup SSH key dulu
+# Atau SSH key
 ssh-keygen -t ed25519 -C "vps@mugalab"
 cat ~/.ssh/id_ed25519.pub
-# Copy output ke GitHub → Settings → SSH Keys
+# Copy ke GitHub → Settings → SSH Keys
 git clone git@github.com:<username>/<repo>.git .
+```
+
+### 5.4 Verifikasi File `.gitignore`
+
+Repo seharusnya sudah punya `.gitignore` di root dengan isi minimal:
+
+```gitignore
+# Uploads — abaikan isi, folder tetap ter-track via .gitkeep
+backend/uploads/**/*
+!backend/uploads/**/.gitkeep
+
+frontend/uploads/**/*
+!frontend/uploads/**/.gitkeep
+
+# Node & environment
+node_modules/
+.env
+.env.local
+*.log
+
+# PM2
+.pm2/
+```
+
+Cek dengan:
+
+```bash
+cat /var/www/lab/.gitignore
+```
+
+Pastikan file `.gitkeep` ada di setiap subfolder upload:
+
+```bash
+find /var/www/lab/backend/uploads -name ".gitkeep"
 ```
 
 ---
@@ -386,7 +413,7 @@ cd /var/www/lab/backend
 npm install
 ```
 
-Atau jika ingin memastikan versi persis sesuai `package-lock.json`:
+Atau jika ingin versi persis sesuai `package-lock.json`:
 
 ```bash
 npm ci
@@ -395,7 +422,7 @@ npm ci
 ### 6.3 Jalankan `init.sql`
 
 ```bash
-# Cek dulu path init.sql
+# Cek path init.sql
 ls -la database/
 
 # Import ke MySQL
@@ -413,6 +440,19 @@ ADD COLUMN file_pdf VARCHAR(255) NULL AFTER kelas;
 "
 ```
 
+Jika tabel `laporan_kerusakan` belum mendukung sarana:
+
+```bash
+mysql -u root -p lab-db -e "
+ALTER TABLE laporan_kerusakan
+    ADD COLUMN jenis ENUM('alat','sarana') NOT NULL DEFAULT 'alat' AFTER id,
+    MODIFY COLUMN alat_id INT NULL,
+    ADD COLUMN sarana_id INT NULL AFTER alat_id,
+    ADD CONSTRAINT fk_laporan_sarana
+        FOREIGN KEY (sarana_id) REFERENCES sarana(id) ON DELETE CASCADE;
+"
+```
+
 ### 6.5 Buat User Admin Pertama
 
 Generate hash password:
@@ -424,24 +464,25 @@ console.log(bcrypt.hashSync('Admin123!', 10));
 "
 ```
 
-Copy hash yang dihasilkan, lalu:
+Copy hash, lalu:
 
 ```bash
 mysql -u root -p lab-db
 ```
 
 ```sql
-INSERT INTO users (username, email, password_hash, role, nama, created_at)
+INSERT INTO users (username, password, nama, role, created_at)
 VALUES (
   'admin',
-  'admin@lab.com',
   '<hash-yang-di-generate>',
-  'admin',
   'Administrator',
+  'admin',
   NOW()
 );
 EXIT;
 ```
+
+> **Catatan:** Skema `users` memakai kolom `password` (bukan `password_hash`) dan tidak punya kolom `email` di versi terbaru.
 
 Login nanti dengan:
 
@@ -450,17 +491,15 @@ Login nanti dengan:
 | Username | `admin` |
 | Password | `Admin123!` |
 
-> ⚠️ **Segera ganti password** setelah login pertama.
+> ⚠️ **Segera ganti password** setelah login pertama (via Pengaturan → Manajemen User).
 
 ### 6.6 Uji Coba Backend
-
-Jalankan sementara (untuk testing):
 
 ```bash
 node server.js
 ```
 
-Jika sukses, akan muncul:
+Jika sukses:
 
 ```
 🚀 Server berjalan di http://localhost:7000
@@ -473,13 +512,7 @@ Uji di terminal lain:
 curl http://localhost:7000/api/health
 ```
 
-Output:
-
-```json
-{"status":"OK","message":"Backend mugalab berjalan dengan baik!","timestamp":"..."}
-```
-
-Hentikan dengan **Ctrl+C** (karena nanti akan dijalankan via PM2).
+Hentikan dengan **Ctrl+C**.
 
 ---
 
@@ -513,7 +546,7 @@ npm install
 
 ### 7.3 Import Skema Database Chatbot
 
-Jika ada file `init.sql` di chatbot:
+Jika ada `init.sql`:
 
 ```bash
 mysql -u root -p chatbot < database/init.sql
@@ -525,12 +558,6 @@ mysql -u root -p chatbot < database/init.sql
 node index.js
 ```
 
-Jika sukses, akan muncul log seperti:
-
-```
-Chatbot berjalan di port 3000
-```
-
 Uji webhook:
 
 ```bash
@@ -538,8 +565,6 @@ curl -X POST http://localhost:3000/webhook \
   -H "Content-Type: application/json" \
   -d '{"sender":"6281234567890","message":"test","name":"Test"}'
 ```
-
-Harus mengembalikan respons (biasanya `OK` atau JSON).
 
 Hentikan dengan **Ctrl+C**.
 
@@ -551,7 +576,7 @@ Hentikan dengan **Ctrl+C**.
 
 ```bash
 cd /var/www/lab/backend
-pm2 start server.js --name mugalab-backend
+pm2 start server.js --name lab
 ```
 
 ### 8.2 Jalankan Chatbot
@@ -574,14 +599,7 @@ pm2 save
 pm2 startup
 ```
 
-Perintah ini akan menampilkan output seperti:
-
-```
-[PM2] To setup the Startup Script, copy/paste the following command:
-sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u adminlab --hp /home/adminlab
-```
-
-Copy dan jalankan perintah tersebut (yang dimulai dengan `sudo env PATH=...`).
+Copy dan jalankan perintah `sudo env PATH=...` yang muncul.
 
 ### 8.5 Verifikasi
 
@@ -595,7 +613,7 @@ Output yang diharapkan:
 ┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┐
 │ id │ name               │ mode     │ ↺    │ status    │ cpu      │
 ├────┼────────────────────┼──────────┼──────┼───────────┼──────────┤
-│ 0  │ mugalab-backend    │ fork     │ 0    │ online    │ 0%       │
+│ 0  │ lab                │ fork     │ 0    │ online    │ 0%       │
 │ 1  │ chatbot            │ fork     │ 0    │ online    │ 0%       │
 └────┴────────────────────┴──────────┴──────┴───────────┴──────────┘
 ```
@@ -603,13 +621,13 @@ Output yang diharapkan:
 ### 8.6 Perintah PM2 Harian
 
 ```bash
-pm2 status                      # cek status
-pm2 logs mugalab-backend        # log backend
-pm2 logs chatbot                # log chatbot
-pm2 restart mugalab-backend     # restart backend
-pm2 restart all                 # restart semua
-pm2 monit                       # monitor real-time
-pm2 delete <name>               # hapus proses
+pm2 status
+pm2 logs lab
+pm2 logs chatbot
+pm2 restart lab
+pm2 restart all
+pm2 monit
+pm2 delete <name>
 ```
 
 ---
@@ -633,9 +651,7 @@ server {
     root /var/www/lab/frontend;
     index index.html;
 
-    # ============================================
-    # HALAMAN LOGIN
-    # ============================================
+    # Halaman login
     location = /login {
         try_files /login/login.html =404;
     }
@@ -643,9 +659,7 @@ server {
         try_files $uri /login/login.html;
     }
 
-    # ============================================
-    # HALAMAN DASHBOARD (SPA)
-    # ============================================
+    # Halaman dashboard (SPA)
     location = /dashboard {
         try_files /dashboard/dashboard.html =404;
     }
@@ -653,10 +667,8 @@ server {
         try_files $uri $uri/ /dashboard/dashboard.html;
     }
 
-    # ============================================
-    # AKSES FILE UPLOAD (PDF pengajuan, foto peminjaman, dll.)
+    # Akses file upload (foto peminjaman, PDF pengajuan, template)
     # ⚠️ WAJIB ada SEBELUM location /
-    # ============================================
     location /uploads/ {
         alias /var/www/lab/backend/uploads/;
         autoindex off;
@@ -664,9 +676,7 @@ server {
         add_header X-Content-Type-Options "nosniff";
     }
 
-    # ============================================
-    # PROXY API KE BACKEND (port 7000)
-    # ============================================
+    # Proxy API ke backend
     location /api/ {
         proxy_pass http://127.0.0.1:7000;
         proxy_http_version 1.1;
@@ -678,15 +688,12 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
 
-        # Timeout untuk request berat (upload PDF, generate PDF laporan)
         proxy_read_timeout 300s;
         proxy_connect_timeout 300s;
         client_max_body_size 10M;
     }
 
-    # ============================================
-    # PROXY CHATBOT WHATSAPP (port 3000)
-    # ============================================
+    # Proxy chatbot
     location /chatbot/ {
         proxy_pass http://127.0.0.1:3000/;
         proxy_http_version 1.1;
@@ -698,9 +705,7 @@ server {
         proxy_connect_timeout 300s;
     }
 
-    # ============================================
-    # FALLBACK SPA (HARUS PALING BAWAH)
-    # ============================================
+    # Fallback SPA (HARUS PALING BAWAH)
     location / {
         try_files $uri $uri/ /index.html;
     }
@@ -710,20 +715,13 @@ server {
 ### 9.2 Aktifkan Konfigurasi
 
 ```bash
-# Buat symlink
 sudo ln -s /etc/nginx/sites-available/lab /etc/nginx/sites-enabled/
-
-# Hapus default (jika ada)
 sudo unlink /etc/nginx/sites-enabled/default
-
-# Uji konfigurasi
 sudo nginx -t
-
-# Reload
 sudo systemctl reload nginx
 ```
 
-Output yang diharapkan saat `nginx -t`:
+Output `nginx -t` yang diharapkan:
 
 ```
 nginx: configuration file /etc/nginx/nginx.conf syntax is ok
@@ -732,26 +730,22 @@ nginx: configuration file /etc/nginx/nginx.conf test is successful
 
 ### 9.3 ⚠️ Urutan `location` yang Benar
 
-Nginx memilih `location` berdasarkan **prioritas**. Untuk kasus `/uploads/` vs `/`, urutan tetap penting agar tidak jatuh ke fallback SPA.
-
-**Urutan yang benar:**
-
 ```
 1. location = /login            (exact match)
 2. location /login/             (prefix)
 3. location = /dashboard        (exact match)
 4. location /dashboard/         (prefix)
-5. location /uploads/           (prefix — file statis dari backend)
-6. location /api/               (prefix — proxy)
-7. location /chatbot/           (prefix — proxy)
+5. location /uploads/           (file statis dari backend)
+6. location /api/               (proxy)
+7. location /chatbot/           (proxy)
 8. location /                   (fallback SPA)
 ```
 
-**Kesalahan yang sering terjadi:** `location /uploads/` diletakkan **setelah** `location /`. Akibatnya, request ke `/uploads/pengajuan/xxx.pdf` akan jatuh ke fallback dan menampilkan `index.html`.
+**Kesalahan umum:** `location /uploads/` diletakkan **setelah** `location /`. Akibatnya, URL `/uploads/...` jatuh ke fallback SPA dan menampilkan `index.html` alih-alih file.
 
-### 9.4 Perbedaan `root` vs `alias` (Penting!)
+### 9.4 Perbedaan `root` vs `alias`
 
-**`root`** — menambahkan path ke URL:
+**`root`** — menambah path ke URL:
 
 ```nginx
 location /uploads/ {
@@ -769,18 +763,13 @@ location /uploads/ {
 # URL /uploads/file.pdf → /var/www/lab/backend/uploads/file.pdf
 ```
 
-Untuk MUGALAB, **gunakan `alias`** karena kita ingin URL `/uploads/...` dipetakan langsung ke folder `backend/uploads/`.
+Untuk MUGALAB, **gunakan `alias`**.
 
 ### 9.5 Verifikasi
 
 ```bash
-# Cek Nginx mendengarkan di port 80
 sudo ss -tulpn | grep :80
-
-# Cek semua server block aktif
 sudo nginx -T | grep -E "listen|server_name|location|root|alias"
-
-# Cek urutan location
 sudo nginx -T | grep "location"
 ```
 
@@ -788,7 +777,7 @@ sudo nginx -T | grep "location"
 
 ## 10. Setup HTTPS dengan Let's Encrypt (Opsional)
 
-Hanya diperlukan jika aplikasi diakses dari **internet publik**.
+Hanya jika diakses dari **internet publik**.
 
 ### 10.1 Instal Certbot
 
@@ -802,11 +791,11 @@ sudo apt install -y certbot python3-certbot-nginx
 sudo certbot --nginx -d lab.mugalearning.web.id
 ```
 
-Ikuti instruksi di layar:
+Ikuti instruksi:
 
 1. Masukkan email
 2. Setuju TOS
-3. Pilih redirect HTTP → HTTPS: **Ya**
+3. Redirect HTTP → HTTPS: **Ya**
 
 ### 10.3 Verifikasi Auto-Renewal
 
@@ -816,30 +805,6 @@ sudo certbot renew --dry-run
 
 Certbot otomatis memperbarui sertifikat setiap 90 hari via systemd timer.
 
-### 10.4 Konfigurasi Nginx Setelah HTTPS
-
-Setelah Certbot dijalankan, `/etc/nginx/sites-available/lab` akan otomatis diperbarui menjadi:
-
-```nginx
-server {
-    listen 80 default_server;
-    server_name lab.mugalearning.web.id;
-    return 301 https://$host$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    server_name lab.mugalearning.web.id;
-
-    ssl_certificate /etc/letsencrypt/live/lab.mugalearning.web.id/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/lab.mugalearning.web.id/privkey.pem;
-    include /etc/letsencrypt/options-ssl-nginx.conf;
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
-
-    # ... sisanya sama seperti konfigurasi HTTP
-}
-```
-
 ---
 
 ## 11. Setup Firewall UFW
@@ -848,8 +813,6 @@ server {
 sudo ufw allow OpenSSH
 sudo ufw allow 'Nginx Full'
 sudo ufw enable
-
-# Verifikasi
 sudo ufw status
 ```
 
@@ -873,9 +836,9 @@ Nginx Full                 ALLOW       Anywhere
 ### 12.1 Cek Semua Layanan
 
 ```bash
-pm2 status                       # semua "online"
-sudo systemctl status nginx      # active (running)
-sudo systemctl status mysql      # active (running)
+pm2 status
+sudo systemctl status nginx
+sudo systemctl status mysql
 ```
 
 ### 12.2 Cek Endpoint via Curl
@@ -893,16 +856,16 @@ curl -X POST http://localhost:3000/webhook \
   -d '{"sender":"6281234567890","message":"test"}'
 
 # File upload (jika ada)
-curl -I http://172.168.1.228/uploads/pengajuan/<file>.pdf
+curl -I http://172.168.1.228/uploads/peminjaman/<file>.webp
 ```
 
 ### 12.3 Cek via Browser
 
 | URL | Fungsi |
 |-----|--------|
-| `http://172.168.1.228/` | Halaman publik (jadwal) |
+| `http://172.168.1.228/` | Halaman publik |
 | `http://172.168.1.228/login` | Halaman login dashboard |
-| `http://172.168.1.228/dashboard` | Dashboard (setelah login) |
+| `http://172.168.1.228/dashboard` | Dashboard |
 | `http://172.168.1.228/api/health` | Health check API |
 
 ### 12.4 Uji Fitur Utama
@@ -914,7 +877,9 @@ curl -I http://172.168.1.228/uploads/pengajuan/<file>.pdf
 - [ ] Terima pengajuan dari dashboard
 - [ ] Preview lampiran PDF
 - [ ] Buat laporan praktikum → download PDF
-- [ ] Peminjaman alat dengan foto
+- [ ] Peminjaman alat/sarana dengan foto → cek stok berkurang
+- [ ] Kembalikan dengan jumlah_rusak > 0 → cek auto-report ke Laporan Kerusakan
+- [ ] Pengaturan → tab Manajemen User → toggle chip role permissions → simpan → cek sidebar berubah
 - [ ] Chatbot: kirim pesan WA, cek balasan otomatis
 
 ---
@@ -925,23 +890,23 @@ curl -I http://172.168.1.228/uploads/pengajuan/<file>.pdf
 
 Buka [https://fonnte.com](https://fonnte.com) dan login.
 
-### 13.2 Daftarkan Device (Nomor WhatsApp)
+### 13.2 Daftarkan Device
 
-- Tambahkan nomor WA yang akan dipakai
+- Tambahkan nomor WA
 - Scan QR code dari HP
 - Pastikan status device: **Connected**
 
 ### 13.3 Setup Webhook
 
-- Masuk ke menu **Device** → **Webhook**
-- Isi URL: `https://lab.mugalearning.web.id/chatbot/webhook`
+- Menu **Device** → **Webhook**
+- URL: `https://lab.mugalearning.web.id/chatbot/webhook`
 - Method: `POST`
-- Event: centang `message` (dan opsi lain sesuai kebutuhan)
+- Event: centang `message`
 - Simpan
 
 ### 13.4 Uji Webhook
 
-Kirim pesan WhatsApp ke nomor device, contoh:
+Kirim pesan WhatsApp ke nomor device, mis.:
 
 ```
 halo
@@ -953,7 +918,7 @@ Jika tidak ada balasan:
 
 - Cek log chatbot: `pm2 logs chatbot --lines 30`
 - Cek log Nginx: `sudo tail -f /var/log/nginx/access.log`
-- Pastikan URL webhook bisa diakses dari internet (gunakan HTTPS)
+- Pastikan URL webhook diakses via HTTPS
 
 ---
 
@@ -979,16 +944,17 @@ Jika tidak ada balasan:
 - [ ] Database `chatbot` dibuat
 - [ ] User `mugalab` dengan password kuat dibuat
 - [ ] Tabel dari `init.sql` di-import
-- [ ] Migrasi tambahan dijalankan (kolom `file_pdf`)
+- [ ] Migrasi tambahan dijalankan (`file_pdf`, kolom laporan sarana)
 - [ ] User admin pertama dibuat
 
 ### 14.3 Folder & Hak Akses
 
 - [ ] `/var/www/lab` dibuat dengan owner `adminlab:www-data`
 - [ ] `/opt/chatbot` dibuat
-- [ ] `/var/www/lab/backend/uploads/{pengajuan,templates,temp}` dibuat
-- [ ] `/var/www/lab/frontend/uploads/peminjaman` dibuat
-- [ ] Semua folder punya permission `775`
+- [ ] `/var/www/lab/backend/uploads/{pengajuan,templates,peminjaman,temp}` dibuat
+- [ ] Semua folder `uploads` punya permission `775`
+- [ ] `.gitignore` root sudah meng-ignore isi uploads
+- [ ] File `.gitkeep` ada di setiap subfolder uploads
 
 ### 14.4 Aplikasi
 
@@ -1026,24 +992,26 @@ Jika tidak ada balasan:
 |--------|----------|--------|
 | `403 Forbidden` di root Nginx | Kepemilikan file salah | `sudo chown -R adminlab:www-data /var/www/lab` |
 | `404 Not Found` di `/api/...` | Blok `location /api/` tidak ada | Cek konfigurasi Nginx, reload |
-| `502 Bad Gateway` | Backend tidak berjalan | `pm2 status`, `pm2 restart` |
+| `502 Bad Gateway` | Backend tidak berjalan | `pm2 status`, `pm2 restart lab` |
 | `EACCES: permission denied` | Folder upload tidak ada | Buat folder + `chown` |
 | `libreoffice: not found` | LibreOffice belum terinstal | `sudo apt install -y libreoffice libreoffice-writer` |
-| `invalid token` di WA | Token Fonnte salah / ada spasi di `.env` | Cek `.env`, restart PM2 |
+| `invalid token` di WA | Token Fonnte salah / spasi di `.env` | Cek `.env`, restart PM2 |
 | MySQL error `1698` | Root pakai `auth_socket` | Reset via `skip-grant-tables` (§3.2) |
-| Iframe PDF menampilkan halaman jadwal | Fallback SPA menangkap `/uploads/` | Pindah `location /uploads/` ke atas `location /` |
-| `alias` tidak diakhiri `/` | Path jadi salah | Pastikan `alias .../uploads/;` |
-| Folder upload tidak bisa dibaca | Permission salah | `chown adminlab:www-data` + `chmod 755` |
-| Chatbot `Cannot GET /webhook` | Diakses dengan GET, harus POST | Gunakan `curl -X POST` |
-| Webhook Fonnte tidak merespon | URL salah / route tidak ada | Cek log PM2 chatbot + `curl -X POST` di server |
-| Template DOCX tidak terdeteksi | Placeholder salah atau file corrupt | Pastikan `{{NAMA_LAB}}` (kurung ganda) |
+| **Foto peminjaman 404** | Foto tersimpan di folder yang tidak dilayani Nginx | Pastikan `uploadPeminjaman.js` menyimpan ke `backend/uploads/peminjaman/` (§9.4) |
+| Iframe PDF tampil halaman jadwal | Fallback SPA menangkap `/uploads/` | Pindah `location /uploads/` ke atas `location /` |
+| Chatbot `Cannot GET /webhook` | Diakses dengan GET | Gunakan `curl -X POST` |
+| Webhook Fonnte tidak merespon | URL salah / route tidak ada | Cek log PM2 chatbot + `curl -X POST` |
+| Template DOCX tidak terdeteksi | Placeholder salah / file corrupt | Pastikan `{{NAMA_LAB}}` (kurung ganda) |
+| `ReferenceError: create is not defined` | Salah satu fungsi hilang dari `module.exports` | Cek file service, pastikan semua fungsi diekspor |
+| **Menu role permissions tidak muncul** | Login bukan admin | Cek `localStorage.getItem('role')` |
+| **Stok alat tidak berkurang setelah pinjam** | Cache JS lama / `kurangiStok` tidak jalan | Hard refresh + cek log backend |
 
 ### 15.2 Cara Cek Log
 
 ```bash
 # Backend
-pm2 logs mugalab-backend --lines 50
-pm2 logs mugalab-backend --lines 50 --err
+pm2 logs lab --lines 50
+pm2 logs lab --lines 50 --err
 
 # Chatbot
 pm2 logs chatbot --lines 50
@@ -1081,7 +1049,7 @@ sudo ss -tulpn | grep -E ":80|:443|:3000|:7000|:3306"
 ### 16.1 Update Aplikasi dari GitHub
 
 ```bash
-# 1. Backup dulu (opsional tapi direkomendasikan)
+# 1. Backup dulu
 mysqldump -u root -p lab-db > /backup/lab-db_$(date +%Y%m%d).sql
 
 # 2. Pull perubahan
@@ -1092,7 +1060,7 @@ git reset --hard origin/main
 # 3. Update backend
 cd /var/www/lab/backend
 npm install   # hanya jika package.json berubah
-pm2 restart mugalab-backend
+pm2 restart lab
 
 # 4. Update chatbot
 cd /opt/chatbot
@@ -1103,8 +1071,6 @@ pm2 restart chatbot
 ```
 
 ### 16.2 Backup Database Rutin
-
-Buat script backup:
 
 ```bash
 sudo nano /usr/local/bin/backup-mugalab.sh
@@ -1118,25 +1084,16 @@ BACKUP_DIR="/backup/mugalab"
 DATE=$(date +%Y%m%d_%H%M%S)
 mkdir -p $BACKUP_DIR
 
-# Backup database
 mysqldump -u root -p'PasswordRootAnda' lab-db | gzip > $BACKUP_DIR/lab-db_$DATE.sql.gz
 mysqldump -u root -p'PasswordRootAnda' chatbot | gzip > $BACKUP_DIR/chatbot_$DATE.sql.gz
 
-# Hapus backup > 30 hari
 find $BACKUP_DIR -name "*.sql.gz" -mtime +30 -delete
 
 echo "Backup selesai: $DATE"
 ```
 
-Beri izin eksekusi:
-
 ```bash
 sudo chmod +x /usr/local/bin/backup-mugalab.sh
-```
-
-Tambahkan ke cron (backup tiap hari jam 2 pagi):
-
-```bash
 sudo crontab -e
 ```
 
@@ -1149,36 +1106,22 @@ Tambahkan:
 ### 16.3 Monitoring
 
 ```bash
-# Cek resource
-df -h                       # disk
-free -h                     # memory
-top                         # proses
-htop                        # (install dulu: sudo apt install htop)
-
-# Monitoring PM2
+df -h
+free -h
+top
+htop                       # (install dulu: sudo apt install htop)
 pm2 monit
 pm2 status
-
-# Monitoring Nginx
 sudo tail -f /var/log/nginx/access.log
 ```
 
 ### 16.4 Perintah Maintenance Harian
 
 ```bash
-# Restart semua
 pm2 restart all
-
-# Cek log error
 pm2 logs --err --lines 20
-
-# Bersihkan log PM2
 pm2 flush
-
-# Cek versi Node.js
 node -v
-
-# Cek update sistem
 sudo apt update && sudo apt list --upgradable
 ```
 
@@ -1193,27 +1136,25 @@ Jika deployment dilakukan di WSL:
 1. **Project di `/mnt/c/...`** (Windows filesystem) → akses lambat + kadang permission error. Sebaiknya pindah ke `~/mugalab` (filesystem Linux native).
 2. **LibreOffice** tetap bisa diinstal via `apt` dan berjalan di WSL.
 3. **Path output** sebaiknya diarahkan ke filesystem Linux (bukan `/mnt/c/`) untuk menghindari masalah lock file.
-4. **Firewall Windows** mungkin memblokir port 80/443. Jika tidak bisa diakses dari Windows:
-   - Buka **Windows Defender Firewall** → **Advanced Settings** → **Inbound Rules** → **New Rule**
-   - Pilih **Port** → **TCP** → **80, 443**
+4. **Firewall Windows** mungkin memblokir port 80/443:
+   - Windows Defender Firewall → Advanced Settings → Inbound Rules → New Rule
+   - Port → TCP → 80, 443
    - Allow connection → Apply
    - Atau akses langsung dari dalam WSL: `curl http://localhost`
 
 ### 17.2 Catatan Production
 
-Untuk production di VPS dengan trafik tinggi:
-
 - **LibreOffice headless** memakan RAM ~100–200 MB per proses. Jika banyak request PDF bersamaan, bisa membebani VPS kecil (1 GB RAM).
 - Alternatif jika resource terbatas:
   - **Gotenberg** — service Docker untuk konversi DOCX → PDF
-  - **unoconv** — wrapper LibreOffice sebagai service (install via `pip`)
-  - **Cache PDF** hasil generate agar tidak perlu konversi berulang
+  - **unoconv** — wrapper LibreOffice sebagai service
+  - **Cache PDF** hasil generate agar tidak konversi berulang
 
 ---
 
 ## 📞 Bantuan Lanjutan
 
-Jika mengalami kendala yang tidak tercakup di dokumen ini:
+Jika mengalami kendala yang tidak tercakup:
 
 1. Cek dokumentasi arsitektur: [`architecture.md`](./architecture.md)
 2. Cek log sesuai bagian [§15.2](#152-cara-cek-log)
@@ -1222,6 +1163,6 @@ Jika mengalami kendala yang tidak tercakup di dokumen ini:
 
 ---
 
-**Selamat! Aplikasi MUGALAB siap digunakan.** 🎉
+**Selamat! MUGALAB siap digunakan.** 🎉
 
 Pastikan semua checklist di [§14](#14-checklist-instalasi) sudah tercentang sebelum dinyatakan selesai.

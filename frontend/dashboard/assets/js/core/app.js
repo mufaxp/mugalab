@@ -3,44 +3,30 @@
  * Sidebar navigasi, hamburger menu, tabs, filter role.
  */
 
-function initSidebar() {
+async function initSidebar() {
     const role = localStorage.getItem('role') || 'guru';
 
-    const menuRules = {
-        admin: [
-            'jadwal',
-            'inventaris',
-            'laporan',
-            'riwayat',
-            'laporan-praktikum',
-            'pengajuan',
-            'peminjaman',
-            'setting'
-        ],
-        laboran: [
-            'jadwal',
-            'inventaris',
-            'laporan',
-            'riwayat',
-            'laporan-praktikum',
-            'pengajuan',
-            'peminjaman'
-        ],
-        guru: [
-            'jadwal',
-            'inventaris',
-            'laporan',
-            'riwayat',
-            'laporan-praktikum',
-            'peminjaman'
-        ]
-    };
+    // Ambil permission dari server
+    let allowedPanels = [];
+    try {
+        const res = await apiGet('/api/settings/role-permissions');
+        const perms = res.data || res;
+        allowedPanels = perms[role] || [];
+    } catch (err) {
+        // Fallback default jika API gagal
+        const fallback = {
+            admin:   ['jadwal','inventaris','laporan','riwayat','laporan-praktikum','pengajuan','peminjaman','setting'],
+            laboran: ['jadwal','inventaris','laporan','riwayat','laporan-praktikum','pengajuan','peminjaman'],
+            guru:    ['jadwal','inventaris','laporan','riwayat','laporan-praktikum','peminjaman']
+        };
+        allowedPanels = fallback[role] || fallback.guru;
+        console.warn('Fallback permissions digunakan:', err.message);
+    }
 
-    const allowedPanels = menuRules[role] || menuRules.guru;
     console.log('Role aktif:', role);
     console.log('Panel diizinkan:', allowedPanels);
 
-    // Sembunyikan/tampilkan menu sesuai role
+    // Sembunyikan/tampilkan menu
     document.querySelectorAll('.sidebar-item').forEach(item => {
         const panel = item.getAttribute('data-panel');
         if (panel && !allowedPanels.includes(panel)) {
@@ -54,11 +40,11 @@ function initSidebar() {
     const panels = document.querySelectorAll('.panel');
     panels.forEach(p => p.classList.remove('active'));
 
-    const firstPanel = allowedPanels[0] || 'inventaris';
+    const firstPanel = allowedPanels[0] || 'jadwal';
     const firstPanelEl = document.getElementById(firstPanel);
     if (firstPanelEl) firstPanelEl.classList.add('active');
 
-    // Tandai menu aktif di sidebar
+    // Tandai menu aktif
     document.querySelectorAll('.sidebar-item').forEach(item => {
         item.classList.remove('active');
         if (item.getAttribute('data-panel') === firstPanel) {
@@ -68,9 +54,12 @@ function initSidebar() {
 
     // Navigasi sidebar
     document.querySelectorAll('.sidebar-item').forEach(item => {
+        // hindari duplikasi listener
+        if (item.dataset.navBound === '1') return;
+        item.dataset.navBound = '1';
+
         item.addEventListener('click', function(e) {
             e.preventDefault();
-
             document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
             this.classList.add('active');
 
@@ -145,8 +134,8 @@ function initInvLabFilter() {
     });
 }
 
-function initApp() {
-    initSidebar();
+async function initApp() {
+    await initSidebar();
     initHamburger();
     initTabs();
     initInvLabFilter();

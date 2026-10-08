@@ -1,8 +1,8 @@
-# 🛠️ Panduan Instalasi MUGALAB
+# 🛠️ Panduan Instalasi Aplikasi Lab IPA Sekolah
 
-Panduan lengkap instalasi aplikasi MUGALAB dari nol di VPS Ubuntu 24.04 LTS.
+Panduan lengkap instalasi aplikasi Lab IPA Sekolah dari nol di VPS Ubuntu 24.04 LTS.
 
-> **Target pembaca:** Administrator server / developer yang akan mendeploy MUGALAB.
+> **Target pembaca:** Administrator server / developer yang akan mendeploy Aplikasi Laboratorium IPA Sekolah.
 > **Estimasi waktu:** 30–45 menit (tergantung kecepatan internet & spesifikasi VPS).
 > **Untuk gambaran arsitektur & konvensi kode, lihat [`architecture.md`](./architecture.md).**
 
@@ -237,15 +237,15 @@ sudo mysql -u root -p
 CREATE DATABASE `lab-db` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE `chatbot` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-CREATE USER 'mugalab'@'localhost' IDENTIFIED BY 'PasswordMugalab';
-GRANT ALL PRIVILEGES ON `lab-db`.* TO 'mugalab'@'localhost';
-GRANT ALL PRIVILEGES ON `chatbot`.* TO 'mugalab'@'localhost';
+CREATE USER 'labuser'@'localhost' IDENTIFIED BY 'Passwordlabuser';
+GRANT ALL PRIVILEGES ON `lab-db`.* TO 'labuser'@'localhost';
+GRANT ALL PRIVILEGES ON `chatbot`.* TO 'labuser'@'localhost';
 FLUSH PRIVILEGES;
 
 EXIT;
 ```
 
-> **Catatan:** Ganti `PasswordMugalab` dengan password kuat. Password ini dipakai di `.env`.
+> **Catatan:** Ganti `Passwordlabuser` dengan password kuat. Password ini dipakai di `.env`.
 
 ---
 
@@ -332,7 +332,7 @@ git clone https://github.com/<username>/<repo-chatbot>.git .
 git clone https://<username>:<token>@github.com/<username>/<repo>.git .
 
 # Atau SSH key
-ssh-keygen -t ed25519 -C "vps@mugalab"
+ssh-keygen -t ed25519 -C "vps@user"
 cat ~/.ssh/id_ed25519.pub
 # Copy ke GitHub → Settings → SSH Keys
 git clone git@github.com:<username>/<repo>.git .
@@ -390,8 +390,8 @@ Isi:
 PORT=7000
 NODE_ENV=production
 DB_HOST=localhost
-DB_USER=mugalab
-DB_PASSWORD=PasswordMugalab
+DB_USER=labuser
+DB_PASSWORD=Passwordlabuser
 DB_NAME=lab-db
 JWT_SECRET=<string-acak-min-32-karakter>
 TOKEN_FONNTE=<token-dari-dashboard-fonnte>
@@ -532,8 +532,8 @@ Isi:
 PORT=3000
 NODE_ENV=production
 DB_HOST=localhost
-DB_USER=mugalab
-DB_PASSWORD=PasswordMugalab
+DB_USER=labuser
+DB_PASSWORD=Passwordlabuser
 DB_NAME=chatbot
 TOKEN_FONNTE=<token-yang-sama-dengan-backend>
 ```
@@ -763,7 +763,7 @@ location /uploads/ {
 # URL /uploads/file.pdf → /var/www/lab/backend/uploads/file.pdf
 ```
 
-Untuk MUGALAB, **gunakan `alias`**.
+Untuk lab, **gunakan `alias`**.
 
 ### 9.5 Verifikasi
 
@@ -942,7 +942,7 @@ Jika tidak ada balasan:
 - [ ] MySQL diamankan (`mysql_secure_installation`)
 - [ ] Database `lab-db` dibuat
 - [ ] Database `chatbot` dibuat
-- [ ] User `mugalab` dengan password kuat dibuat
+- [ ] User `labuser` dengan password kuat dibuat
 - [ ] Tabel dari `init.sql` di-import
 - [ ] Migrasi tambahan dijalankan (`file_pdf`, kolom laporan sarana)
 - [ ] User admin pertama dibuat
@@ -1073,14 +1073,14 @@ pm2 restart chatbot
 ### 16.2 Backup Database Rutin
 
 ```bash
-sudo nano /usr/local/bin/backup-mugalab.sh
+sudo nano /usr/local/bin/backup-lab.sh
 ```
 
 Isi:
 
 ```bash
 #!/bin/bash
-BACKUP_DIR="/backup/mugalab"
+BACKUP_DIR="/backup/lab"
 DATE=$(date +%Y%m%d_%H%M%S)
 mkdir -p $BACKUP_DIR
 
@@ -1093,14 +1093,14 @@ echo "Backup selesai: $DATE"
 ```
 
 ```bash
-sudo chmod +x /usr/local/bin/backup-mugalab.sh
+sudo chmod +x /usr/local/bin/backup-lab.sh
 sudo crontab -e
 ```
 
 Tambahkan:
 
 ```
-0 2 * * * /usr/local/bin/backup-mugalab.sh >> /var/log/backup-mugalab.log 2>&1
+0 2 * * * /usr/local/bin/backup-lab.sh >> /var/log/backup-lab.log 2>&1
 ```
 
 ### 16.3 Monitoring
@@ -1133,7 +1133,7 @@ sudo apt update && sudo apt list --upgradable
 
 Jika deployment dilakukan di WSL:
 
-1. **Project di `/mnt/c/...`** (Windows filesystem) → akses lambat + kadang permission error. Sebaiknya pindah ke `~/mugalab` (filesystem Linux native).
+1. **Project di `/mnt/c/...`** (Windows filesystem) → akses lambat + kadang permission error. Sebaiknya pindah ke `~/lab` (filesystem Linux native).
 2. **LibreOffice** tetap bisa diinstal via `apt` dan berjalan di WSL.
 3. **Path output** sebaiknya diarahkan ke filesystem Linux (bukan `/mnt/c/`) untuk menghindari masalah lock file.
 4. **Firewall Windows** mungkin memblokir port 80/443:
@@ -1163,6 +1163,6 @@ Jika mengalami kendala yang tidak tercakup:
 
 ---
 
-**Selamat! MUGALAB siap digunakan.** 🎉
+**Selamat! Aplikasi Laboratorium IPA Sekolah siap digunakan.** 🎉
 
 Pastikan semua checklist di [§14](#14-checklist-instalasi) sudah tercentang sebelum dinyatakan selesai.

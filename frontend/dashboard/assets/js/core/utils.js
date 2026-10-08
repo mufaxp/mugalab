@@ -60,14 +60,5 @@ async function loadLabOptions(selectId, includeAll = false) {
     }
 }
 
-function fillLabOptions(selectId, labs, includeAll = false) {
-    const select = document.getElementById(selectId);
-    if (!select) return;
-    let html = includeAll ? '<option value="all">Semua Lab</option>' : '';
-    labs.forEach(lab => html += `<option value="${lab.id}">${lab.nama}</option>`);
-    select.innerHTML = html;
-}
-
 // Pastikan fungsi global
 window.loadLabOptions = loadLabOptions;
-window.fillLabOptions = fillLabOptions;

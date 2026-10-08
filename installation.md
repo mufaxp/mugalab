@@ -1,8 +1,8 @@
-# 🛠️ Panduan Instalasi Aplikasi Laboratorium IPA
+# 🛠️ Panduan Instalasi MUGALAB
 
-Panduan lengkap instalasi aplikasi Laboratorium IPA dari nol di VPS Ubuntu 24.04 LTS.
+Panduan lengkap instalasi aplikasi MUGALAB dari nol di VPS Ubuntu 24.04 LTS.
 
-> **Target pembaca:** Administrator server / developer yang akan mendeploy aplikasi Laboratorium IPA.
+> **Target pembaca:** Administrator server / developer yang akan mendeploy MUGALAB.
 > **Estimasi waktu:** 30–45 menit (tergantung kecepatan internet & spesifikasi VPS).
 > **Untuk gambaran arsitektur & konvensi kode, lihat [`architecture.md`](./architecture.md).**
 
@@ -46,7 +46,7 @@ Panduan lengkap instalasi aplikasi Laboratorium IPA dari nol di VPS Ubuntu 24.04
 
 - [ ] VPS dengan Ubuntu 24.04 LTS
 - [ ] Akses SSH (user non-root, mis. `adminlab`, dengan `sudo`)
-- [ ] Repositori GitHub (aplikasi web lab + chatbot)
+- [ ] Repositori GitHub (MUGALAB web + chatbot)
 - [ ] Token Fonnte (dari [dashboard Fonnte](https://fonnte.com))
 - [ ] Nomor WhatsApp admin (format: `6281234567890`)
 - [ ] Domain (opsional, untuk HTTPS) — mis. `lab.mugalearning.web.id`
@@ -237,15 +237,15 @@ sudo mysql -u root -p
 CREATE DATABASE `lab-db` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE `chatbot` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-CREATE USER 'labuser'@'localhost' IDENTIFIED BY 'PasswordLabUser';
-GRANT ALL PRIVILEGES ON `lab-db`.* TO 'labuser'@'localhost';
-GRANT ALL PRIVILEGES ON `chatbot`.* TO 'labuser'@'localhost';
+CREATE USER 'mugalab'@'localhost' IDENTIFIED BY 'PasswordMugalab';
+GRANT ALL PRIVILEGES ON `lab-db`.* TO 'mugalab'@'localhost';
+GRANT ALL PRIVILEGES ON `chatbot`.* TO 'mugalab'@'localhost';
 FLUSH PRIVILEGES;
 
 EXIT;
 ```
 
-> **Catatan:** Ganti `PasswordLabUser` dengan password kuat. Password ini dipakai di `.env`.
+> **Catatan:** Ganti `PasswordMugalab` dengan password kuat. Password ini dipakai di `.env`.
 
 ---
 
@@ -332,7 +332,7 @@ git clone https://github.com/<username>/<repo-chatbot>.git .
 git clone https://<username>:<token>@github.com/<username>/<repo>.git .
 
 # Atau SSH key
-ssh-keygen -t ed25519 -C "vps@lab"
+ssh-keygen -t ed25519 -C "vps@mugalab"
 cat ~/.ssh/id_ed25519.pub
 # Copy ke GitHub → Settings → SSH Keys
 git clone git@github.com:<username>/<repo>.git .
@@ -390,8 +390,8 @@ Isi:
 PORT=7000
 NODE_ENV=production
 DB_HOST=localhost
-DB_USER=labuser
-DB_PASSWORD=PasswordLabUser
+DB_USER=mugalab
+DB_PASSWORD=PasswordMugalab
 DB_NAME=lab-db
 JWT_SECRET=<string-acak-min-32-karakter>
 TOKEN_FONNTE=<token-dari-dashboard-fonnte>
@@ -532,8 +532,8 @@ Isi:
 PORT=3000
 NODE_ENV=production
 DB_HOST=localhost
-DB_USER=labuser
-DB_PASSWORD=PasswordLabUser
+DB_USER=mugalab
+DB_PASSWORD=PasswordMugalab
 DB_NAME=chatbot
 TOKEN_FONNTE=<token-yang-sama-dengan-backend>
 ```
@@ -646,7 +646,7 @@ Isi:
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
-    server_name domain_anda ip_address _;
+    server_name lab.mugalearning.web.id 172.168.1.228 _;
 
     root /var/www/lab/frontend;
     index index.html;
@@ -763,7 +763,7 @@ location /uploads/ {
 # URL /uploads/file.pdf → /var/www/lab/backend/uploads/file.pdf
 ```
 
-Untuk Lab, **gunakan `alias`**.
+Untuk MUGALAB, **gunakan `alias`**.
 
 ### 9.5 Verifikasi
 
@@ -788,7 +788,7 @@ sudo apt install -y certbot python3-certbot-nginx
 ### 10.2 Generate Sertifikat
 
 ```bash
-sudo certbot --nginx -d domain_website_anda
+sudo certbot --nginx -d lab.mugalearning.web.id
 ```
 
 Ikuti instruksi:
@@ -848,7 +848,7 @@ sudo systemctl status mysql
 curl http://localhost:7000/api/health
 
 # Lewat Nginx
-curl http://ipaddress/api/health
+curl http://172.168.1.228/api/health
 
 # Chatbot webhook
 curl -X POST http://localhost:3000/webhook \
@@ -856,17 +856,17 @@ curl -X POST http://localhost:3000/webhook \
   -d '{"sender":"6281234567890","message":"test"}'
 
 # File upload (jika ada)
-curl -I http://ipaddress/uploads/peminjaman/<file>.webp
+curl -I http://172.168.1.228/uploads/peminjaman/<file>.webp
 ```
 
 ### 12.3 Cek via Browser
 
 | URL | Fungsi |
 |-----|--------|
-| `http://ipaddress/` | Halaman publik |
-| `http://ipaddress/login` | Halaman login dashboard |
-| `http://ipaddress/dashboard` | Dashboard |
-| `http://ipaddress/api/health` | Health check API |
+| `http://172.168.1.228/` | Halaman publik |
+| `http://172.168.1.228/login` | Halaman login dashboard |
+| `http://172.168.1.228/dashboard` | Dashboard |
+| `http://172.168.1.228/api/health` | Health check API |
 
 ### 12.4 Uji Fitur Utama
 
@@ -899,7 +899,7 @@ Buka [https://fonnte.com](https://fonnte.com) dan login.
 ### 13.3 Setup Webhook
 
 - Menu **Device** → **Webhook**
-- URL: `https://domain-website-anda/chatbot/webhook`
+- URL: `https://lab.mugalearning.web.id/chatbot/webhook`
 - Method: `POST`
 - Event: centang `message`
 - Simpan
@@ -942,7 +942,7 @@ Jika tidak ada balasan:
 - [ ] MySQL diamankan (`mysql_secure_installation`)
 - [ ] Database `lab-db` dibuat
 - [ ] Database `chatbot` dibuat
-- [ ] User `labuser` dengan password kuat dibuat
+- [ ] User `mugalab` dengan password kuat dibuat
 - [ ] Tabel dari `init.sql` di-import
 - [ ] Migrasi tambahan dijalankan (`file_pdf`, kolom laporan sarana)
 - [ ] User admin pertama dibuat
@@ -1073,14 +1073,14 @@ pm2 restart chatbot
 ### 16.2 Backup Database Rutin
 
 ```bash
-sudo nano /usr/local/bin/backup-lab.sh
+sudo nano /usr/local/bin/backup-mugalab.sh
 ```
 
 Isi:
 
 ```bash
 #!/bin/bash
-BACKUP_DIR="/backup/lab"
+BACKUP_DIR="/backup/mugalab"
 DATE=$(date +%Y%m%d_%H%M%S)
 mkdir -p $BACKUP_DIR
 
@@ -1093,14 +1093,14 @@ echo "Backup selesai: $DATE"
 ```
 
 ```bash
-sudo chmod +x /usr/local/bin/backup-lab.sh
+sudo chmod +x /usr/local/bin/backup-mugalab.sh
 sudo crontab -e
 ```
 
 Tambahkan:
 
 ```
-0 2 * * * /usr/local/bin/backup-lab.sh >> /var/log/backup-lab.log 2>&1
+0 2 * * * /usr/local/bin/backup-mugalab.sh >> /var/log/backup-mugalab.log 2>&1
 ```
 
 ### 16.3 Monitoring
@@ -1133,7 +1133,7 @@ sudo apt update && sudo apt list --upgradable
 
 Jika deployment dilakukan di WSL:
 
-1. **Project di `/mnt/c/...`** (Windows filesystem) → akses lambat + kadang permission error. Sebaiknya pindah ke `~/lab` (filesystem Linux native).
+1. **Project di `/mnt/c/...`** (Windows filesystem) → akses lambat + kadang permission error. Sebaiknya pindah ke `~/mugalab` (filesystem Linux native).
 2. **LibreOffice** tetap bisa diinstal via `apt` dan berjalan di WSL.
 3. **Path output** sebaiknya diarahkan ke filesystem Linux (bukan `/mnt/c/`) untuk menghindari masalah lock file.
 4. **Firewall Windows** mungkin memblokir port 80/443:
@@ -1163,6 +1163,6 @@ Jika mengalami kendala yang tidak tercakup:
 
 ---
 
-**Selamat! Aplikasi Lab siap digunakan.** 🎉
+**Selamat! MUGALAB siap digunakan.** 🎉
 
 Pastikan semua checklist di [§14](#14-checklist-instalasi) sudah tercentang sebelum dinyatakan selesai.

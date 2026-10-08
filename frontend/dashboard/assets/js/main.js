@@ -31,23 +31,31 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.error('Gagal load labs untuk dropdown:', err);
     }
 
-    // Modules
-    if (typeof initJadwal === 'function') await initJadwal();
-    if (typeof initAlat === 'function') await initAlat();
-    if (typeof initBahan === 'function') await initBahan();
-    if (typeof initSarana === 'function') await initSarana();
-    if (typeof initLaporanKerusakan === 'function') await initLaporanKerusakan();
-    if (typeof initRiwayatBahan === 'function') await initRiwayatBahan();
-    if (typeof initLaprak === 'function') await initLaprak();
-    if (typeof initPengajuan === 'function') await initPengajuan();
-    if (typeof initPeminjaman === 'function') await initPeminjaman();
-    if (typeof initKelolaLab === 'function') await initKelolaLab();
-    if (typeof initManajemenUser === 'function') {
-        await initManajemenUser();
-    } else {
-        console.warn('initManajemenUser tidak ditemukan');
+    // Modules — jalankan paralel (semua modul independen)
+    const moduleInits = [
+        { name: 'Jadwal',            fn: typeof initJadwal === 'function' ? initJadwal : null },
+        { name: 'Alat',              fn: typeof initAlat === 'function' ? initAlat : null },
+        { name: 'Bahan',             fn: typeof initBahan === 'function' ? initBahan : null },
+        { name: 'Sarana',            fn: typeof initSarana === 'function' ? initSarana : null },
+        { name: 'Laporan Kerusakan', fn: typeof initLaporanKerusakan === 'function' ? initLaporanKerusakan : null },
+        { name: 'Riwayat Bahan',     fn: typeof initRiwayatBahan === 'function' ? initRiwayatBahan : null },
+        { name: 'Laprak',            fn: typeof initLaprak === 'function' ? initLaprak : null },
+        { name: 'Pengajuan',         fn: typeof initPengajuan === 'function' ? initPengajuan : null },
+        { name: 'Peminjaman',        fn: typeof initPeminjaman === 'function' ? initPeminjaman : null },
+        { name: 'Kelola Lab',        fn: typeof initKelolaLab === 'function' ? initKelolaLab : null },
+        { name: 'Manajemen User',    fn: typeof initManajemenUser === 'function' ? initManajemenUser : null },
+        { name: 'Setting',           fn: typeof initSetting === 'function' ? initSetting : null }
+    ];
+
+    const missingModules = moduleInits.filter(m => !m.fn);
+    if (missingModules.length) {
+        console.warn('⚠️ Modul tidak ditemukan:', missingModules.map(m => m.name).join(', '));
     }
-    if (typeof initSetting === 'function') await initSetting();
+
+    await Promise.all(
+        moduleInits.filter(m => m.fn).map(m => m.fn())
+    );
 
     console.log('✅ Dashboard siap — semua modul terinisialisasi');
+    
 });

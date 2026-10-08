@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Core
     await initApp();
 
-    // Load semua dropdown lab
+    // Load semua dropdown lab — fetch SEKALI, reuse untuk semua
     const labSelects = [
         { id: 'lab_id', all: false },
         { id: 'labFilterSelect', all: true },
@@ -21,8 +21,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         { id: 'pinjamLabFilter', all: true }
     ];
 
-    for (const s of labSelects) {
-        await loadLabOptions(s.id, s.all);
+    try {
+        const labsRes = await apiGet('/api/lab');
+        const labsData = Array.isArray(labsRes) ? labsRes : (labsRes.data || []);
+        for (const s of labSelects) {
+            fillLabOptions(s.id, labsData, s.all);
+        }
+    } catch (err) {
+        console.error('Gagal load labs untuk dropdown:', err);
     }
 
     // Modules

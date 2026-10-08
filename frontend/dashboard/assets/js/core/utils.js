@@ -60,5 +60,24 @@ async function loadLabOptions(selectId, includeAll = false) {
     }
 }
 
+// FILL LAB OPTIONS DARI DATA YANG SUDAH ADA (tanpa fetch)
+// Dipakai ketika data lab sudah di-fetch sekali — hemat N-1 request.
+function fillLabOptions(selectId, labs, includeAll = false) {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+
+    if (!Array.isArray(labs) || labs.length === 0) return;
+
+    let html = '';
+    if (includeAll) {
+        html += '<option value="all">Semua Lab</option>';
+    }
+    labs.forEach(lab => {
+        html += `<option value="${lab.id}">${lab.nama}</option>`;
+    });
+    select.innerHTML = html;
+}
+
 // Pastikan fungsi global
 window.loadLabOptions = loadLabOptions;
+window.fillLabOptions = fillLabOptions;

@@ -93,6 +93,7 @@ async function initBahan() {
     });
 
     loadBahan();
+    if (typeof initImportExcel === 'function') initImportExcel();
     console.log('✅ Modul Bahan siap');
 }
 

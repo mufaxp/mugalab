@@ -77,10 +77,9 @@ async function initAlat() {
 
     const sidebarInv = document.querySelector('.sidebar-item[data-panel="inventaris"]');
     if (sidebarInv) sidebarInv.addEventListener('click', loadAlat);
-
+    if (typeof initImportExcel === 'function') initImportExcel();
     console.log('✅ Modul Alat siap');
 }
-
 async function loadAlat() {
     const container = document.getElementById('alatList');
     if (!container) return;

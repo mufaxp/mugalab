@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 
-// ================== GLOBAL MIDDLEWARE ==================
+// GLOBAL MIDDLEWARE
 app.use(express.json());
 
 // CORS (jika belum ada file-nya, bisa pakai middleware manual atau buat file baru)
@@ -12,7 +12,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// ================== HEALTH CHECK ==================
+// HEALTH CHECK
 app.get('/api/health', (req, res) => {
     res.json({
         status: 'OK',
@@ -21,7 +21,7 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// ================== MOUNT MODULES ==================
+// MOUNT MODULES
 // Modul auth
 app.use('/api/auth', require('./modules/auth/auth.routes'));
 
@@ -66,7 +66,7 @@ app.use((req, res) => {
     });
 });
 
-// ================== 404 HANDLER ==================
+// 404 HANDLER
 app.use((req, res) => {
     res.status(404).json({
         error: 'Route tidak ditemukan',

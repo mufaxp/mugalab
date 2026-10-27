@@ -412,8 +412,14 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 cd /var/www/lab/backend
 npm install
 ```
-
 Atau jika ingin versi persis sesuai `package-lock.json`:
+
+Verifikasi xlsx terpasang (dependensi baru untuk import Excel)
+grep '"xlsx"' package.json
+node -e "require('xlsx'); console.log('xlsx OK')"
+
+Generate template Excel (hanya sekali, hasil di-commit ke repo)
+node scripts/generate-templates.js
 
 ```bash
 npm ci

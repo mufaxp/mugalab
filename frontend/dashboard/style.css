@@ -904,6 +904,32 @@ body {
     border-color: var(--muh-green-light);
 }
 
+/* Tombol import file Excel */
+.btn-import-tpl {
+    background-color: #E8F5E9;
+    color: #2E7D32;
+    border: 1px solid #A5D6A7;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: background-color 0.15s, transform 0.1s;
+    font-family: inherit;
+}
+.btn-import-tpl:hover {
+    background-color: #C8E6C9;
+    transform: translateY(-1px);
+}
+.btn-import-tpl:active {
+    transform: scale(0.97);
+}
+
 @media (max-width: 640px) {
     .role-permissions-header {
         flex-direction: column;

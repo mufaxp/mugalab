@@ -868,3 +868,45 @@ Saat menambahkan fitur yang melibatkan upload file atau data baru:
 - [ ] Notifikasi WA disesuaikan (jika ada).
 - [ ] Testing end-to-end.
 - [ ] Dokumentasi ini diperbarui.
+
+---
+
+## 16. Fitur Import Excel Inventaris
+
+Bulk import alat, bahan, dan sarana dari file Excel.
+
+### Alur
+1. User memilih lab di dropdown `invLabFilter` → tombol **📄 Template** & **📥 Import** muncul.
+2. Upload file → `POST /api/<jenis>/import` (multipart: `file`, `lab_id`).
+3. Backend parse Excel (`xlsx`), validasi per baris, pre-check duplikat `kode_*`, insert **atomik**.
+4. Jika ada baris gagal → **tidak ada** data yang di-insert; error dikembalikan per baris.
+
+### Endpoint Baru
+| Method | Endpoint | Body | Akses |
+|--------|----------|------|-------|
+| POST | `/api/alat/import` | `lab_id`, `file` | admin/laboran |
+| POST | `/api/bahan/import` | `lab_id`, `file` | admin/laboran |
+| POST | `/api/sarana/import` | `lab_id`, `file` | admin/laboran |
+
+### Kolom Template
+- **Alat/Sarana**: `kode_*, nama_*, spek, produsen, jumlah, keterangan`
+- **Bahan**: `kode_bahan, nama_bahan, produsen, stok_awal, stok_akhir, satuan, tanggal_kadaluarsa, keterangan`
+- `jumlah_rusak` & `kondisi` **tidak diisi dari Excel** (default DB: `0` & `'baik'`), diisi manual via web
+- `satuan` bahan: whitelist `gram`, `ml`, `liter`, `kg`, `buah`
+- `tanggal_kadaluarsa`: `YYYY-MM-DD` atau `DD/MM/YYYY`, kosong = NULL
+
+### Batasan
+- Maks 5 MB, maks 1000 baris
+- Hanya sheet pertama dibaca; baris pertama = header
+- File sementara di `backend/uploads/temp/`, dihapus otomatis setelah proses
+
+### File Terkait
+| File | Peran |
+|------|-------|
+| `backend/shared/middleware/uploadExcel.js` | Multer + wrapper JSON error |
+| `backend/shared/utils/response.js` | `errorWithDetails()` |
+| `backend/modules/{alat,bahan,sarana}/*.service.js` | `importFromExcel()` |
+| `backend/modules/{alat,bahan,sarana}/*.controller.js` | `importExcel()` |
+| `backend/scripts/generate-templates.js` | Generate 3 template `.xlsx` |
+| `frontend/.../inventaris/import.js` | UI helper |
+| `frontend/dashboard/assets/templates/*.xlsx` | Template siap unduh |

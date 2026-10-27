@@ -66,10 +66,9 @@ async function initSarana() {
     document.addEventListener('click', e => { if (!e.target.closest('.search-wrapper')) suggestSarana.classList.remove('active'); });
 
     loadSarana();
-
     const sidebarInv = document.querySelector('.sidebar-item[data-panel="inventaris"]');
     if (sidebarInv) sidebarInv.addEventListener('click', loadSarana);
-
+    if (typeof initImportExcel === 'function') initImportExcel();
     console.log('✅ Modul Sarana siap');
 }
 

@@ -99,6 +99,8 @@
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:10px; flex-wrap:wrap;">
                         <h3>Daftar Alat</h3>
                         <div style="display:flex; gap:8px; align-items:center;">
+                            <a id="btnTemplateAlat" href="/dashboard/assets/templates/alat-template.xlsx" download class="btn-import-tpl" style="display:none;">Unduh Template</a>
+                            <button type="button" class="btn-import-tpl" id="btnImportAlat" style="display:none;">Unggah File</button>
                             <button class="btn-tambah" id="btnTambahAlat">Tambah Alat</button>
                             <div class="search-wrapper">
                                 <input type="text" id="searchAlat" class="search-input" placeholder="Cari alat...">
@@ -116,6 +118,8 @@
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:10px; flex-wrap:wrap;">
                         <h3>Daftar Bahan</h3>
                         <div style="display:flex; gap:8px; align-items:center;">
+                            <a id="btnTemplateBahan" href="/dashboard/assets/templates/bahan-template.xlsx" download class="btn-import-tpl" style="display:none;">Unduh Template</a>
+                            <button type="button" class="btn-import-tpl" id="btnImportBahan" style="display:none;">Unggah File</button>
                             <button class="btn-tambah" id="btnTambahBahan">Tambah Bahan</button>
                             <div class="search-wrapper">
                                 <input type="text" id="searchBahan" class="search-input" placeholder="Cari bahan...">
@@ -133,6 +137,8 @@
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:10px; flex-wrap:wrap;">
                         <h3>Daftar Sarana</h3>
                         <div style="display:flex; gap:8px; align-items:center;">
+                            <a id="btnTemplateSarana" href="/dashboard/assets/templates/sarana-template.xlsx" download class="btn-import-tpl" style="display:none;">Unduh Template</a>
+                            <button type="button" class="btn-import-tpl" id="btnImportSarana" style="display:none;">Unggah File</button>
                             <button class="btn-tambah" id="btnTambahSarana">Tambah Sarana</button>
                             <div class="search-wrapper">
                                 <input type="text" id="searchSarana" class="search-input" placeholder="Cari sarana...">
@@ -869,6 +875,41 @@
         </div>
     </div>
 
+    <!-- Modal Import Excel (shared untuk alat/bahan/sarana) -->
+    <div id="modalImport" class="modal-overlay" style="display:none;">
+        <div class="modal-content" style="max-width:560px;">
+            <h3 class="modal-title" id="modalImportTitle">Import Excel</h3>
+            <form id="formImport">
+                <input type="hidden" id="import_jenis" value="">
+                <input type="hidden" id="import_lab_id" value="">
+                <p style="margin-bottom:12px; color:#555; font-size:13px;">
+                    Data akan disimpan ke lab: <strong id="import_lab_name" style="color:var(--muh-green-dark);">-</strong>
+                </p>
+
+                <div class="form-group">
+                    <label for="import_file">File Excel (.xlsx / .xls)</label>
+                    <input type="file" id="import_file" class="form-input" accept=".xlsx,.xls" required>
+                    <small style="display:block; margin-top:6px; color:#777; font-size:12px;">
+                        Maksimal 5 MB, maksimal 1000 baris. Baris pertama harus berisi header.
+                        <a id="import_template_link" href="#" download style="color:var(--muh-green-dark); font-weight:600;">Unduh template</a>
+                    </small>
+                </div>
+
+                <div id="import_error_box" style="display:none; margin-top:12px; padding:12px; background:#FFEBEE; border:1px solid #EF9A9A; border-radius:8px;">
+                    <p style="margin:0 0 8px; font-weight:600; color:#C62828; font-size:13px;" id="import_error_title">Baris bermasalah:</p>
+                    <div id="import_error_list" style="max-height:200px; overflow-y:auto;"></div>
+                    <button type="button" id="btnDownloadErrors" class="btn-batal" style="display:none; margin-top:10px; padding:6px 14px; font-size:12px;">
+                        ⬇️ Unduh Detail Error (CSV)
+                    </button>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="submit" class="btn-simpan" id="btnImportSubmit">Import</button>
+                    <button type="button" class="btn-batal" onclick="closeModal('modalImport')">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
     <!-- Library eksternal -->
     <script defer src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <!-- Core -->
@@ -881,13 +922,14 @@
     <!-- Modules (bertahap) -->
     <script src="/dashboard/assets/js/modules/lab/lab.js?v=2.3"></script>
     <script src="/dashboard/assets/js/modules/jadwal/jadwal.js?v=2.3"></script>
-    <script src="/dashboard/assets/js/modules/inventaris/alat.js?v=2.3"></script>
-    <script src="/dashboard/assets/js/modules/inventaris/bahan.js?v=2.5"></script>
+    <script src="/dashboard/assets/js/modules/inventaris/alat.js?v=2.4"></script>
+    <script src="/dashboard/assets/js/modules/inventaris/bahan.js?v=2.6"></script>
+    <script src="/dashboard/assets/js/modules/inventaris/sarana.js?v=2.4"></script>
+    <script src="/dashboard/assets/js/modules/inventaris/import.js?v=2.1"></script>
     <script src="/dashboard/assets/js/modules/laporanKerusakan/laporanKerusakan.js?v=2.4"></script>
     <script src="/dashboard/assets/js/modules/riwayatBahan/riwayatBahan.js?v=2.3"></script>
     <script src="/dashboard/assets/js/modules/laprak/laprak.js?v=2.5"></script>
     <script src="/dashboard/assets/js/modules/pengajuan/pengajuan.js?v=2.6"></script>
-    <script src="/dashboard/assets/js/modules/inventaris/sarana.js?v=2.3"></script>
     <script src="/dashboard/assets/js/modules/peminjaman/peminjaman.js?v=2.5"></script>    
     <script src="/dashboard/assets/js/modules/user/user.js?v=2.3"></script>
     <script src="/dashboard/assets/js/modules/setting/setting.js?v=2.3"></script>

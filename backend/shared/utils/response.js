@@ -13,4 +13,12 @@ function error(res, message = 'Internal Server Error', statusCode = 500) {
     });
 }
 
-module.exports = { success, error };
+function errorWithDetails(res, message, data, statusCode = 400) {
+    return res.status(statusCode).json({
+        success: false,
+        message: message,
+        data: data
+    });
+}
+
+module.exports = { success, error, errorWithDetails };

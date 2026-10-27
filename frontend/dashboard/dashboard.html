@@ -888,18 +888,37 @@
 
                 <div class="form-group">
                     <label for="import_file">File Excel (.xlsx / .xls)</label>
-                    <input type="file" id="import_file" class="form-input" accept=".xlsx,.xls" required>
-                    <small style="display:block; margin-top:6px; color:#777; font-size:12px;">
-                        Maksimal 5 MB, maksimal 1000 baris. Baris pertama harus berisi header.
-                        <a id="import_template_link" href="#" download style="color:var(--muh-green-dark); font-weight:600;">Unduh template</a>
-                    </small>
-                </div>
+
+                        <!-- Drop zone (tampil saat belum ada file) -->
+                        <div id="import_upload_area" class="import-upload-area">
+                            <div class="import-upload-icon">📄</div>
+                            <div class="import-upload-text">
+                                <strong>Klik atau seret file ke sini</strong>
+                                <span>Format: .xlsx / .xls · Maks 5 MB</span>
+                            </div>
+                            <input type="file" id="import_file" accept=".xlsx,.xls" hidden>
+                        </div>
+
+                        <!-- Preview (tampil saat file sudah dipilih) -->
+                        <div id="import_upload_preview" class="import-upload-preview" style="display:none;">
+                            <div class="import-upload-info">
+                                <span class="import-upload-filename" id="import_upload_filename">-</span>
+                                <span class="import-upload-size" id="import_upload_size">-</span>
+                            </div>
+                            <button type="button" class="import-upload-remove" id="import_upload_remove" title="Hapus file">×</button>
+                        </div>
+
+                        <small style="display:block; margin-top:8px; color:#777; font-size:12px;">
+                            Baris pertama harus berisi header. Maksimal 1000 baris.
+                            <a id="import_template_link" href="#" download style="color:var(--muh-green-dark); font-weight:600;">Unduh template</a>
+                        </small>
+                    </div>
 
                 <div id="import_error_box" style="display:none; margin-top:12px; padding:12px; background:#FFEBEE; border:1px solid #EF9A9A; border-radius:8px;">
                     <p style="margin:0 0 8px; font-weight:600; color:#C62828; font-size:13px;" id="import_error_title">Baris bermasalah:</p>
                     <div id="import_error_list" style="max-height:200px; overflow-y:auto;"></div>
                     <button type="button" id="btnDownloadErrors" class="btn-batal" style="display:none; margin-top:10px; padding:6px 14px; font-size:12px;">
-                        ⬇️ Unduh Detail Error (CSV)
+                        Unduh Detail Error (CSV)
                     </button>
                 </div>
 
@@ -925,7 +944,7 @@
     <script src="/dashboard/assets/js/modules/inventaris/alat.js?v=2.4"></script>
     <script src="/dashboard/assets/js/modules/inventaris/bahan.js?v=2.6"></script>
     <script src="/dashboard/assets/js/modules/inventaris/sarana.js?v=2.4"></script>
-    <script src="/dashboard/assets/js/modules/inventaris/import.js?v=2.1"></script>
+    <script src="/dashboard/assets/js/modules/inventaris/import.js?v=2.2"></script>
     <script src="/dashboard/assets/js/modules/laporanKerusakan/laporanKerusakan.js?v=2.4"></script>
     <script src="/dashboard/assets/js/modules/riwayatBahan/riwayatBahan.js?v=2.3"></script>
     <script src="/dashboard/assets/js/modules/laprak/laprak.js?v=2.5"></script>

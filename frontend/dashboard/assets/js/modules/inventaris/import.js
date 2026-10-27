@@ -43,6 +43,106 @@ function updateImportButtons() {
     });
 }
 
+function _importFormatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+}
+
+function _importResetUpload() {
+    const input = document.getElementById('import_file');
+    const area = document.getElementById('import_upload_area');
+    const preview = document.getElementById('import_upload_preview');
+    if (input) input.value = '';
+    if (area) area.style.display = 'flex';
+    if (preview) preview.style.display = 'none';
+    if (input) input.required = true;
+}
+
+function _importShowPreview(file) {
+    const area = document.getElementById('import_upload_area');
+    const preview = document.getElementById('import_upload_preview');
+    const nameEl = document.getElementById('import_upload_filename');
+    const sizeEl = document.getElementById('import_upload_size');
+    if (area) area.style.display = 'none';
+    if (preview) preview.style.display = 'flex';
+    if (nameEl) nameEl.textContent = file.name;
+    if (sizeEl) sizeEl.textContent = _importFormatSize(file.size);
+}
+
+function _importValidateFile(file) {
+    const name = (file.name || '').toLowerCase();
+    if (!name.endsWith('.xlsx') && !name.endsWith('.xls')) {
+        alert('Format file harus .xlsx atau .xls');
+        return false;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+        alert('Ukuran file melebihi 5 MB');
+        return false;
+    }
+    return true;
+}
+
+function _setupUploadArea() {
+    const area = document.getElementById('import_upload_area');
+    const input = document.getElementById('import_file');
+    const btnRemove = document.getElementById('import_upload_remove');
+    if (!area || !input) return;
+
+    // Klik area → buka file picker
+    area.addEventListener('click', () => input.click());
+
+    // File dipilih via file picker
+    input.addEventListener('change', () => {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        if (!_importValidateFile(file)) {
+            input.value = '';
+            return;
+        }
+        _importShowPreview(file);
+    });
+
+    // Drag & drop
+    ['dragenter', 'dragover'].forEach(ev => {
+        area.addEventListener(ev, e => {
+            e.preventDefault();
+            e.stopPropagation();
+            area.classList.add('dragover');
+        });
+    });
+    ['dragleave', 'drop'].forEach(ev => {
+        area.addEventListener(ev, e => {
+            e.preventDefault();
+            e.stopPropagation();
+            area.classList.remove('dragover');
+        });
+    });
+    area.addEventListener('drop', e => {
+        const files = e.dataTransfer && e.dataTransfer.files;
+        if (!files || files.length === 0) return;
+        const file = files[0];
+        if (!_importValidateFile(file)) return;
+        try {
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            input.files = dt.files;
+        } catch (err) {
+            alert('Browser tidak mendukung drag & drop. Silakan klik area untuk memilih file.');
+            return;
+        }
+        _importShowPreview(file);
+    });
+
+    // Tombol × hapus file
+    if (btnRemove) {
+        btnRemove.addEventListener('click', (e) => {
+            e.stopPropagation();
+            _importResetUpload();
+        });
+    }
+}
+
 function openImportExcel(jenis) {
     const cfg = IMPORT_CONFIG[jenis];
     if (!cfg) return;
@@ -57,6 +157,7 @@ function openImportExcel(jenis) {
     document.getElementById('modalImportTitle').textContent = 'Import ' + cfg.label + ' dari Excel';
     document.getElementById('import_template_link').href = cfg.template;
     document.getElementById('formImport').reset();
+    _importResetUpload();
     document.getElementById('import_error_box').style.display = 'none';
     document.getElementById('import_error_list').innerHTML = '';
     document.getElementById('btnDownloadErrors').style.display = 'none';
@@ -101,10 +202,13 @@ async function _handleImportSubmit(e) {
     const btnDl = document.getElementById('btnDownloadErrors');
 
     if (!jenis || !IMPORT_CONFIG[jenis]) return alert('Jenis import tidak valid');
-    if (!fileInput.files[0]) return alert('Pilih file Excel terlebih dahulu');
+
+    const file = fileInput.files && fileInput.files[0];
+    if (!file) return alert('Pilih file Excel terlebih dahulu');
+    if (!_importValidateFile(file)) return;
 
     const fd = new FormData();
-    fd.append('file', fileInput.files[0]);
+    fd.append('file', file);
     fd.append('lab_id', labId);
 
     btn.disabled = true;
@@ -164,6 +268,7 @@ function initImportExcel() {
     if (window.__importExcelSetup) return;
     window.__importExcelSetup = true;
 
+    _setupUploadArea();
     ['alat', 'bahan', 'sarana'].forEach(jenis => {
         const cap = _importCap(jenis);
         const btnTpl = document.getElementById('btnTemplate' + cap);

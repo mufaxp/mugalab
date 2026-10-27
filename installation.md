@@ -414,15 +414,19 @@ npm install
 ```
 Atau jika ingin versi persis sesuai `package-lock.json`:
 
-Verifikasi xlsx terpasang (dependensi baru untuk import Excel)
-grep '"xlsx"' package.json
-node -e "require('xlsx'); console.log('xlsx OK')"
-
-Generate template Excel (hanya sekali, hasil di-commit ke repo)
-node scripts/generate-templates.js
-
 ```bash
 npm ci
+```
+
+Verifikasi xlsx terpasang (dependensi baru untuk import file Excel)
+```bash
+grep '"xlsx"' package.json
+node -e "require('xlsx'); console.log('xlsx OK')"
+```
+
+Bila file template tidak ditemukan, maka generate template Excel dengan menjalankan
+```bash
+node scripts/generate-templates.js
 ```
 
 ### 6.3 Jalankan `init.sql`

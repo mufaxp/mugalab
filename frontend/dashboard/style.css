@@ -929,6 +929,117 @@ body {
 .btn-import-tpl:active {
     transform: scale(0.97);
 }
+/* === Import Modal — Upload Area === */
+.import-upload-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 22px 16px;
+    border: 2px dashed #a0d5b0;
+    border-radius: 10px;
+    background: #f6fbf7;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.1s ease;
+    text-align: center;
+    user-select: none;
+}
+
+.import-upload-area:hover {
+    border-color: var(--muh-green);
+    background: #eef8f0;
+}
+
+.import-upload-area.dragover {
+    border-color: var(--muh-green);
+    background: #dcf1e2;
+    transform: scale(1.01);
+    box-shadow: 0 0 0 3px rgba(14, 112, 63, 0.08);
+}
+
+.import-upload-icon {
+    font-size: 34px;
+    line-height: 1;
+}
+
+.import-upload-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.import-upload-text strong {
+    font-size: 14px;
+    color: var(--muh-green-dark);
+    font-weight: 600;
+}
+
+.import-upload-text span {
+    font-size: 12px;
+    color: #718096;
+}
+
+/* Preview file terpilih */
+.import-upload-preview {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1.5px solid var(--muh-green);
+    border-radius: 10px;
+    background: #f0f7f2;
+}
+
+.import-upload-preview-icon {
+    font-size: 22px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.import-upload-info {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-width: 0;
+    gap: 2px;
+}
+
+.import-upload-filename {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.import-upload-size {
+    font-size: 11px;
+    color: #718096;
+}
+
+.import-upload-remove {
+    background: #FFEBEE;
+    color: #C62828;
+    border: 1px solid #EF9A9A;
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    flex-shrink: 0;
+    transition: background-color 0.15s ease;
+}
+
+.import-upload-remove:hover {
+    background: #FFCDD2;
+}
 
 @media (max-width: 640px) {
     .role-permissions-header {

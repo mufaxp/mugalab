@@ -142,6 +142,7 @@ CREATE TABLE IF NOT EXISTS `laporan_kerusakan` (
     `sarana_id` INT NULL,
     `jumlah_rusak` INT NOT NULL DEFAULT 1,
     `pelapor` VARCHAR(100) NOT NULL,
+    `terlapor` VARCHAR(100) NOT NULL DEFAULT '-',
     `tanggal_lapor` DATE NOT NULL,
     `status` ENUM('rusak','diperbaiki','selesai','dibuang') DEFAULT 'rusak',
     `keterangan` TEXT,

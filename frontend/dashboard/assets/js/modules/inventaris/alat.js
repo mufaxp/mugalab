@@ -74,7 +74,6 @@ async function initAlat() {
     document.addEventListener('click', e => { if (!e.target.closest('.search-wrapper')) suggestAlat.classList.remove('active'); });
 
     loadAlat();
-
     const sidebarInv = document.querySelector('.sidebar-item[data-panel="inventaris"]');
     if (sidebarInv) sidebarInv.addEventListener('click', loadAlat);
     if (typeof initImportExcel === 'function') initImportExcel();

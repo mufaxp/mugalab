@@ -4,50 +4,66 @@ document.addEventListener('DOMContentLoaded', async function() {
     displayNama();
     initLogoutButton();
 
-    // Core
+    // Core (Sidebar, Tabs, dll)
     await initApp();
 
-    // Load semua dropdown lab — fetch SEKALI, reuse untuk semua
-    const labSelects = [
-        { id: 'lab_id', all: false },
-        { id: 'labFilterSelect', all: true },
-        { id: 'alat_lab', all: false },
-        { id: 'bahan_lab', all: false },
-        { id: 'sarana_lab', all: false },
-        { id: 'laporanLabFilter', all: true },
-        { id: 'riwayatLabFilter', all: true },
-        { id: 'lpLabFilter', all: true },
-        { id: 'lp_lab_id', all: false },
-        { id: 'pinjamLabFilter', all: true }
-    ];
+    // Set untuk melacak panel mana yang sudah dimuat
+    const loadedPanels = new Set();
 
-    try {
-        const labsRes = await apiGet('/api/lab');
-        const labsData = Array.isArray(labsRes) ? labsRes : (labsRes.data || []);
-        for (const s of labSelects) {
-            fillLabOptions(s.id, labsData, s.all);
+    // Fungsi Lazy Loading
+    async function loadModule(panelId) {
+        if (loadedPanels.has(panelId)) return;
+        loadedPanels.add(panelId);
+        
+        console.log(`🚀 Memuat modul: ${panelId}...`);
+
+        try {
+            switch (panelId) {
+                case 'jadwal':
+                    if (typeof initJadwal === 'function') await initJadwal();
+                    break;
+                case 'inventaris':
+                    if (typeof initAlat === 'function') await initAlat();
+                    if (typeof initBahan === 'function') await initBahan();
+                    if (typeof initSarana === 'function') await initSarana();
+                    break;
+                case 'laporan':
+                    if (typeof initLaporanKerusakan === 'function') await initLaporanKerusakan();
+                    break;
+                case 'riwayat':
+                    if (typeof initRiwayatBahan === 'function') await initRiwayatBahan();
+                    break;
+                case 'laporan-praktikum':
+                    if (typeof initLaprak === 'function') await initLaprak();
+                    break;
+                case 'pengajuan':
+                    if (typeof initPengajuan === 'function') await initPengajuan();
+                    break;
+                case 'peminjaman':
+                    if (typeof initPeminjaman === 'function') await initPeminjaman();
+                    break;
+                case 'setting':
+                    if (typeof initKelolaLab === 'function') await initKelolaLab();
+                    if (typeof initManajemenUser === 'function') await initManajemenUser();
+                    if (typeof initSetting === 'function') await initSetting();
+                    break;
+            }
+        } catch (err) {
+            console.error(`Gagal inisialisasi modul ${panelId}:`, err);
         }
-    } catch (err) {
-        console.error('Gagal load labs untuk dropdown:', err);
     }
 
-    // Modules — sequential (hindari kewalahan backend dengan parallel)
-    if (typeof initJadwal === 'function') await initJadwal();
-    if (typeof initAlat === 'function') await initAlat();
-    if (typeof initBahan === 'function') await initBahan();
-    if (typeof initSarana === 'function') await initSarana();
-    if (typeof initLaporanKerusakan === 'function') await initLaporanKerusakan();
-    if (typeof initRiwayatBahan === 'function') await initRiwayatBahan();
-    if (typeof initLaprak === 'function') await initLaprak();
-    if (typeof initPengajuan === 'function') await initPengajuan();
-    if (typeof initPeminjaman === 'function') await initPeminjaman();
-    if (typeof initKelolaLab === 'function') await initKelolaLab();
-    if (typeof initManajemenUser === 'function') {
-        await initManajemenUser();
-    } else {
-        console.warn('initManajemenUser tidak ditemukan');
-    }
-    if (typeof initSetting === 'function') await initSetting();
+    document.querySelectorAll('.sidebar-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const panelId = this.getAttribute('data-panel');
+            if (panelId) loadModule(panelId);
+        });
+    });
 
-    console.log('✅ Dashboard siap — semua modul terinisialisasi');
+    const activeItem = document.querySelector('.sidebar-item.active');
+    const defaultPanel = activeItem ? activeItem.getAttribute('data-panel') : 'jadwal';
+    
+    await loadModule(defaultPanel);
+
+    console.log('✅ Dashboard siap — Lazy Loading aktif');
 });

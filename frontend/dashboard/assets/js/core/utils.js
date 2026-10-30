@@ -37,15 +37,20 @@ function getCurrentSunday() {
     return sunday;
 }
 
-// LOAD LAB OPTIONS DINAMIS
+let _labsCache = null;
+
 async function loadLabOptions(selectId, includeAll = false) {
     const select = document.getElementById(selectId);
     if (!select) return;
 
     try {
-        const response = await apiGet('/api/lab');
-        // respons bisa array langsung (jika belum diubah) atau { success, data }
-        const labs = Array.isArray(response) ? response : (response.data || []);
+        // Hanya fetch jika cache belum ada
+        if (!_labsCache) {
+            const response = await apiGet('/api/lab');
+            _labsCache = Array.isArray(response) ? response : (response.data || []);
+        }
+
+        const labs = _labsCache;
 
         let html = '';
         if (includeAll) {
@@ -60,8 +65,7 @@ async function loadLabOptions(selectId, includeAll = false) {
     }
 }
 
-// FILL LAB OPTIONS DARI DATA YANG SUDAH ADA (tanpa fetch)
-// Dipakai ketika data lab sudah di-fetch sekali — hemat N-1 request.
+// Method fillLabOptions
 function fillLabOptions(selectId, labs, includeAll = false) {
     const select = document.getElementById(selectId);
     if (!select) return;
@@ -78,6 +82,5 @@ function fillLabOptions(selectId, labs, includeAll = false) {
     select.innerHTML = html;
 }
 
-// Pastikan fungsi global
 window.loadLabOptions = loadLabOptions;
 window.fillLabOptions = fillLabOptions;

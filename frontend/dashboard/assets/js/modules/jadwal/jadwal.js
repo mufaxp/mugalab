@@ -91,6 +91,12 @@ async function initJadwal() {
 
     // pemanggilan method load jadwal
     await loadDashboardJadwal();
+    
+    // Siapkan modal Laprak agar suggestion alat & bahan langsung muncul
+    if (typeof initLaprakModal === 'function') {
+        await initLaprakModal();
+    }
+
     console.log('✅ Modul Jadwal siap');
 }
 

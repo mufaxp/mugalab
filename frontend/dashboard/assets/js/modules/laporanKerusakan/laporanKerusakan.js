@@ -81,11 +81,12 @@ async function initLaporanKerusakan() {
             item_id: itemId,
             jumlah_rusak: parseInt(document.getElementById('laporan_jumlah').value),
             pelapor: document.getElementById('laporan_pelapor').value,
+            terlapor: document.getElementById('laporan_terlapor').value, // <-- Tambahan
             tanggal_lapor: document.getElementById('laporan_tanggal').value,
             keterangan: document.getElementById('laporan_keterangan').value
         };
 
-        if (!body.item_id || !body.jumlah_rusak || !body.pelapor || !body.tanggal_lapor || !document.getElementById('laporan_alat_search').value) {
+        if (!body.item_id || !body.jumlah_rusak || !body.pelapor || !body.terlapor || !body.tanggal_lapor || !document.getElementById('laporan_alat_search').value) {
             return alert('Semua field wajib diisi!');
         }
 
@@ -163,9 +164,10 @@ function renderLaporan(data) {
             <th style="padding:8px;border:1px solid #d0e6d5;">Jenis</th>
             <th style="padding:8px;border:1px solid #d0e6d5;">Kode</th>
             <th style="padding:8px;border:1px solid #d0e6d5;">Nama Item</th>
-            <th style="padding:8px;border:1px solid #d0e6d5;">Jml Rusak</th>
+            <th style="padding:8px;border:1px solid #d0e6d5;">Jumlah Rusak</th>
             <th style="padding:8px;border:1px solid #d0e6d5;">Pelapor</th>
-            <th style="padding:8px;border:1px solid #d0e6d5;">Tgl Lapor</th>
+            <th style="padding:8px;border:1px solid #d0e6d5;">Terlapor</th>
+            <th style="padding:8px;border:1px solid #d0e6d5;">Tanggal Lapor</th>
             <th style="padding:8px;border:1px solid #d0e6d5;">Status</th>
             <th style="padding:8px;border:1px solid #d0e6d5;">Aksi</th>
         </tr></thead><tbody>`;
@@ -189,12 +191,13 @@ function renderLaporan(data) {
             tombol = `<button class="btn-delete btn-xs" data-action="hapus" data-id="${item.id}">Hapus</button>`;
         }
 
-        html += `<tr>
+         html += `<tr>
             <td style="padding:8px;border:1px solid #d0e6d5;">${jenisLabel}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.kode_item || '-'}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.nama_item || '-'}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.jumlah_rusak}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.pelapor}</td>
+            <td style="padding:8px;border:1px solid #d0e6d5;">${item.terlapor || '-'}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${tgl}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${statusLabel[status] || status}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;white-space:nowrap;">${tombol}</td>

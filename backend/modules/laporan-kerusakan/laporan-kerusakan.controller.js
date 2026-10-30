@@ -17,19 +17,18 @@ async function getAll(req, res) {
 
 /**
  * POST buat laporan kerusakan baru
- * Terima: { jenis, item_id / alat_id / sarana_id, jumlah_rusak, pelapor, tanggal_lapor, keterangan }
+ * Terima: { jenis, item_id / alat_id / sarana_id, jumlah_rusak, pelapor, terlapor, tanggal_lapor, keterangan }
  */
 async function create(req, res) {
-    const { jumlah_rusak, pelapor, tanggal_lapor, keterangan } = req.body;
+    const { jumlah_rusak, pelapor, terlapor, tanggal_lapor, keterangan } = req.body;
     const jenis = req.body.jenis || 'alat';
 
-    // Terima dua format: item_id generik, atau alat_id/sarana_id spesifik
     let item_id = req.body.item_id;
     if (!item_id) {
         item_id = jenis === 'alat' ? req.body.alat_id : req.body.sarana_id;
     }
 
-    if (!item_id || !jumlah_rusak || !pelapor || !tanggal_lapor) {
+    if (!item_id || !jumlah_rusak || !pelapor || !terlapor || !tanggal_lapor) {
         return error(res, 'Field wajib diisi', 400);
     }
     if (!['alat', 'sarana'].includes(jenis)) {
@@ -45,7 +44,7 @@ async function create(req, res) {
             return error(res, 'Jumlah tidak mencukupi', 400);
         }
 
-        await laporanService.create(jenis, item_id, parseInt(jumlah_rusak), pelapor, tanggal_lapor, keterangan || '');
+        await laporanService.create(jenis, item_id, parseInt(jumlah_rusak), pelapor, terlapor, tanggal_lapor, keterangan || '');
         await laporanService.kurangiStok(jenis, item_id, parseInt(jumlah_rusak));
 
         return success(res, null, `Laporan berhasil dibuat, stok ${jenis} berkurang`, 201);
@@ -55,9 +54,7 @@ async function create(req, res) {
     }
 }
 
-/**
- * PUT update status laporan
- */
+// PUT update status laporan
 async function updateStatus(req, res) {
     const { id } = req.params;
     const { status } = req.body;
@@ -91,9 +88,7 @@ async function updateStatus(req, res) {
     }
 }
 
-/**
- * DELETE hapus laporan
- */
+// DELETE hapus laporan
 async function remove(req, res) {
     const { id } = req.params;
 

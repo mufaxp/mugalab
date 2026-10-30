@@ -105,12 +105,14 @@ async function updateKembali(id, tanggalKembali, fotoKembali) {
 async function laporKerusakan(jenis, itemId, jumlahRusak, pelapor, tanggal, keterangan) {
     const alat_id = jenis === 'alat' ? itemId : null;
     const sarana_id = jenis === 'sarana' ? itemId : null;
+    
+    const terlapor = pelapor; // Set terlapor sama dengan pelapor untuk laporan otomatis
 
     await pool.query(
         `INSERT INTO laporan_kerusakan
-            (jenis, alat_id, sarana_id, jumlah_rusak, pelapor, tanggal_lapor, keterangan)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [jenis, alat_id, sarana_id, jumlahRusak, pelapor, tanggal, keterangan || '']
+            (jenis, alat_id, sarana_id, jumlah_rusak, pelapor, terlapor, tanggal_lapor, keterangan)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [jenis, alat_id, sarana_id, jumlahRusak, pelapor, terlapor, tanggal, keterangan || '']
     );
 }
 

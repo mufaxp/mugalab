@@ -9,21 +9,34 @@ let lpAlatList = [];
 let lpBahanList = [];
 let allAlatForLP = [];
 let allBahanForLP = [];
+let lpModalInitialized = false;
 
 async function initLaprak() {
     const lpLabFilter = document.getElementById('lpLabFilter');
     await loadLabOptions('lpLabFilter', true);
     await loadLabOptions('lp_lab_id');
 
-    function getLpLabFilter() {
-        if (!lpLabFilter) return null;
-        const v = lpLabFilter.value;
-        return v === 'all' ? null : parseInt(v);
-    }
-
     if (lpLabFilter) {
         lpLabFilter.addEventListener('change', () => loadLaporanPraktikum());
     }
+
+    // Siapkan modal (search, submit, data alat/bahan)
+    await initLaprakModal();
+
+    // Load data awal untuk panel tabel
+    loadLaporanPraktikum();
+
+    const sidebar = document.querySelector('.sidebar-item[data-panel="laporan-praktikum"]');
+    if (sidebar) sidebar.addEventListener('click', loadLaporanPraktikum);
+
+    console.log('✅ Modul Laprak siap');
+}
+
+// Fungsi khusus untuk inisialisasi modal (bisa dipanggil dari mana saja)
+async function initLaprakModal() {
+    // Cegah inisialisasi ganda
+    if (lpModalInitialized) return;
+    lpModalInitialized = true;
 
     // Submit form laporan praktikum
     document.getElementById('formLaporanPraktikum').addEventListener('submit', async function(e) {
@@ -54,7 +67,10 @@ async function initLaprak() {
             closeModal('modalLaporanPraktikum');
             lpEditMode = false;
             lpEditId = null;
-            loadLaporanPraktikum();
+            
+            // Hanya refresh tabel jika sedang di panel Laprak
+            if (document.getElementById('lpList')) loadLaporanPraktikum();
+            
             if (typeof loadDashboardJadwal === 'function') loadDashboardJadwal();
         }
     });
@@ -63,14 +79,119 @@ async function initLaprak() {
     initSearchAlatLP();
     initSearchBahanLP();
 
-    // Load data awal
-    loadAlatBahanForLP();
-    loadLaporanPraktikum();
+    // Load data awal untuk modal
+    await loadAlatBahanForLP();
+}
 
-    const sidebar = document.querySelector('.sidebar-item[data-panel="laporan-praktikum"]');
-    if (sidebar) sidebar.addEventListener('click', loadLaporanPraktikum);
+// Pencarian alat pada modal laporan praktikum
+function initSearchAlatLP() {
+    const lpSearchAlat = document.getElementById('lp_search_alat');
+    const lpSuggestAlat = document.getElementById('lp_suggest_alat');
+    
+    if (!lpSearchAlat) return;
 
-    console.log('✅ Modul Laprak siap');
+    lpSearchAlat.addEventListener('input', function() {
+        const keyword = this.value.toLowerCase().trim();
+        if (!keyword) {
+            lpSuggestAlat.classList.remove('active');
+            return;
+        }
+        const filtered = allAlatForLP.filter(item =>
+            item.nama_alat.toLowerCase().includes(keyword) ||
+            item.kode_alat.toLowerCase().includes(keyword)
+        );
+        lpSuggestAlat.innerHTML = filtered.map(item => `
+            <div class="search-suggest-item" data-id="${item.id}" data-nama="${item.nama_alat}" data-kode="${item.kode_alat}">
+                🔧 ${item.kode_alat} - ${item.nama_alat} (Stok: ${item.jumlah})
+            </div>`).join('');
+        lpSuggestAlat.classList.add('active');
+    });
+
+    lpSuggestAlat.addEventListener('click', function(e) {
+        const item = e.target.closest('.search-suggest-item');
+        if (item) {
+            lpSearchAlat.value = `${item.getAttribute('data-kode')} - ${item.getAttribute('data-nama')}`;
+            lpSearchAlat.setAttribute('data-selected-id', item.getAttribute('data-id'));
+            lpSearchAlat.setAttribute('data-selected-nama', item.getAttribute('data-nama'));
+            lpSearchAlat.setAttribute('data-selected-kode', item.getAttribute('data-kode'));
+            lpSuggestAlat.classList.remove('active');
+        }
+    });
+
+    document.getElementById('btnTambahAlatLP').addEventListener('click', function() {
+        const id = lpSearchAlat.getAttribute('data-selected-id');
+        const nama = lpSearchAlat.getAttribute('data-selected-nama');
+        const kode = lpSearchAlat.getAttribute('data-selected-kode');
+        const jumlah = parseInt(document.getElementById('lp_jumlah_alat').value);
+
+        if (!id || !jumlah || jumlah < 1) return alert('Pilih alat dan isi jumlah!');
+        if (lpAlatList.find(a => a.id == id)) return alert('Alat ini sudah ada di daftar!');
+
+        lpAlatList.push({ id: parseInt(id), kode, nama, jumlah, satuan: 'buah' });
+        renderLPAlatList();
+        lpSearchAlat.value = '';
+        lpSearchAlat.removeAttribute('data-selected-id');
+        lpSearchAlat.removeAttribute('data-selected-nama');
+        lpSearchAlat.removeAttribute('data-selected-kode');
+        document.getElementById('lp_jumlah_alat').value = '';
+    });
+}
+
+// Pencarian bahan pada modal laporan praktikum
+function initSearchBahanLP() {
+    const lpSearchBahan = document.getElementById('lp_search_bahan');
+    const lpSuggestBahan = document.getElementById('lp_suggest_bahan');
+
+    if (!lpSearchBahan) return;
+
+    lpSearchBahan.addEventListener('input', function() {
+        const keyword = this.value.toLowerCase().trim();
+        if (!keyword) {
+            lpSuggestBahan.classList.remove('active');
+            return;
+        }
+        const filtered = allBahanForLP.filter(item =>
+            item.nama_bahan.toLowerCase().includes(keyword) ||
+            item.kode_bahan.toLowerCase().includes(keyword)
+        );
+        lpSuggestBahan.innerHTML = filtered.map(item => `
+            <div class="search-suggest-item" data-id="${item.id}" data-nama="${item.nama_bahan}" data-kode="${item.kode_bahan}" data-satuan="${item.satuan}">
+                🧪 ${item.kode_bahan} - ${item.nama_bahan} (Stok: ${item.stok_akhir} ${item.satuan})
+            </div>`).join('');
+        lpSuggestBahan.classList.add('active');
+    });
+
+    lpSuggestBahan.addEventListener('click', function(e) {
+        const item = e.target.closest('.search-suggest-item');
+        if (item) {
+            lpSearchBahan.value = `${item.getAttribute('data-kode')} - ${item.getAttribute('data-nama')}`;
+            lpSearchBahan.setAttribute('data-selected-id', item.getAttribute('data-id'));
+            lpSearchBahan.setAttribute('data-selected-nama', item.getAttribute('data-nama'));
+            lpSearchBahan.setAttribute('data-selected-kode', item.getAttribute('data-kode'));
+            document.getElementById('lp_satuan_bahan').value = item.getAttribute('data-satuan');
+            lpSuggestBahan.classList.remove('active');
+        }
+    });
+
+    document.getElementById('btnTambahBahanLP').addEventListener('click', function() {
+        const id = lpSearchBahan.getAttribute('data-selected-id');
+        const nama = lpSearchBahan.getAttribute('data-selected-nama');
+        const kode = lpSearchBahan.getAttribute('data-selected-kode');
+        const jumlah = parseFloat(document.getElementById('lp_jumlah_bahan').value);
+        const satuan = document.getElementById('lp_satuan_bahan').value;
+
+        if (!id || !jumlah || jumlah <= 0 || !satuan) return alert('Pilih bahan, isi jumlah, dan satuan!');
+        if (lpBahanList.find(b => b.id == id)) return alert('Bahan ini sudah ada di daftar!');
+
+        lpBahanList.push({ id: parseInt(id), kode, nama, jumlah, satuan });
+        renderLPBahanList();
+        lpSearchBahan.value = '';
+        lpSearchBahan.removeAttribute('data-selected-id');
+        lpSearchBahan.removeAttribute('data-selected-nama');
+        lpSearchBahan.removeAttribute('data-selected-kode');
+        document.getElementById('lp_jumlah_bahan').value = '';
+        document.getElementById('lp_satuan_bahan').value = '';
+    });
 }
 
 // Buka modal untuk membuat laporan praktikum dari jadwal
@@ -242,113 +363,6 @@ async function loadAlatBahanForLP() {
     }
 }
 
-// Pencarian alat pada modal laporan praktikum
-function initSearchAlatLP() {
-    const lpSearchAlat = document.getElementById('lp_search_alat');
-    const lpSuggestAlat = document.getElementById('lp_suggest_alat');
-
-    lpSearchAlat.addEventListener('input', function() {
-        const keyword = this.value.toLowerCase().trim();
-        if (!keyword) {
-            lpSuggestAlat.classList.remove('active');
-            return;
-        }
-        const filtered = allAlatForLP.filter(item =>
-            item.nama_alat.toLowerCase().includes(keyword) ||
-            item.kode_alat.toLowerCase().includes(keyword)
-        );
-        lpSuggestAlat.innerHTML = filtered.map(item => `
-            <div class="search-suggest-item" data-id="${item.id}" data-nama="${item.nama_alat}" data-kode="${item.kode_alat}">
-                🔧 ${item.kode_alat} - ${item.nama_alat} (Stok: ${item.jumlah})
-            </div>`).join('');
-        lpSuggestAlat.classList.add('active');
-    });
-
-    lpSuggestAlat.addEventListener('click', function(e) {
-        const item = e.target.closest('.search-suggest-item');
-        if (item) {
-            lpSearchAlat.value = `${item.getAttribute('data-kode')} - ${item.getAttribute('data-nama')}`;
-            lpSearchAlat.setAttribute('data-selected-id', item.getAttribute('data-id'));
-            lpSearchAlat.setAttribute('data-selected-nama', item.getAttribute('data-nama'));
-            lpSearchAlat.setAttribute('data-selected-kode', item.getAttribute('data-kode'));
-            lpSuggestAlat.classList.remove('active');
-        }
-    });
-
-    document.getElementById('btnTambahAlatLP').addEventListener('click', function() {
-        const id = lpSearchAlat.getAttribute('data-selected-id');
-        const nama = lpSearchAlat.getAttribute('data-selected-nama');
-        const kode = lpSearchAlat.getAttribute('data-selected-kode');
-        const jumlah = parseInt(document.getElementById('lp_jumlah_alat').value);
-
-        if (!id || !jumlah || jumlah < 1) return alert('Pilih alat dan isi jumlah!');
-        if (lpAlatList.find(a => a.id == id)) return alert('Alat ini sudah ada di daftar!');
-
-        lpAlatList.push({ id: parseInt(id), kode, nama, jumlah, satuan: 'buah' });
-        renderLPAlatList();
-        lpSearchAlat.value = '';
-        lpSearchAlat.removeAttribute('data-selected-id');
-        lpSearchAlat.removeAttribute('data-selected-nama');
-        lpSearchAlat.removeAttribute('data-selected-kode');
-        document.getElementById('lp_jumlah_alat').value = '';
-    });
-}
-
-// Pencarian bahan pada modal laporan praktikum
-function initSearchBahanLP() {
-    const lpSearchBahan = document.getElementById('lp_search_bahan');
-    const lpSuggestBahan = document.getElementById('lp_suggest_bahan');
-
-    lpSearchBahan.addEventListener('input', function() {
-        const keyword = this.value.toLowerCase().trim();
-        if (!keyword) {
-            lpSuggestBahan.classList.remove('active');
-            return;
-        }
-        const filtered = allBahanForLP.filter(item =>
-            item.nama_bahan.toLowerCase().includes(keyword) ||
-            item.kode_bahan.toLowerCase().includes(keyword)
-        );
-        lpSuggestBahan.innerHTML = filtered.map(item => `
-            <div class="search-suggest-item" data-id="${item.id}" data-nama="${item.nama_bahan}" data-kode="${item.kode_bahan}" data-satuan="${item.satuan}">
-                🧪 ${item.kode_bahan} - ${item.nama_bahan} (Stok: ${item.stok_akhir} ${item.satuan})
-            </div>`).join('');
-        lpSuggestBahan.classList.add('active');
-    });
-
-    lpSuggestBahan.addEventListener('click', function(e) {
-        const item = e.target.closest('.search-suggest-item');
-        if (item) {
-            lpSearchBahan.value = `${item.getAttribute('data-kode')} - ${item.getAttribute('data-nama')}`;
-            lpSearchBahan.setAttribute('data-selected-id', item.getAttribute('data-id'));
-            lpSearchBahan.setAttribute('data-selected-nama', item.getAttribute('data-nama'));
-            lpSearchBahan.setAttribute('data-selected-kode', item.getAttribute('data-kode'));
-            document.getElementById('lp_satuan_bahan').value = item.getAttribute('data-satuan');
-            lpSuggestBahan.classList.remove('active');
-        }
-    });
-
-    document.getElementById('btnTambahBahanLP').addEventListener('click', function() {
-        const id = lpSearchBahan.getAttribute('data-selected-id');
-        const nama = lpSearchBahan.getAttribute('data-selected-nama');
-        const kode = lpSearchBahan.getAttribute('data-selected-kode');
-        const jumlah = parseFloat(document.getElementById('lp_jumlah_bahan').value);
-        const satuan = document.getElementById('lp_satuan_bahan').value;
-
-        if (!id || !jumlah || jumlah <= 0 || !satuan) return alert('Pilih bahan, isi jumlah, dan satuan!');
-        if (lpBahanList.find(b => b.id == id)) return alert('Bahan ini sudah ada di daftar!');
-
-        lpBahanList.push({ id: parseInt(id), kode, nama, jumlah, satuan });
-        renderLPBahanList();
-        lpSearchBahan.value = '';
-        lpSearchBahan.removeAttribute('data-selected-id');
-        lpSearchBahan.removeAttribute('data-selected-nama');
-        lpSearchBahan.removeAttribute('data-selected-kode');
-        document.getElementById('lp_jumlah_bahan').value = '';
-        document.getElementById('lp_satuan_bahan').value = '';
-    });
-}
-
 // Render daftar alat yang sudah dipilih
 function renderLPAlatList() {
     const container = document.getElementById('lp_list_alat');
@@ -380,3 +394,6 @@ function renderLPBahanList() {
         });
     });
 }
+
+// Ekspos ke global agar bisa dipanggil dari file lain
+window.initLaprakModal = initLaprakModal;

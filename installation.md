@@ -463,6 +463,15 @@ ALTER TABLE laporan_kerusakan
 "
 ```
 
+Jika tabel `laporan_kerusakan` belum memiliki kolom `terlapor`:
+
+```bash
+mysql -u root -p lab-db -e "
+ALTER TABLE laporan_kerusakan
+ADD COLUMN terlapor VARCHAR(100) NOT NULL DEFAULT '-' AFTER pelapor;
+"
+```
+
 ### 6.5 Buat User Admin Pertama
 
 Generate hash password:
@@ -1015,6 +1024,8 @@ Jika tidak ada balasan:
 | `ReferenceError: create is not defined` | Salah satu fungsi hilang dari `module.exports` | Cek file service, pastikan semua fungsi diekspor |
 | **Menu role permissions tidak muncul** | Login bukan admin | Cek `localStorage.getItem('role')` |
 | **Stok alat tidak berkurang setelah pinjam** | Cache JS lama / `kurangiStok` tidak jalan | Hard refresh + cek log backend |
+| **Perubahan file JS/CSS tidak muncul** | Browser menyimpan cache versi lama | Lakukan Hard Refresh (`Ctrl+Shift+R`), atau bump versi `?v=...` di `dashboard.html`. |
+| **Suggestion alat/bahan di modal Laprak kosong** | `initLaprakModal` gagal dimuat atau data API kosong | Cek Console browser, pastikan `jadwal.js` memanggil `initLaprakModal()`, dan API `/api/alat` mengembalikan data. |
 
 ### 15.2 Cara Cek Log
 

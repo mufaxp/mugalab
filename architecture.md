@@ -281,7 +281,8 @@ Mendukung **alat** dan **sarana** dalam satu tabel.
   "jenis": "alat" | "sarana",
   "item_id": 1,
   "jumlah_rusak": 1,
-  "pelapor": "Nama",
+  "pelapor": "Nama Pelapor",
+  "terlapor": "Nama Terlapor",
   "tanggal_lapor": "2026-09-20",
   "keterangan": "opsional"
 }
@@ -385,6 +386,7 @@ Mendukung **alat** dan **sarana** dalam satu tabel.
   - `jenis` (ENUM `alat`/`sarana`) — diskriminator.
   - `alat_id` (INT, NULL) — diisi jika `jenis='alat'`.
   - `sarana_id` (INT, NULL) — diisi jika `jenis='sarana'`.
+  - `terlapor` (VARCHAR 100) — nama pihak yang dilaporkan (wajib, default `'-'`).
 - `settings`:
   - Menyimpan `nama_sekolah`, `nama_lab` sebagai key-value.
   - Menyimpan `role_permissions` sebagai JSON string.
@@ -910,3 +912,20 @@ Bulk import alat, bahan, dan sarana dari file Excel.
 | `backend/scripts/generate-templates.js` | Generate 3 template `.xlsx` |
 | `frontend/.../inventaris/import.js` | UI helper |
 | `frontend/dashboard/assets/templates/*.xlsx` | Template siap unduh |
+
+---
+
+## 17. Optimasi Performa & Fitur Dashboard
+
+### 17.1 Lazy Loading Modul
+Untuk mengurangi beban server saat pertama kali dashboard dibuka, `main.js` menerapkan pola **Lazy Loading**. Modul (Jadwal, Inventaris, Laporan, dll.) hanya akan diinisialisasi (`init...()`) ketika menu di sidebar diklik untuk pertama kalinya. Hal ini mencegah penumpukan request API di awal.
+
+### 17.2 Cache Data Lab
+Untuk mencegah request `/api/lab` yang berulang-ulang dari setiap modul, fungsi `loadLabOptions` di `utils.js` menggunakan variabel cache global (`_labsCache`). Data lab hanya akan di-fetch sekali per sesi halaman. Jika ada penambahan lab baru, cache perlu di-reset (bisa melalui refresh halaman atau memanggil fungsi reset cache).
+
+### 17.3 Dropdown Pekan di Panel Jadwal
+Panel Jadwal di Dashboard kini menggunakan dropdown pemilih pekan (Pekan Lalu, Pekan Ini, Pekan Depan) yang meniru tampilan landing page. Tombol "Tambah" di header dihapus, dan data jadwal dirender ke dalam satu daftar berdasarkan pekan yang dipilih.
+- **File terkait:** `frontend/dashboard/dashboard.html` (elemen `#dashboardWeekSelect`), `frontend/dashboard/assets/js/modules/jadwal/jadwal.js` (logika `loadDashboardJadwal`).
+
+### 17.4 Pemisahan Inisialisasi Modal Laprak
+Karena modal "Buat Laporan Praktikum" bisa dipanggil dari panel **Jadwal**, inisialisasinya dipisah menjadi `initLaprakModal()`. Fungsi ini memuat data alat/bahan dan memasang event listener pada form modal tanpa harus memuat tabel Laporan Praktikum. Fungsi `initLaprak()` akan memanggil `initLaprakModal()` secara internal, dan `jadwal.js` juga memanggilnya agar suggestion alat/bahan langsung siap.

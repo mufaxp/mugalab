@@ -40,12 +40,16 @@
         <main class="content-panel">
             <!-- Panel Jadwal -->
             <div id="jadwal" class="panel">
-                <!-- header dengan tombol tambah -->
+                <!-- header dengan dropdown pekan -->
                 <div class="panel-header">
                     <h2>📅 Jadwal Kegiatan Lab</h2>
-                    <button class="btn-tambah">Tambah</button>
+                    <select id="dashboardWeekSelect" class="form-input lab-filter-select" style="width:auto; min-width:220px;">
+                        <option value="prev">Pekan Lalu</option>
+                        <option value="current" selected>Pekan Ini</option>
+                        <option value="next">Pekan Depan</option>
+                    </select>
                 </div>            
-                <p>Di sini Anda dapat menambah, mengedit, dan menghapus jadwal penggunaan laboratorium.</p>
+                <p>Di sini Anda dapat melihat, mengedit, dan menghapus jadwal penggunaan laboratorium.</p>
                 <div class="lab-filter">
                     <label for="labFilterSelect">Pilih Ruang Laboratorium:</label>
                     <select id="labFilterSelect" class="form-input lab-filter-select">
@@ -54,21 +58,7 @@
                 </div>
                 <!-- daftar jadwal -->
                 <div id="jadwalList" class="jadwal-list">
-                    <!-- Pekan Ini -->
-                    <div class="jadwal-section">
-                        <h3 class="jadwal-section-title">Jadwal Pekan Ini</h3>
-                        <div id="jadwalPekanIni" class="jadwal-section-content">
-                            <p style="color:#999; text-align:center; padding:20px;">Memuat data jadwal...</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Pekan Depan -->
-                    <div class="jadwal-section">
-                        <h3 class="jadwal-section-title">Jadwal Pekan Depan</h3>
-                        <div id="jadwalPekanDepan" class="jadwal-section-content">
-                            <p style="color:#999; text-align:center; padding:20px;">Memuat data jadwal...</p>
-                        </div>
-                    </div>
+                    <p style="color:#999; text-align:center; padding:20px;">Memuat data jadwal...</p>
                 </div>
             </div>
 
@@ -944,7 +934,7 @@
 
     <!-- Modules (bertahap) -->
     <script src="/dashboard/assets/js/modules/lab/lab.js?v=2.3"></script>
-    <script src="/dashboard/assets/js/modules/jadwal/jadwal.js?v=2.4"></script>
+    <script src="/dashboard/assets/js/modules/jadwal/jadwal.js?v=2.5"></script>
     <script src="/dashboard/assets/js/modules/inventaris/alat.js?v=2.4"></script>
     <script src="/dashboard/assets/js/modules/inventaris/bahan.js?v=2.6"></script>
     <script src="/dashboard/assets/js/modules/inventaris/sarana.js?v=2.4"></script>

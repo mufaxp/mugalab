@@ -439,10 +439,11 @@ ls -la database/
 mysql -u root -p lab-db < database/init.sql
 ```
 
-### 6.4 Migrasi Tambahan (jika perlu)
+### 6.4 Migrasi Tambahan (Wajib)
 
-Jika tabel `pengajuan_jadwal` belum memiliki kolom `file_pdf`:
+Jalankan perintah SQL berikut di database `lab-db` untuk memastikan skema sesuai dengan kode terbaru:
 
+**a. Kolom `file_pdf` (Pengajuan Jadwal):**
 ```bash
 mysql -u root -p lab-db -e "
 ALTER TABLE pengajuan_jadwal
@@ -450,8 +451,7 @@ ADD COLUMN file_pdf VARCHAR(255) NULL AFTER kelas;
 "
 ```
 
-Jika tabel `laporan_kerusakan` belum mendukung sarana:
-
+**b. Kolom `jenis` & `sarana_id` (Laporan Kerusakan):**
 ```bash
 mysql -u root -p lab-db -e "
 ALTER TABLE laporan_kerusakan
@@ -463,12 +463,19 @@ ALTER TABLE laporan_kerusakan
 "
 ```
 
-Jika tabel `laporan_kerusakan` belum memiliki kolom `terlapor`:
-
+**c. Kolom `terlapor` (Laporan Kerusakan):**
 ```bash
 mysql -u root -p lab-db -e "
 ALTER TABLE laporan_kerusakan
 ADD COLUMN terlapor VARCHAR(100) NOT NULL DEFAULT '-' AFTER pelapor;
+"
+```
+
+**d. Kolom `mata_pelajaran` (Users):**
+```bash
+mysql -u root -p lab-db -e "
+ALTER TABLE users
+ADD COLUMN mata_pelajaran VARCHAR(100) NOT NULL DEFAULT '' AFTER role;
 "
 ```
 
@@ -963,7 +970,7 @@ Jika tidak ada balasan:
 - [ ] Database `chatbot` dibuat
 - [ ] User `labuser` dengan password kuat dibuat
 - [ ] Tabel dari `init.sql` di-import
-- [ ] Migrasi tambahan dijalankan (`file_pdf`, kolom laporan sarana)
+- [ ] Migrasi tambahan dijalankan (`file_pdf`, kolom laporan sarana, `terlapor`, `mata_pelajaran`)
 - [ ] User admin pertama dibuat
 
 ### 14.3 Folder & Hak Akses
@@ -1026,6 +1033,7 @@ Jika tidak ada balasan:
 | **Stok alat tidak berkurang setelah pinjam** | Cache JS lama / `kurangiStok` tidak jalan | Hard refresh + cek log backend |
 | **Perubahan file JS/CSS tidak muncul** | Browser menyimpan cache versi lama | Lakukan Hard Refresh (`Ctrl+Shift+R`), atau bump versi `?v=...` di `dashboard.html`. |
 | **Suggestion alat/bahan di modal Laprak kosong** | `initLaprakModal` gagal dimuat atau data API kosong | Cek Console browser, pastikan `jadwal.js` memanggil `initLaprakModal()`, dan API `/api/alat` mengembalikan data. |
+| **Filter mapel guru tidak jalan** | User belum logout/login ulang setelah mapelnya diubah | Minta user logout dan login ulang agar JWT diperbarui. |
 
 ### 15.2 Cara Cek Log
 

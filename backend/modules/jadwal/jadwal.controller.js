@@ -25,14 +25,14 @@ async function getPublic(req, res) {
  * GET jadwal dashboard (auth, dengan has_laporan)
  */
 async function getAll(req, res) {
-    const { minggu_mulai, lab_id } = req.query;
+    const { minggu_mulai, lab_id, mata_pelajaran } = req.query;
 
     if (!minggu_mulai) {
         return error(res, 'Parameter minggu_mulai diperlukan', 400);
     }
 
     try {
-        const data = await jadwalService.getJadwalMingguanWithLaporan(minggu_mulai, lab_id || null);
+        const data = await jadwalService.getJadwalMingguanWithLaporan(minggu_mulai, lab_id || null, mata_pelajaran || null);
         return success(res, data);
     } catch (err) {
         console.error('Error fetching jadwal:', err);

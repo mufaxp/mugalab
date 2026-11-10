@@ -3,13 +3,22 @@ const pool = require('../../config/db');
 /**
  * Ambil semua laporan praktikum dengan filter lab_id opsional
  */
-async function getAll(labId = null) {
+async function getAll(labId = null, mataPelajaran = null) {
     let query = 'SELECT * FROM laporan_praktikum';
     const params = [];
+    const conditions = [];
 
     if (labId) {
-        query += ' WHERE lab_id = ?';
+        conditions.push('lab_id = ?');
         params.push(labId);
+    }
+    if (mataPelajaran) {
+        conditions.push('mata_pelajaran = ?');
+        params.push(mataPelajaran);
+    }
+
+    if (conditions.length > 0) {
+        query += ' WHERE ' + conditions.join(' AND ');
     }
 
     query += ' ORDER BY tanggal DESC, created_at DESC';

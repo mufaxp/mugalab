@@ -1041,6 +1041,52 @@ body {
     background: #FFCDD2;
 }
 
+/* === Mapel Chips Modern === */
+.mapel-chip-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.mapel-chip {
+    display: inline-flex;
+    align-items: center;
+    background-color: #e8f5e9; /* Warna hijau muda */
+    border: 1px solid #c8e6c9;
+    color: #2e7d32; /* Warna teks hijau tua */
+    padding: 6px 14px;
+    border-radius: 999px; /* Membuat bentuk kapsul */
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+}
+
+.mapel-chip:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
+}
+
+.mapel-chip-remove {
+    background: transparent;
+    border: none;
+    color: #66bb6a; /* Warna x abu-abu kehijauan */
+    font-size: 18px;
+    line-height: 1;
+    margin-left: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: color 0.2s;
+}
+
+.mapel-chip-remove:hover {
+    color: #c62828; /* Berubah merah saat di-hover */
+}
+
 @media (max-width: 640px) {
     .role-permissions-header {
         flex-direction: column;

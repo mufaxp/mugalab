@@ -6,6 +6,7 @@
 let userEditMode = false;
 let userEditId = null;
 let allUserData = [];
+let listMapelOptions = []; // Menyimpan data mapel dari API
 
 const ALL_PANELS = [
     { id: 'jadwal',             label: 'Jadwal' },
@@ -24,16 +25,60 @@ const ALL_ROLES = [
     { id: 'guru',    label: 'Guru' }
 ];
 
-function initManajemenUser() {
+async function initManajemenUser() {
     const btnTambahUser = document.getElementById('btnTambahUser');
     const formUser = document.getElementById('formUser');
     const userListContainer = document.getElementById('userList');
+    const roleSelect = document.getElementById('user_role');
+    const mapelGroup = document.getElementById('user_mapel_group');
+    const mapelSelect = document.getElementById('user_mapel');
 
     if (!btnTambahUser || !formUser || !userListContainer) {
         console.warn('Elemen manajemen user tidak ditemukan');
         return;
     }
 
+    // 1. Muat opsi mata pelajaran dari settings publik
+    async function loadMapelOptions() {
+        try {
+            const res = await apiGet('/api/settings/public');
+            const data = res.data || res;
+            if (data.mata_pelajaran_list) {
+                let parsed = [];
+                if (typeof data.mata_pelajaran_list === 'string') {
+                    parsed = JSON.parse(data.mata_pelajaran_list);
+                } else {
+                    parsed = data.mata_pelajaran_list;
+                }
+                if (Array.isArray(parsed)) {
+                    listMapelOptions = parsed;
+                }
+            }
+        } catch (err) {
+            console.warn('Gagal memuat list mapel:', err);
+        }
+        
+        // Render ke select
+        if (mapelSelect) {
+            mapelSelect.innerHTML = '<option value="">Pilih Mata Pelajaran</option>' + 
+                listMapelOptions.map(m => `<option value="${m}">${m}</option>`).join('');
+        }
+    }
+
+    // Panggil saat init
+    await loadMapelOptions();
+
+    // 2. Logika Show/Hide Dropdown Mapel berdasarkan Role
+    roleSelect.addEventListener('change', function() {
+        if (this.value === 'guru') {
+            mapelGroup.style.display = 'block';
+        } else {
+            mapelGroup.style.display = 'none';
+            mapelSelect.value = ''; // Reset pilihan
+        }
+    });
+
+    // 3. Tombol Tambah User
     btnTambahUser.addEventListener('click', () => {
         userEditMode = false;
         userEditId = null;
@@ -43,20 +88,29 @@ function initManajemenUser() {
         document.getElementById('user_password').value = '';
         document.getElementById('user_nama').value = '';
         document.getElementById('user_role').value = 'guru';
+        mapelSelect.value = '';
+        // Trigger event change agar dropdown mapel muncul (karena default role = guru)
+        roleSelect.dispatchEvent(new Event('change'));
         openModal('modalUser');
     });
 
+    // 4. Submit Form
     formUser.addEventListener('submit', async function(e) {
         e.preventDefault();
+        const role = document.getElementById('user_role').value;
+        
         const body = {
             username: document.getElementById('user_username').value.trim(),
             nama: document.getElementById('user_nama').value.trim(),
-            role: document.getElementById('user_role').value,
+            role: role,
+            mata_pelajaran: role === 'guru' ? mapelSelect.value : ''
         };
+        
         const password = document.getElementById('user_password').value;
         if (password) body.password = password;
 
         if (!body.username || !body.nama || !body.role) return alert('Field wajib diisi');
+        if (body.role === 'guru' && !body.mata_pelajaran) return alert('Mata Pelajaran wajib dipilih untuk role Guru!');
 
         const url = userEditMode ? `/api/users/${userEditId}` : '/api/users';
         const data = userEditMode ? await apiPut(url, body) : await apiPost(url, body);
@@ -67,17 +121,14 @@ function initManajemenUser() {
         }
     });
 
-    // Tombol Simpan Izin Role
     const btnSimpanPerm = document.getElementById('btnSimpanPermissions');
     if (btnSimpanPerm) {
         btnSimpanPerm.addEventListener('click', saveRolePermissions);
     }
 
-    // Reload saat tab Manajemen User dibuka
     const sidebarSetting = document.querySelector('.sidebar-item[data-panel="setting"]');
     if (sidebarSetting) {
         sidebarSetting.addEventListener('click', () => {
-            // hanya load kalau tab user sedang aktif
             const activeTab = document.querySelector('.settings-tab.active');
             if (activeTab && activeTab.getAttribute('data-settings-tab') === 'user') {
                 loadUser();
@@ -91,10 +142,7 @@ function initManajemenUser() {
     console.log('✅ Modul Manajemen User siap');
 }
 
-/* ============================================
-   USER CRUD
-   ============================================ */
-
+// User CRUD functions
 async function loadUser() {
     const container = document.getElementById('userList');
     if (!container) return;
@@ -119,14 +167,17 @@ function renderUser(data) {
             <th style="padding:8px;border:1px solid #d0e6d5;">Username</th>
             <th style="padding:8px;border:1px solid #d0e6d5;">Nama</th>
             <th style="padding:8px;border:1px solid #d0e6d5;">Role</th>
+            <th style="padding:8px;border:1px solid #d0e6d5;">Mata Pelajaran</th>
             <th style="padding:8px;border:1px solid #d0e6d5;">Aksi</th>
         </tr></thead><tbody>`;
 
     data.forEach(u => {
+        const mapelText = u.role === 'guru' ? (u.mata_pelajaran || '-') : '-';
         html += `<tr>
             <td style="padding:8px;border:1px solid #d0e6d5;">${u.username}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${u.nama}</td>
-            <td style="padding:8px;border:1px solid #d0e6d5;">${u.role}</td>
+            <td style="padding:8px;border:1px solid #d0e6d5;text-transform:capitalize;">${u.role}</td>
+            <td style="padding:8px;border:1px solid #d0e6d5;">${mapelText}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">
                 <button class="btn-edit" data-edit-user="${u.id}">Edit</button>
                 <button class="btn-delete" data-hapus-user="${u.id}">Hapus</button>
@@ -148,14 +199,30 @@ function renderUser(data) {
 async function editUser(id) {
     const u = allUserData.find(x => x.id === id);
     if (!u) return;
+    
     userEditMode = true;
     userEditId = id;
     setModalTitle('modalUser', 'Edit User');
     setSubmitButton('modalUser', 'Update');
+    
     document.getElementById('user_username').value = u.username;
     document.getElementById('user_nama').value = u.nama;
-    document.getElementById('user_role').value = u.role;
     document.getElementById('user_password').value = '';
+    
+    const roleSelect = document.getElementById('user_role');
+    const mapelGroup = document.getElementById('user_mapel_group');
+    const mapelSelect = document.getElementById('user_mapel');
+    
+    roleSelect.value = u.role;
+    mapelSelect.value = u.mata_pelajaran || '';
+    
+    // Tampilkan / sembunyikan dropdown mapel sesuai role user yang diedit
+    if (u.role === 'guru') {
+        mapelGroup.style.display = 'block';
+    } else {
+        mapelGroup.style.display = 'none';
+    }
+    
     openModal('modalUser');
 }
 
@@ -166,9 +233,7 @@ async function hapusUser(id) {
     if (!data.message.includes('Gagal')) loadUser();
 }
 
-/* ============================================
-   ROLE PERMISSIONS
-   ============================================ */
+//    Role permissions
 
 async function loadRolePermissions() {
     const container = document.getElementById('rolePermissionsContainer');
@@ -211,7 +276,6 @@ function renderRolePermissions(perms) {
 
     container.innerHTML = html;
 
-    // Bind click toggle
     container.querySelectorAll('.role-chip:not(.locked)').forEach(chip => {
         chip.addEventListener('click', function() {
             this.classList.toggle('active');
@@ -228,7 +292,6 @@ async function saveRolePermissions() {
         if (result[role]) result[role].push(panel);
     });
 
-    // Pastikan urutan panel konsisten
     for (const r in result) {
         result[r].sort((a, b) => {
             const ai = ALL_PANELS.findIndex(p => p.id === a);
@@ -245,7 +308,6 @@ async function saveRolePermissions() {
         const res = await apiPut('/api/settings/role-permissions', result);
         alert(res.message || 'Tersimpan');
         if (res.message && !res.message.includes('Gagal')) {
-            // Refresh sidebar supaya perubahan langsung terlihat
             if (typeof initSidebar === 'function') initSidebar();
         }
     } catch (err) {

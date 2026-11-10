@@ -31,7 +31,7 @@ async function getAll(req, res) {
  * PUT update pengaturan (nama_sekolah, nama_lab)
  */
 async function update(req, res) {
-    const { nama_sekolah, nama_lab } = req.body;
+    const { nama_sekolah, nama_lab, mata_pelajaran_list } = req.body;
 
     // Validasi
     if (!nama_sekolah || !nama_lab) {
@@ -39,7 +39,7 @@ async function update(req, res) {
     }
 
     try {
-        await settingsService.updateSettings(nama_sekolah, nama_lab);
+        await settingsService.updateSettings(nama_sekolah, nama_lab, mata_pelajaran_list || '[]');
         return success(res, null, 'Pengaturan berhasil disimpan');
     } catch (err) {
         console.error('Error update settings:', err);

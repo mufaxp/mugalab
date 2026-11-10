@@ -6,10 +6,10 @@ const fs = require('fs');
  * GET semua laporan praktikum (filter lab_id opsional)
  */
 async function getAll(req, res) {
-    const { lab_id } = req.query;
+    const { lab_id, mata_pelajaran } = req.query; // <-- Tambah mata_pelajaran
 
     try {
-        const data = await laporanPraktikumService.getAll(lab_id || null);
+        const data = await laporanPraktikumService.getAll(lab_id || null, mata_pelajaran || null);
         return success(res, data);
     } catch (err) {
         console.error('Error fetching laporan praktikum:', err);

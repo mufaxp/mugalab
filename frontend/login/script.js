@@ -18,11 +18,12 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         const data = await response.json();
 
         if (response.ok) {
-            const userData = data.data; // <-- penting
+            const userData = data.data;
 
             localStorage.setItem('token', userData.token);
             localStorage.setItem('nama', userData.nama);
             localStorage.setItem('role', userData.role || 'guru');
+            localStorage.setItem('mata_pelajaran', userData.mata_pelajaran || '');
 
             window.location.href = '/dashboard';
         } else {

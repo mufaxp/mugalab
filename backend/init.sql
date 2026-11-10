@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS `users` (
     `password` VARCHAR(255) NOT NULL,
     `nama` VARCHAR(100) NOT NULL,
     `role` ENUM('admin','laboran','guru') DEFAULT 'guru',
+    `mata_pelajaran` VARCHAR(100) NOT NULL DEFAULT '',
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 

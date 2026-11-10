@@ -27,13 +27,14 @@ async function login(req, res) {
             return error(res, 'Username atau password salah', 401);
         }
 
-        // Buat JWT token
+         // Buat JWT token
         const token = jwt.sign(
             {
                 id: user.id,
                 username: user.username,
                 nama: user.nama,
-                role: user.role
+                role: user.role,
+                mata_pelajaran: user.mata_pelajaran
             },
             process.env.JWT_SECRET,
             { expiresIn: '2h' }
@@ -43,7 +44,8 @@ async function login(req, res) {
         return success(res, {
             token,
             nama: user.nama,
-            role: user.role
+            role: user.role,
+            mata_pelajaran: user.mata_pelajaran
         }, 'Login berhasil', 200);
     } catch (err) {
         console.error('Login error:', err);

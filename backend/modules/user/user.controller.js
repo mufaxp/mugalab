@@ -20,6 +20,7 @@ async function getAll(req, res) {
  */
 async function create(req, res) {
     const { username, password, nama, role } = req.body;
+    let { mata_pelajaran } = req.body;
 
     // Validasi
     if (!username || !password || !nama || !role) {
@@ -32,11 +33,14 @@ async function create(req, res) {
         return error(res, 'Role tidak valid', 400);
     }
 
-    try {
-        // Hash password
-        const hashedPassword = await bcrypt.hash(password, 10);
+    // Validasi mapel: hanya untuk guru, selain itu string kosong
+    if (role !== 'guru') {
+        mata_pelajaran = '';
+    }
 
-        const result = await userService.create(username, hashedPassword, nama, role);
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const result = await userService.create(username, hashedPassword, nama, role, mata_pelajaran || '');
         return success(res, { id: result.insertId }, 'User berhasil ditambahkan', 201);
     } catch (err) {
         if (err.code === 'ER_DUP_ENTRY') {
@@ -53,6 +57,7 @@ async function create(req, res) {
 async function update(req, res) {
     const { id } = req.params;
     const { nama, role, password } = req.body;
+    let { mata_pelajaran } = req.body;
 
     // Validasi role jika dikirim
     const allowedRoles = ['admin', 'laboran', 'guru'];
@@ -61,19 +66,31 @@ async function update(req, res) {
     }
 
     try {
-        // Cek user
         const user = await userService.getById(id);
         if (!user) {
             return error(res, 'User tidak ditemukan', 404);
         }
 
-        // Jika password diisi, hash password baru
+        const finalRole = role || user.role;
+        
+        // Validasi mapel: hanya untuk guru, selain itu string kosong
+        if (finalRole !== 'guru') {
+            mata_pelajaran = '';
+        }
+
         let hashedPassword = null;
         if (password) {
             hashedPassword = await bcrypt.hash(password, 10);
         }
 
-        await userService.update(id, nama || user.nama, role || user.role, hashedPassword);
+        await userService.update(
+            id, 
+            nama || user.nama, 
+            finalRole, 
+            mata_pelajaran !== undefined ? mata_pelajaran : user.mata_pelajaran, 
+            hashedPassword
+        );
+        
         return success(res, null, 'User berhasil diperbarui');
     } catch (err) {
         console.error('Error update user:', err);
@@ -86,12 +103,9 @@ async function update(req, res) {
  */
 async function remove(req, res) {
     const { id } = req.params;
-
     try {
         const user = await userService.getById(id);
-        if (!user) {
-            return error(res, 'User tidak ditemukan', 404);
-        }
+        if (!user) return error(res, 'User tidak ditemukan', 404);
 
         await userService.remove(id);
         return success(res, null, 'User berhasil dihapus');

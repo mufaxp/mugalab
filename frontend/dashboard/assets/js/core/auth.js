@@ -13,17 +13,10 @@ function checkAuth() {
     return true;
 }
 
-function getToken() {
-    return localStorage.getItem('token');
-}
-
-function getNama() {
-    return localStorage.getItem('nama');
-}
-
-function getRole() {
-    return localStorage.getItem('role') || 'guru';
-}
+function getToken() { return localStorage.getItem('token'); }
+function getNama() { return localStorage.getItem('nama'); }
+function getRole() { return localStorage.getItem('role') || 'guru'; }
+function getMapel() { return localStorage.getItem('mata_pelajaran') || ''; } // <-- Tambahan
 
 function displayNama() {
     const el = document.getElementById('userNameDisplay');
@@ -33,7 +26,8 @@ function displayNama() {
 function logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('nama');
-    localStorage.removeItem('role'); // ✅ hapus role
+    localStorage.removeItem('role');
+    localStorage.removeItem('mata_pelajaran'); // <-- Tambahan
     window.location.href = '/login';
 }
 
@@ -42,11 +36,11 @@ function initLogoutButton() {
     if (btn) btn.addEventListener('click', logout);
 }
 
-// ===== EXPORT GLOBAL =====
 window.checkAuth = checkAuth;
 window.getToken = getToken;
 window.getNama = getNama;
 window.getRole = getRole;
+window.getMapel = getMapel;
 window.displayNama = displayNama;
 window.logout = logout;
 window.initLogoutButton = initLogoutButton;

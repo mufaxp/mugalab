@@ -3,13 +3,17 @@ const pool = require('../../config/db');
 /**
  * Ambil jadwal mingguan (publik, tanpa has_laporan)
  */
-async function getJadwalMingguan(mingguMulai, labId = null) {
+async function getJadwalMingguan(mingguMulai, labId = null, mataPelajaran = null) {
     let query = `SELECT * FROM jadwal WHERE tanggal >= ? AND tanggal <= DATE_ADD(?, INTERVAL 6 DAY)`;
     const params = [mingguMulai, mingguMulai];
 
     if (labId) {
         query += ' AND lab_id = ?';
         params.push(labId);
+    }
+    if (mataPelajaran) {
+        query += ' AND mata_pelajaran = ?';
+        params.push(mataPelajaran);
     }
 
     query += ' ORDER BY tanggal, jam_mulai';
@@ -20,7 +24,7 @@ async function getJadwalMingguan(mingguMulai, labId = null) {
 /**
  * Ambil jadwal mingguan dengan info has_laporan
  */
-async function getJadwalMingguanWithLaporan(mingguMulai, labId = null) {
+async function getJadwalMingguanWithLaporan(mingguMulai, labId = null, mataPelajaran = null) {
     let query = `
         SELECT j.*, 
             CASE WHEN lp.id IS NOT NULL THEN true ELSE false END as has_laporan
@@ -33,6 +37,10 @@ async function getJadwalMingguanWithLaporan(mingguMulai, labId = null) {
     if (labId) {
         query += ' AND j.lab_id = ?';
         params.push(labId);
+    }
+    if (mataPelajaran) {
+        query += ' AND j.mata_pelajaran = ?';
+        params.push(mataPelajaran);
     }
 
     query += ' ORDER BY j.tanggal, j.jam_mulai';

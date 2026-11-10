@@ -434,17 +434,40 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ---------- LOAD SETTINGS ----------
+    // load settings
     async function loadSettings() {
         try {
             const res = await fetch('/api/settings/public');
             const json = await res.json();
             const data = json.data || json;
+            
             if (data.nama_sekolah) {
                 document.getElementById('nama_sekolah_display').textContent = data.nama_sekolah;
             }
             if (data.nama_lab) {
                 document.getElementById('nama_lab_display').textContent = data.nama_lab;
+            }
+
+            // Render Dropdown Mata Pelajaran
+            const selectMapel = document.getElementById('pengajuan_mapel');
+            if (selectMapel && data.mata_pelajaran_list) {
+                try {
+                    let list = [];
+                    // Cek apakah formatnya JSON array
+                    if (data.mata_pelajaran_list.startsWith('[')) {
+                        list = JSON.parse(data.mata_pelajaran_list);
+                    } else {
+                        // Fallback jika data lama berupa koma
+                        list = data.mata_pelajaran_list.split(',').map(s => s.trim());
+                    }
+                    
+                    if (list.length > 0) {
+                        selectMapel.innerHTML = '<option value="">-- Pilih Mata Pelajaran --</option>' +
+                            list.map(m => `<option value="${m}">${m}</option>`).join('');
+                    }
+                } catch (err) {
+                    console.warn('Format data mata pelajaran tidak valid:', err);
+                }
             }
         } catch (err) {
             console.warn('Gagal memuat pengaturan:', err);

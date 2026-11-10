@@ -227,6 +227,12 @@ async function loadLaporanPraktikum() {
     try {
         const labId = document.getElementById('lpLabFilter')?.value;
         const params = (labId && labId !== 'all') ? { lab_id: labId } : {};
+
+        if (getRole() === 'guru') {
+            const mapel = getMapel();
+            if (mapel) params.mata_pelajaran = mapel;
+        }
+
         const response = await apiGet('/api/laporan-praktikum', params);
         const data = Array.isArray(response) ? response : (response.data || []);
         renderLaporanPraktikum(data);

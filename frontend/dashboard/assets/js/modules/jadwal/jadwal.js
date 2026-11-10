@@ -148,6 +148,11 @@ async function loadDashboardJadwal(labId = null) {
             params.lab_id = labId;
         }
 
+        if (getRole() === 'guru') {
+            const mapel = getMapel();
+            if (mapel) params.mata_pelajaran = mapel;
+        }
+
         const response = await apiGet('/api/jadwal', params);
         const data = Array.isArray(response) ? response : (response.data || []);
 

@@ -23,6 +23,9 @@ Dokumen ini menjelaskan arsitektur, struktur, dan konvensi kode aplikasi MUGALAB
 13. [Contoh Modul `lab`](#13-contoh-modul-lab)
 14. [Alur Deployment (Ringkas)](#14-alur-deployment-ringkas)
 15. [Checklist Penambahan Fitur Baru](#15-checklist-penambahan-fitur-baru)
+16. [Fitur Import Excel Inventaris](#16-fitur-import-excel-inventaris)
+17. [Optimasi Performa & Fitur Dashboard](#17-optimasi-performa--fitur-dashboard)
+18. [Filter Mata Pelajaran untuk Role Guru](#18-filter-mata-pelajaran-untuk-role-guru)
 
 ---
 
@@ -97,7 +100,8 @@ backend/
 │   │   ├── requireRole.js
 │   │   ├── uploadPeminjaman.js  # Multer foto peminjaman
 │   │   ├── uploadPengajuan.js   # Multer PDF pengajuan
-│   │   └── uploadTemplate.js    # Multer DOCX template
+│   │   ├── uploadTemplate.js    # Multer DOCX template
+│   │   └── uploadExcel.js       # Multer file Excel inventaris
 │   ├── utils/
 │   │   ├── response.js
 │   │   ├── whatsapp.js
@@ -157,7 +161,7 @@ frontend/
 │       │   ├── lab/
 │       │   ├── user/          # + Izin Akses per Role
 │       │   ├── jadwal/
-│       │   ├── inventaris/    # alat.js, bahan.js, sarana.js
+│       │   ├── inventaris/    # alat.js, bahan.js, sarana.js, import.js
 │       │   ├── laporanKerusakan/
 │       │   ├── riwayatBahan/
 │       │   ├── laprak/
@@ -177,15 +181,15 @@ Panel **Pengaturan** (`#setting`) adalah satu-satunya tempat untuk mengelola kon
 
 | Tab | Icon | Isi | File |
 |-----|------|-----|------|
-| Umum | ⚙️ | Nama sekolah, nama lab, upload template DOCX | `modules/setting/setting.js` |
+| Umum | ⚙️ | Nama sekolah, nama lab, upload template DOCX, daftar mata pelajaran | `modules/setting/setting.js` |
 | Ruangan Lab | 🏫 | CRUD ruangan laboratorium | `modules/lab/lab.js` |
-| Manajemen User | 👥 | CRUD user + **Izin Akses per Role** | `modules/user/user.js` |
+| Manajemen User | 👥 | CRUD user + **Izin Akses per Role** + Profil Mapel Guru | `modules/user/user.js` |
 
 #### Manajemen User — Dua Section
 
 Tab Manajemen User memiliki **dua section** yang ditampilkan berurutan:
 
-1. **👥 Daftar Pengguna** — tabel user (username, nama, role, aksi edit/hapus).
+1. **👥 Daftar Pengguna** — tabel user (username, nama, role, mapel (jika guru), aksi edit/hapus).
 2. **🔐 Izin Akses per Role** — chip-toggle per panel; klik chip untuk toggle aktif/non-aktif. Lihat §9.
 
 #### Perubahan Struktur Menu
@@ -228,7 +232,7 @@ Tidak ada perubahan endpoint untuk pengaturan umum. Panel Pengaturan memanggil:
 | Method | Endpoint | Deskripsi | Akses |
 |--------|----------|-----------|-------|
 | GET | `/api/jadwal/public` | Jadwal publik mingguan | Publik |
-| GET | `/api/jadwal` | Jadwal dashboard | Auth |
+| GET | `/api/jadwal` | Jadwal dashboard (bisa filter `?mata_pelajaran=...` untuk role guru) | Auth |
 | POST | `/api/jadwal` | Tambah jadwal + notif WA | Auth (admin/laboran) |
 | PUT | `/api/jadwal/:id` | Edit jadwal + notif WA | Auth (admin/laboran) |
 | DELETE | `/api/jadwal/:id` | Hapus jadwal | Auth (admin/laboran) |
@@ -294,7 +298,7 @@ Mendukung **alat** dan **sarana** dalam satu tabel.
 
 | Method | Endpoint | Deskripsi | Akses |
 |--------|----------|-----------|-------|
-| GET | `/api/laporan-praktikum` | Ambil semua laporan | Auth |
+| GET | `/api/laporan-praktikum` | Ambil laporan (bisa filter `?mata_pelajaran=...` untuk role guru) | Auth |
 | POST | `/api/laporan-praktikum` | Buat laporan praktikum | Auth |
 | PUT | `/api/laporan-praktikum/:id` | Edit laporan | Auth (admin/laboran) |
 | DELETE | `/api/laporan-praktikum/:id` | Hapus laporan | Auth (admin/laboran) |
@@ -331,7 +335,7 @@ Mendukung **alat** dan **sarana** dalam satu tabel.
 |--------|----------|-----------|-------|
 | GET | `/api/settings/public` | Pengaturan publik | Publik |
 | GET | `/api/settings` | Ambil semua pengaturan | Auth (admin) |
-| PUT | `/api/settings` | Update pengaturan | Auth (admin) |
+| PUT | `/api/settings` | Update pengaturan (termasuk `mata_pelajaran_list`) | Auth (admin) |
 | POST | `/api/settings/template` | Upload template DOCX | Auth (admin) |
 | GET | `/api/settings/role-permissions` | Ambil izin per role | Auth |
 | PUT | `/api/settings/role-permissions` | Update izin per role | Auth (admin) |
@@ -374,6 +378,8 @@ Mendukung **alat** dan **sarana** dalam satu tabel.
 
 ### 5.3 Kolom Penting
 
+- `users`:
+  - `mata_pelajaran` (VARCHAR 100, NOT NULL, DEFAULT '') — hanya diisi jika role = `guru`.
 - `alat` dan `sarana`:
   - `spek` (VARCHAR 255).
   - `jumlah` = stok **tersedia** (available). Dikurangi otomatis saat peminjaman dibuat.
@@ -390,6 +396,7 @@ Mendukung **alat** dan **sarana** dalam satu tabel.
 - `settings`:
   - Menyimpan `nama_sekolah`, `nama_lab` sebagai key-value.
   - Menyimpan `role_permissions` sebagai JSON string.
+  - Menyimpan `mata_pelajaran_list` sebagai JSON array (mis. `["Matematika", "Fisika"]`).
 
 Skema lengkap tersedia di `backend/database/init.sql`.
 
@@ -468,6 +475,7 @@ Environment: `TOKEN_FONNTE`, `ADMIN_WA`.
 | `uploadPeminjaman.js` | `upload.single('foto')` | `backend/uploads/peminjaman/` |
 | `uploadPengajuan.js` | `upload.single('file_pdf')` | `backend/uploads/pengajuan/` |
 | `uploadTemplate.js` | `upload.single('file')` | `backend/uploads/templates/laprak-template.docx` (overwrite) |
+| `uploadExcel.js` | `excelUpload('file')` | `backend/uploads/temp/` |
 
 **Akses file publik:**
 
@@ -929,3 +937,33 @@ Panel Jadwal di Dashboard kini menggunakan dropdown pemilih pekan (Pekan Lalu, P
 
 ### 17.4 Pemisahan Inisialisasi Modal Laprak
 Karena modal "Buat Laporan Praktikum" bisa dipanggil dari panel **Jadwal**, inisialisasinya dipisah menjadi `initLaprakModal()`. Fungsi ini memuat data alat/bahan dan memasang event listener pada form modal tanpa harus memuat tabel Laporan Praktikum. Fungsi `initLaprak()` akan memanggil `initLaprakModal()` secara internal, dan `jadwal.js` juga memanggilnya agar suggestion alat/bahan langsung siap.
+
+### 17.5 Auto-Save Mata Pelajaran (Pengaturan)
+Pada tab Pengaturan > Umum, daftar mata pelajaran diinput menggunakan sistem *chip* (tag). Setiap kali admin menekan Enter untuk menambah mapel atau mengklik tombol `x` untuk menghapus, data akan **otomatis tersimpan ke database** (via `autoSaveMapel()`) tanpa perlu menekan tombol Simpan.
+
+---
+
+## 18. Filter Mata Pelajaran untuk Role Guru
+
+Fitur ini membatasi data yang tampil di panel Jadwal dan Laporan Praktikum berdasarkan profil guru yang sedang login.
+
+### 18.1 Konsep & Alur Data
+1. Saat login, `auth.controller.js` menyertakan `mata_pelajaran` milik user ke dalam JWT dan response.
+2. `login.js` menyimpannya ke `localStorage`.
+3. Saat memuat data, fungsi `loadDashboardJadwal()` dan `loadLaporanPraktikum()` di frontend mengecek `getRole()`. Jika role adalah `guru`, frontend menambahkan parameter `mata_pelajaran` pada request API.
+4. Backend (`jadwal.service.js` & `laporan-praktikum.service.js`) memproses parameter tersebut dan menambahkan klausa `AND mata_pelajaran = ?` pada query.
+5. Admin & Laboran tidak mengirimkan parameter ini, sehingga melihat semua data.
+
+### 18.2 Keamanan & Cache Browser
+Karena data `mata_pelajaran` disimpan di dalam JWT (yang di-cache oleh `localStorage`), **user wajib melakukan logout dan login ulang** setelah profil mata pelajarannya diubah oleh Admin agar filter langsung aktif.
+
+### 18.3 File Terkait
+| File | Bagian |
+|------|--------|
+| `backend/modules/auth/auth.controller.js` | Payload JWT & response login |
+| `frontend/login/login.js` (atau inline script) | Penyimpanan `mata_pelajaran` ke `localStorage` |
+| `frontend/.../core/auth.js` | `getMapel()` & pembersihan `localStorage` |
+| `backend/modules/{jadwal,laporan-praktikum}/*.service.js` | Penambahan filter query `mata_pelajaran` |
+| `backend/modules/{jadwal,laporan-praktikum}/*.controller.js` | Penerimaan `req.query.mata_pelajaran` |
+| `frontend/.../modules/jadwal/jadwal.js` | Filter request API berdasarkan role |
+| `frontend/.../modules/laprak/laprak.js` | Filter request API berdasarkan role |

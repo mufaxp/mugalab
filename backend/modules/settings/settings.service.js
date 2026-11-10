@@ -7,7 +7,7 @@ async function getPublicSettings() {
     const [rows] = await pool.query(
         `SELECT setting_key, setting_value 
          FROM settings 
-         WHERE setting_key IN ('nama_sekolah', 'nama_lab')`
+         WHERE setting_key IN ('nama_sekolah', 'nama_lab', 'mata_pelajaran_list')`
     );
 
     const settings = {};
@@ -28,12 +28,12 @@ async function getAllSettings() {
 /**
  * Update atau insert pengaturan nama_sekolah & nama_lab
  */
-async function updateSettings(nama_sekolah, nama_lab) {
+async function updateSettings(nama_sekolah, nama_lab, mata_pelajaran_list) {
     await pool.query(
         `INSERT INTO settings (setting_key, setting_value) 
-         VALUES ('nama_sekolah', ?), ('nama_lab', ?) 
+         VALUES ('nama_sekolah', ?), ('nama_lab', ?), ('mata_pelajaran_list', ?) 
          ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)`,
-        [nama_sekolah, nama_lab]
+        [nama_sekolah, nama_lab, mata_pelajaran_list]
     );
 }
 

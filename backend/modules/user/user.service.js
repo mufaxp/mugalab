@@ -5,7 +5,7 @@ const pool = require('../../config/db');
  */
 async function getAll() {
     const [rows] = await pool.query(
-        'SELECT id, username, nama, role, created_at FROM users ORDER BY id'
+        'SELECT id, username, nama, role, mata_pelajaran, created_at FROM users ORDER BY id'
     );
     return rows;
 }
@@ -15,7 +15,7 @@ async function getAll() {
  */
 async function getById(id) {
     const [rows] = await pool.query(
-        'SELECT id, username, nama, role FROM users WHERE id = ?',
+        'SELECT id, username, nama, role, mata_pelajaran FROM users WHERE id = ?',
         [id]
     );
     return rows[0] || null;
@@ -24,10 +24,10 @@ async function getById(id) {
 /**
  * Tambah user baru
  */
-async function create(username, hashedPassword, nama, role) {
+async function create(username, hashedPassword, nama, role, mata_pelajaran) {
     const [result] = await pool.query(
-        'INSERT INTO users (username, password, nama, role) VALUES (?, ?, ?, ?)',
-        [username, hashedPassword, nama, role]
+        'INSERT INTO users (username, password, nama, role, mata_pelajaran) VALUES (?, ?, ?, ?, ?)',
+        [username, hashedPassword, nama, role, mata_pelajaran]
     );
     return result;
 }
@@ -35,16 +35,16 @@ async function create(username, hashedPassword, nama, role) {
 /**
  * Update user; jika password tidak diubah, jangan update kolom password
  */
-async function update(id, nama, role, hashedPassword = null) {
+async function update(id, nama, role, mata_pelajaran, hashedPassword = null) {
     if (hashedPassword) {
         await pool.query(
-            'UPDATE users SET nama = ?, role = ?, password = ? WHERE id = ?',
-            [nama, role, hashedPassword, id]
+            'UPDATE users SET nama = ?, role = ?, mata_pelajaran = ?, password = ? WHERE id = ?',
+            [nama, role, mata_pelajaran, hashedPassword, id]
         );
     } else {
         await pool.query(
-            'UPDATE users SET nama = ?, role = ? WHERE id = ?',
-            [nama, role, id]
+            'UPDATE users SET nama = ?, role = ?, mata_pelajaran = ? WHERE id = ?',
+            [nama, role, mata_pelajaran, id]
         );
     }
 }

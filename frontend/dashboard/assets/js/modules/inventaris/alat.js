@@ -61,6 +61,23 @@ async function initAlat() {
         suggestAlat.classList.add('active');
     });
 
+    searchAlat.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const keyword = this.value.toLowerCase().trim();
+            if (!keyword) {
+                renderAlat(allAlatData);
+            } else {
+                const filtered = allAlatData.filter(item => 
+                    item.nama_alat.toLowerCase().includes(keyword) || 
+                    item.kode_alat.toLowerCase().includes(keyword)
+                );
+                renderAlat(filtered);
+            }
+            suggestAlat.classList.remove('active');
+        }
+    });
+
     suggestAlat.addEventListener('click', function(e) {
         const item = e.target.closest('.search-suggest-item');
         if (item) {
@@ -95,7 +112,7 @@ async function loadAlat() {
 
 function renderAlat(data) {
     const container = document.getElementById('alatList');
-    const currentRole = localStorage.getItem('role') || 'guru'; // ✅ deklarasi di sini
+    const currentRole = localStorage.getItem('role') || 'guru';
 
     if (!data.length) {
         container.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">Belum ada data alat.</p>';

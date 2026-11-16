@@ -1034,6 +1034,7 @@ Jika tidak ada balasan:
 | **Perubahan file JS/CSS tidak muncul** | Browser menyimpan cache versi lama | Lakukan Hard Refresh (`Ctrl+Shift+R`), atau bump versi `?v=...` di `dashboard.html`. |
 | **Suggestion alat/bahan di modal Laprak kosong** | `initLaprakModal` gagal dimuat atau data API kosong | Cek Console browser, pastikan `jadwal.js` memanggil `initLaprakModal()`, dan API `/api/alat` mengembalikan data. |
 | **Filter mapel guru tidak jalan** | User belum logout/login ulang setelah mapelnya diubah | Minta user logout dan login ulang agar JWT diperbarui. |
+| **Fitur Enter pada kolom pencarian tidak merespon** | Fungsi listener `keydown` belum terpasang | Pastikan JS sudah di-update dan lakukan Hard Refresh. |
 
 ### 15.2 Cara Cek Log
 

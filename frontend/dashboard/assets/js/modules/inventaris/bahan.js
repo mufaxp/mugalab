@@ -22,7 +22,7 @@ async function initBahan() {
         bahanEditId = null;
         document.getElementById('modalBahanTitle').textContent = 'Tambah Bahan';
         document.getElementById('formBahan').reset();
-        document.getElementById('bahan_stok_akhir').value = '';  // ✅ pastikan kosong
+        document.getElementById('bahan_stok_akhir').value = '';
         openModal('modalBahan');
     });
 
@@ -60,6 +60,23 @@ async function initBahan() {
         const filtered = allBahanData.filter(item => item.nama_bahan.toLowerCase().includes(keyword) || item.kode_bahan.toLowerCase().includes(keyword));
         suggestBahan.innerHTML = filtered.map(item => `<div class="search-suggest-item" data-id="${item.id}">${item.kode_bahan} - ${item.nama_bahan}</div>`).join('');
         suggestBahan.classList.add('active');
+    });
+
+    searchBahan.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const keyword = this.value.toLowerCase().trim();
+            if (!keyword) {
+                renderBahan(allBahanData);
+            } else {
+                const filtered = allBahanData.filter(item => 
+                    item.nama_bahan.toLowerCase().includes(keyword) || 
+                    item.kode_bahan.toLowerCase().includes(keyword)
+                );
+                renderBahan(filtered);
+            }
+            suggestBahan.classList.remove('active');
+        }
     });
 
     suggestBahan.addEventListener('click', function(e) {
@@ -113,7 +130,7 @@ async function loadBahan() {
 
 function renderBahan(data) {
     const container = document.getElementById('bahanList');
-    const currentRole = localStorage.getItem('role') || 'guru'; // ✅ deklarasi di sini
+    const currentRole = localStorage.getItem('role') || 'guru';
 
     if (!data.length) {
         container.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">Belum ada data bahan.</p>';

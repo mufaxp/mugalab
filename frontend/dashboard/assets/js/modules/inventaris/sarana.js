@@ -59,6 +59,24 @@ async function initSarana() {
         suggestSarana.innerHTML = filtered.map(i => `<div class="search-suggest-item" data-id="${i.id}">${i.kode_sarana} - ${i.nama_sarana}</div>`).join('');
         suggestSarana.classList.add('active');
     });
+
+    searchSarana.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const keyword = this.value.toLowerCase().trim();
+            if (!keyword) {
+                renderSarana(allSaranaData);
+            } else {
+                const filtered = allSaranaData.filter(item => 
+                    item.nama_sarana.toLowerCase().includes(keyword) || 
+                    item.kode_sarana.toLowerCase().includes(keyword)
+                );
+                renderSarana(filtered);
+            }
+            suggestSarana.classList.remove('active');
+        }
+    });
+
     suggestSarana.addEventListener('click', function(e) {
         const item = e.target.closest('.search-suggest-item');
         if (item) { renderSarana(allSaranaData.filter(i => i.id == item.getAttribute('data-id'))); suggestSarana.classList.remove('active'); searchSarana.value = ''; }
@@ -88,7 +106,7 @@ async function loadSarana() {
 
 function renderSarana(data) {
     const container = document.getElementById('saranaList');
-    const currentRole = localStorage.getItem('role') || 'guru'; // ✅ deklarasi di sini
+    const currentRole = localStorage.getItem('role') || 'guru';
 
     if (!data.length) { container.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">Belum ada data sarana.</p>'; return; }
     let html = `<table style="width:100%;border-collapse:collapse;font-size:13px;">

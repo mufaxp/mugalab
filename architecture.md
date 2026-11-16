@@ -941,6 +941,10 @@ Karena modal "Buat Laporan Praktikum" bisa dipanggil dari panel **Jadwal**, inis
 ### 17.5 Auto-Save Mata Pelajaran (Pengaturan)
 Pada tab Pengaturan > Umum, daftar mata pelajaran diinput menggunakan sistem *chip* (tag). Setiap kali admin menekan Enter untuk menambah mapel atau mengklik tombol `x` untuk menghapus, data akan **otomatis tersimpan ke database** (via `autoSaveMapel()`) tanpa perlu menekan tombol Simpan.
 
+### 17.6 Pencarian Instan di Panel Inventaris (Enter to Filter)
+Pada kolom pencarian di panel Inventaris (Alat, Bahan, Sarana), pengguna dapat langsung menekan tombol **Enter** setelah mengetik kata kunci. Ini akan menutup kotak *suggestion* dan memfilter seluruh tabel secara instan (meniru perilaku mesin pencari Google).
+- **File terkait:** `frontend/.../inventaris/{alat,bahan,sarana}.js` (penambahan `addEventListener('keydown', ...)`).
+
 ---
 
 ## 18. Filter Mata Pelajaran untuk Role Guru

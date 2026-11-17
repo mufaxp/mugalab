@@ -115,4 +115,22 @@ async function remove(req, res) {
     }
 }
 
-module.exports = { getAll, create, update, remove };
+async function saveFace(req, res) {
+    const { id } = req.params;
+    const { descriptor } = req.body;
+
+    if (!descriptor) return error(res, 'Data wajah tidak ditemukan', 400);
+
+    try {
+        const user = await userService.getById(id);
+        if (!user) return error(res, 'User tidak ditemukan', 404);
+
+        await userService.saveFaceDescriptor(id, descriptor);
+        return success(res, null, 'Data wajah berhasil didaftarkan');
+    } catch (err) {
+        console.error('Error save face:', err);
+        return error(res, 'Gagal menyimpan data wajah');
+    }
+}
+
+module.exports = { getAll, create, update, remove, saveFace };

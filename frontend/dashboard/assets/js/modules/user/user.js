@@ -88,6 +88,7 @@ async function initManajemenUser() {
         document.getElementById('user_password').value = '';
         document.getElementById('user_nama').value = '';
         document.getElementById('user_role').value = 'guru';
+        document.getElementById('user_face_group').style.display = 'none';
         mapelSelect.value = '';
         // Trigger event change agar dropdown mapel muncul (karena default role = guru)
         roleSelect.dispatchEvent(new Event('change'));
@@ -222,6 +223,8 @@ async function editUser(id) {
     } else {
         mapelGroup.style.display = 'none';
     }
+
+    document.getElementById('user_face_group').style.display = 'block';
     
     openModal('modalUser');
 }
@@ -317,3 +320,93 @@ async function saveRolePermissions() {
         btn.textContent = 'Simpan';
     }
 }
+// Face recognition functions
+let faceMatcher = null;
+let deteksiInterval = null;
+let currentDescriptor = null;
+const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
+
+async function bukaKameraWajah(userId, nama) {
+    const video = document.getElementById('videoWajah');
+    const status = document.getElementById('statusWajah');
+    const btnSimpan = document.getElementById('btnSimpanWajah');
+    
+    openModal('modalKameraWajah');
+    status.textContent = 'Memuat model AI...';
+    btnSimpan.disabled = true;
+
+    try {
+        await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+        await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+        await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+        
+        status.textContent = 'Menyalakan kamera...';
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+
+        video.onplaying = () => {
+            status.textContent = 'Wajah terdeteksi! Klik Simpan.';
+            btnSimpan.disabled = false;
+            mulaiDeteksi(video);
+        };
+    } catch (err) {
+        console.error(err);
+        status.textContent = 'Error: ' + err.message;
+    }
+}
+
+async function mulaiDeteksi(video) {
+    const canvas = document.getElementById('overlayWajah');
+    
+    deteksiInterval = setInterval(async () => {
+        const detections = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
+        
+        const displaySize = { width: video.videoWidth, height: video.videoHeight };
+        faceapi.matchDimensions(canvas, displaySize);
+        
+        const resizedDetections = faceapi.resizeResults(detections, displaySize);
+        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+        
+        if (resizedDetections) {
+            faceapi.draw.drawDetections(canvas, resizedDetections);
+            faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+            currentDescriptor = Array.from(detections.descriptor);
+        }
+    }, 500);
+}
+
+function tutupKamera() {
+    const video = document.getElementById('videoWajah');
+    if (video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+    }
+    clearInterval(deteksiInterval);
+    closeModal('modalKameraWajah');
+}
+
+// Event Listener Tombol
+document.getElementById('btnDaftarWajah')?.addEventListener('click', () => {
+    if (!userEditId) return alert('Simpan user terlebih dahulu sebelum mendaftarkan wajah.');
+    bukaKameraWajah(userEditId, document.getElementById('user_nama').value);
+});
+
+document.getElementById('btnSimpanWajah')?.addEventListener('click', async () => {
+    if (!currentDescriptor) return alert('Wajah tidak terdeteksi. Pastikan wajah terlihat jelas.');
+    
+    const btn = document.getElementById('btnSimpanWajah');
+    btn.disabled = true;
+    btn.textContent = 'Menyimpan...';
+
+    try {
+        const res = await apiPut(`/api/users/${userEditId}/face`, { descriptor: JSON.stringify(currentDescriptor) });
+        alert(res.message);
+        if (!res.message.includes('Gagal')) {
+            tutupKamera();
+        }
+    } catch (err) {
+        alert('Gagal menyimpan wajah');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Simpan Wajah';
+    }
+});

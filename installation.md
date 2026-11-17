@@ -479,6 +479,14 @@ ADD COLUMN mata_pelajaran VARCHAR(100) NOT NULL DEFAULT '' AFTER role;
 "
 ```
 
+**e. Kolom `face_descriptor` (Users - Face Recognition):**
+```bash
+mysql -u root -p lab-db -e "
+ALTER TABLE users
+ADD COLUMN face_descriptor LONGTEXT NULL AFTER mata_pelajaran;
+"
+```
+
 ### 6.5 Buat User Admin Pertama
 
 Generate hash password:
@@ -907,6 +915,7 @@ curl -I http://172.168.1.228/uploads/peminjaman/<file>.webp
 - [ ] Kembalikan dengan jumlah_rusak > 0 → cek auto-report ke Laporan Kerusakan
 - [ ] Pengaturan → tab Manajemen User → toggle chip role permissions → simpan → cek sidebar berubah
 - [ ] Chatbot: kirim pesan WA, cek balasan otomatis
+- [ ] Face Recognition: Daftarkan wajah di Edit User, lalu coba Login Wajah
 
 ---
 
@@ -970,7 +979,7 @@ Jika tidak ada balasan:
 - [ ] Database `chatbot` dibuat
 - [ ] User `labuser` dengan password kuat dibuat
 - [ ] Tabel dari `init.sql` di-import
-- [ ] Migrasi tambahan dijalankan (`file_pdf`, kolom laporan sarana, `terlapor`, `mata_pelajaran`)
+- [ ] Migrasi tambahan dijalankan (`file_pdf`, kolom laporan sarana, `terlapor`, `mata_pelajaran`, `face_descriptor`)
 - [ ] User admin pertama dibuat
 
 ### 14.3 Folder & Hak Akses
@@ -1036,6 +1045,8 @@ Jika tidak ada balasan:
 | **Filter mapel guru tidak jalan** | User belum logout/login ulang setelah mapelnya diubah | Minta user logout dan login ulang agar JWT diperbarui. |
 | **Fitur Enter pada kolom pencarian tidak merespon** | Fungsi listener `keydown` belum terpasang | Pastikan JS sudah di-update dan lakukan Hard Refresh. |
 | **Tombol Pindah Lab tidak ada atau error 404** | `pm2` belum di-restart setelah update backend | Jalankan `pm2 restart lab` lalu Hard Refresh browser. |
+| **Kamera wajah tidak mau menyala** | Akses bukan via HTTPS/localhost | Gunakan HTTPS (Certbot) atau akses via localhost. |
+| **Wajah orang lain bisa login (Bypass)** | Bug NaN (data kosong) / Threshold terlalu longgar | Pastikan backend memvalidasi panjang array (128) dan `isNaN(distance)`. Perketat threshold (misal < 0.45). |
 
 ### 15.2 Cara Cek Log
 

@@ -56,4 +56,9 @@ async function remove(id) {
     await pool.query('DELETE FROM users WHERE id = ?', [id]);
 }
 
-module.exports = { getAll, getById, create, update, remove };
+async function saveFaceDescriptor(id, descriptor) {
+    const [result] = await pool.query('UPDATE users SET face_descriptor = ? WHERE id = ?', [descriptor, id]);
+    return result;
+}
+
+module.exports = { getAll, getById, create, update, remove, saveFaceDescriptor };

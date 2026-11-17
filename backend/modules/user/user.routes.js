@@ -9,5 +9,6 @@ router.get('/', verifyToken, requireRole('admin'), userController.getAll);
 router.post('/', verifyToken, requireRole('admin'), userController.create);
 router.put('/:id', verifyToken, requireRole('admin'), userController.update);
 router.delete('/:id', verifyToken, requireRole('admin'), userController.remove);
+router.put('/:id/face', verifyToken, requireRole('admin', 'laboran'), userController.saveFace);
 
 module.exports = router;

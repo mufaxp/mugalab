@@ -27,6 +27,7 @@ Dokumen ini menjelaskan arsitektur, struktur, dan konvensi kode aplikasi MUGALAB
 17. [Optimasi Performa & Fitur Dashboard](#17-optimasi-performa--fitur-dashboard)
 18. [Filter Mata Pelajaran untuk Role Guru](#18-filter-mata-pelajaran-untuk-role-guru)
 19. [Fitur Pindah Lab Inventaris](#19-fitur-pindah-lab-inventaris)
+20. [Fitur Face Recognition (Login Wajah)](#20-fitur-face-recognition-login-wajah)
 
 ---
 
@@ -184,7 +185,7 @@ Panel **Pengaturan** (`#setting`) adalah satu-satunya tempat untuk mengelola kon
 |-----|------|-----|------|
 | Umum | ⚙️ | Nama sekolah, nama lab, upload template DOCX, daftar mata pelajaran | `modules/setting/setting.js` |
 | Ruangan Lab | 🏫 | CRUD ruangan laboratorium | `modules/lab/lab.js` |
-| Manajemen User | 👥 | CRUD user + **Izin Akses per Role** + Profil Mapel Guru | `modules/user/user.js` |
+| Manajemen User | 👥 | CRUD user + **Izin Akses per Role** + Profil Mapel Guru + Face Recognition | `modules/user/user.js` |
 
 #### Manajemen User — Dua Section
 
@@ -218,6 +219,7 @@ Tidak ada perubahan endpoint untuk pengaturan umum. Panel Pengaturan memanggil:
 | Method | Endpoint | Deskripsi | Akses |
 |--------|----------|-----------|-------|
 | POST | `/api/auth/login` | Login, mendapatkan JWT | Publik |
+| POST | `/api/auth/login-face` | Login dengan verifikasi Face Descriptor | Publik |
 
 ### Lab — `/api/lab`
 
@@ -331,6 +333,7 @@ Mendukung **alat** dan **sarana** dalam satu tabel.
 | GET | `/api/users` | Ambil semua user | Auth (admin) |
 | POST | `/api/users` | Tambah user | Auth (admin) |
 | PUT | `/api/users/:id` | Edit user | Auth (admin) |
+| PUT | `/api/users/:id/face` | Simpan Face Descriptor | Auth (admin/laboran) |
 | DELETE | `/api/users/:id` | Hapus user | Auth (admin) |
 
 ### Settings — `/api/settings`
@@ -384,6 +387,7 @@ Mendukung **alat** dan **sarana** dalam satu tabel.
 
 - `users`:
   - `mata_pelajaran` (VARCHAR 100, NOT NULL, DEFAULT '') — hanya diisi jika role = `guru`.
+  - `face_descriptor` (LONGTEXT, NULL) — menyimpan array 128-dimensi hasil ekstraksi `face-api.js`.
 - `alat` dan `sarana`:
   - `spek` (VARCHAR 255).
   - `jumlah` = stok **tersedia** (available). Dikurangi otomatis saat peminjaman dibuat.
@@ -1013,3 +1017,32 @@ Fitur ini memungkinkan admin atau laboran untuk memindahkan suatu barang (alat, 
 | `frontend/dashboard/style.css` | Class `.btn-pindah` |
 | `frontend/.../core/utils.js` | Fungsi `bukaModalPindah` & handler submit |
 | `frontend/.../inventaris/{alat,bahan,sarana}.js` | Render tombol 📦 & pemanggilan `bukaModalPindah` |
+
+---
+
+## 20. Fitur Face Recognition (Login Wajah)
+
+Fitur ini memungkinkan pengguna login tanpa mengetik password, melainkan dengan memindai wajah mereka. Sistem menggunakan library `face-api.js` (client-side) untuk mengekstrak *Face Descriptor* (128-dimensi vektor) dari gambar webcam.
+
+### 20.1 Alur Kerja
+1. **Registrasi**: Admin membuka modal Edit User di Dashboard, klik "Daftarkan Wajah", lalu webcam mengambil gambar wajah. Browser mengekstrak descriptor dan mengirimkannya ke `PUT /api/users/:id/face`.
+2. **Login**: User membuka halaman login, klik "Login dengan Wajah", memasukkan username, dan webcam mengambil gambar. Browser mengekstrak descriptor dan mengirimkannya ke `POST /api/auth/login-face`.
+3. **Verifikasi**: Backend menghitung *Euclidean Distance* antara descriptor yang disimpan di database dengan yang dikirim. Jika jarak < 0.6, login berhasil dan JWT diberikan.
+
+### 20.2 Keamanan & Validasi
+- **Pencegahan NaN Bug**: Backend memvalidasi ketat bahwa descriptor adalah array dengan panjang 128, serta memastikan hasil perhitungan `distance` bukan `NaN`.
+- **HTTPS/Webcam**: Fitur ini mewajibkan akses via `localhost` atau `HTTPS`.
+- **Bukan Penyimpanan Foto**: Hanya menyimpan angka (descriptor), bukan foto asli user.
+
+### 20.3 File Terkait
+| File | Bagian |
+|------|--------|
+| `backend/modules/auth/auth.controller.js` | `loginFace` (verifikasi descriptor) |
+| `backend/modules/auth/auth.routes.js` | `POST /login-face` |
+| `backend/modules/user/user.controller.js` | `saveFace` (simpan descriptor) |
+| `backend/modules/user/user.service.js` | `saveFaceDescriptor` |
+| `backend/modules/user/user.routes.js` | `PUT /:id/face` |
+| `frontend/login/login.html` | Tombol Login Wajah & Modal Kamera |
+| `frontend/login/script.js` | Logika `face-api.js` & pengiriman descriptor |
+| `frontend/dashboard/dashboard.html` | Tombol Daftar Wajah & Modal Kamera |
+| `frontend/.../modules/user/user.js` | Logika `bukaKameraWajah` & simpan |

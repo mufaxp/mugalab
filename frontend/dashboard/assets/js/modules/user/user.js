@@ -324,7 +324,7 @@ async function saveRolePermissions() {
 let faceMatcher = null;
 let deteksiInterval = null;
 let currentDescriptor = null;
-const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
+const MODEL_URL = '/dashboard/assets/models';
 
 async function bukaKameraWajah(userId, nama) {
     const video = document.getElementById('videoWajah');

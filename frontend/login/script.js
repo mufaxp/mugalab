@@ -36,7 +36,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
 });
 
 // Face recognition login
-const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
+const MODEL_URL = '/login/models';
 let videoLogin = document.getElementById('videoLoginWajah');
 let currentLoginDescriptor = null;
 let intervalLogin = null;

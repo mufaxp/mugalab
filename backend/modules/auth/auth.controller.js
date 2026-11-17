@@ -95,9 +95,9 @@ async function loginFace(req, res) {
             return error(res, 'Gagal menghitung kemiripan wajah', 500);
         }
 
-        // Threshold 0.6 adalah standar face-api.js
-        // Jarak < 0.6 = Mirip, Jarak > 0.6 = Beda
-        if (distance > 0.6) {
+        // Threshold 0.4 adalah standar face-api.js
+        // Jarak < 0.4 = Mirip, Jarak > 0.4 = Beda
+        if (distance > 0.4) {
             console.log(`Login gagal. Jarak wajah: ${distance.toFixed(4)} (Terlalu jauh)`);
             return error(res, 'Wajah tidak cocok', 401);
         }

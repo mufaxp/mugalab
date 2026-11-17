@@ -101,4 +101,20 @@ async function importExcel(req, res) {
     }
 }
 
-module.exports = { getAll, create, update, remove, importExcel };
+async function pindahLab(req, res) {
+    const { id } = req.params;
+    const { lab_id } = req.body;
+    
+    if (!lab_id) return error(res, 'Lab tujuan wajib dipilih', 400);
+
+    try {
+        const result = await alatService.pindahLab(id, lab_id);
+        if (result.affectedRows === 0) return error(res, 'Alat tidak ditemukan', 404);
+        return success(res, null, 'Alat berhasil dipindahkan ke lab baru');
+    } catch (err) {
+        console.error('Error pindah alat:', err);
+        return error(res, 'Gagal memindahkan alat');
+    }
+}
+
+module.exports = { getAll, create, update, remove, importExcel, pindahLab };

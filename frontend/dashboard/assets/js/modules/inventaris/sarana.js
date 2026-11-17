@@ -123,8 +123,9 @@ function renderSarana(data) {
         const emoji = item.kondisi === 'baik' ? '✅' : item.kondisi === 'rusak' ? '🔴' : '🟡';
         let aksi = '';
         if (currentRole !== 'guru') {
-            aksi = `<button class="btn-edit" data-edit-sarana="${item.id}">Edit</button>
-            <button class="btn-delete" data-hapus-sarana="${item.id}">Hapus</button>`;
+            aksi = `<button class="btn-pindah" data-pindah-sarana="${item.id}" data-nama="${item.nama_sarana}" title="Pindah Lab">Pindah</button>
+                <button class="btn-edit" data-edit-sarana="${item.id}">Edit</button>
+                <button class="btn-delete" data-hapus-sarana="${item.id}">Hapus</button>`;
         } else {
             aksi = '<span style="color:#888;">-</span>';
         }
@@ -152,6 +153,11 @@ function renderSarana(data) {
     if (currentRole !== 'guru') {
         container.querySelectorAll('[data-edit-sarana]').forEach(b => b.addEventListener('click', () => editSarana(parseInt(b.getAttribute('data-edit-sarana')))));
         container.querySelectorAll('[data-hapus-sarana]').forEach(b => b.addEventListener('click', () => hapusSarana(parseInt(b.getAttribute('data-hapus-sarana')))));
+        container.querySelectorAll('[data-pindah-sarana]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                bukaModalPindah('sarana', btn.getAttribute('data-pindah-sarana'), btn.getAttribute('data-nama'));
+            });
+        });
     }
 }
 

@@ -260,8 +260,13 @@ function parseDate(v) {
     return false;
 }
 
+async function pindahLab(id, labId) {
+    const [result] = await pool.query('UPDATE bahan SET lab_id = ? WHERE id = ?', [labId, id]);
+    return result;
+}
+
 module.exports = {
     getAll, create, update, remove,
     getStokById, kurangiStok, catatPenggunaan, getRiwayat, hapusRiwayat,
-    importFromExcel
+    importFromExcel, pindahLab
 };

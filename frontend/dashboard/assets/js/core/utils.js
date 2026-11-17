@@ -81,6 +81,54 @@ function fillLabOptions(selectId, labs, includeAll = false) {
     });
     select.innerHTML = html;
 }
+async function bukaModalPindah(jenis, id, nama) {
+    document.getElementById('pindah_jenis').value = jenis;
+    document.getElementById('pindah_id').value = id;
+    document.getElementById('pindah_nama_item').textContent = nama;
+    
+    // Muat list lab menggunakan cache
+    await loadLabOptions('pindah_lab_id');
+    
+    // Reset pilihan
+    document.getElementById('pindah_lab_id').value = '';
+    openModal('modalPindahLab');
+}
 
+document.addEventListener('DOMContentLoaded', () => {
+    const formPindah = document.getElementById('formPindahLab');
+    if (formPindah) {
+        formPindah.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const jenis = document.getElementById('pindah_jenis').value;
+            const id = document.getElementById('pindah_id').value;
+            const labId = document.getElementById('pindah_lab_id').value;
+            
+            if (!labId) return alert('Pilih laboratorium tujuan terlebih dahulu');
+
+            const btn = document.getElementById('btnSubmitPindah');
+            btn.disabled = true;
+            btn.textContent = 'Memindahkan...';
+
+            try {
+                const res = await apiPut(`/api/${jenis}/${id}/pindah`, { lab_id: labId });
+                alert(res.message);
+                if (!res.message.includes('Gagal')) {
+                    closeModal('modalPindahLab');
+                    // Refresh tabel yang sesuai
+                    if (jenis === 'alat' && typeof loadAlat === 'function') loadAlat();
+                    if (jenis === 'bahan' && typeof loadBahan === 'function') loadBahan();
+                    if (jenis === 'sarana' && typeof loadSarana === 'function') loadSarana();
+                }
+            } catch (err) {
+                alert('Gagal terhubung ke server');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Pindahkan';
+            }
+        });
+    }
+});
+
+window.bukaModalPindah = bukaModalPindah;
 window.loadLabOptions = loadLabOptions;
 window.fillLabOptions = fillLabOptions;

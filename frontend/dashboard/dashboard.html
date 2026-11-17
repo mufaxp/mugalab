@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Dashboard - Laboratorium IPA</title>
-    <link rel="stylesheet" href="/dashboard/style.css?v=1.0">
+    <link rel="stylesheet" href="/dashboard/style.css?v=1.1">
 </head>
 <body>
     <!-- top bar -->
@@ -938,10 +938,32 @@
             </form>
         </div>
     </div>
+    <div id="modalPindahLab" class="modal-overlay" style="display:none;">
+        <div class="modal-content" style="max-width:400px;">
+            <h3 class="modal-title">Pindah Laboratorium</h3>
+            <form id="formPindahLab">
+                <input type="hidden" id="pindah_jenis" value="">
+                <input type="hidden" id="pindah_id" value="">
+                <p style="margin-bottom:12px;">Pindahkan <strong id="pindah_nama_item" style="color:var(--muh-green-dark);">-</strong> ke:</p>
+                
+                <div class="form-group">
+                    <label for="pindah_lab_id">Laboratorium Tujuan</label>
+                    <select id="pindah_lab_id" class="form-input" required>
+                        <option value="">-- Pilih Lab Tujuan --</option>
+                    </select>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="submit" class="btn-simpan" id="btnSubmitPindah">Pindahkan</button>
+                    <button type="button" class="btn-batal" onclick="closeModal('modalPindahLab')">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
     <!-- Library eksternal -->
     <script defer src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <!-- Core -->
-    <script src="/dashboard/assets/js/core/utils.js?v=2.5"></script>
+    <script src="/dashboard/assets/js/core/utils.js?v=2.6"></script>
     <script src="/dashboard/assets/js/core/auth.js?v=2.5"></script>
     <script src="/dashboard/assets/js/core/apiClient.js?v=2.4"></script>
     <script src="/dashboard/assets/js/core/modal.js?v=2.4"></script>
@@ -950,9 +972,9 @@
     <!-- Modules (bertahap) -->
     <script src="/dashboard/assets/js/modules/lab/lab.js?v=2.3"></script>
     <script src="/dashboard/assets/js/modules/jadwal/jadwal.js?v=2.6"></script>
-    <script src="/dashboard/assets/js/modules/inventaris/alat.js?v=2.5"></script>
-    <script src="/dashboard/assets/js/modules/inventaris/bahan.js?v=2.7"></script>
-    <script src="/dashboard/assets/js/modules/inventaris/sarana.js?v=2.5"></script>
+    <script src="/dashboard/assets/js/modules/inventaris/alat.js?v=2.6"></script>
+    <script src="/dashboard/assets/js/modules/inventaris/bahan.js?v=2.8"></script>
+    <script src="/dashboard/assets/js/modules/inventaris/sarana.js?v=2.6"></script>
     <script src="/dashboard/assets/js/modules/inventaris/import.js?v=2.2"></script>
     <script src="/dashboard/assets/js/modules/laporanKerusakan/laporanKerusakan.js?v=2.4"></script>
     <script src="/dashboard/assets/js/modules/riwayatBahan/riwayatBahan.js?v=2.3"></script>

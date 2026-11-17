@@ -26,6 +26,7 @@ Dokumen ini menjelaskan arsitektur, struktur, dan konvensi kode aplikasi MUGALAB
 16. [Fitur Import Excel Inventaris](#16-fitur-import-excel-inventaris)
 17. [Optimasi Performa & Fitur Dashboard](#17-optimasi-performa--fitur-dashboard)
 18. [Filter Mata Pelajaran untuk Role Guru](#18-filter-mata-pelajaran-untuk-role-guru)
+19. [Fitur Pindah Lab Inventaris](#19-fitur-pindah-lab-inventaris)
 
 ---
 
@@ -244,6 +245,7 @@ Tidak ada perubahan endpoint untuk pengaturan umum. Panel Pengaturan memanggil:
 | GET | `/api/alat` | Ambil semua alat (sertakan field `dipinjam`) | Auth |
 | POST | `/api/alat` | Tambah alat | Auth (admin/laboran) |
 | PUT | `/api/alat/:id` | Edit alat | Auth (admin/laboran) |
+| PUT | `/api/alat/:id/pindah` | Pindah alat ke lab lain | Auth (admin/laboran) |
 | DELETE | `/api/alat/:id` | Hapus alat | Auth (admin/laboran) |
 
 ### Bahan — `/api/bahan`
@@ -253,6 +255,7 @@ Tidak ada perubahan endpoint untuk pengaturan umum. Panel Pengaturan memanggil:
 | GET | `/api/bahan` | Ambil daftar bahan | Auth |
 | POST | `/api/bahan` | Tambah bahan | Auth (admin/laboran) |
 | PUT | `/api/bahan/:id` | Edit bahan | Auth (admin/laboran) |
+| PUT | `/api/bahan/:id/pindah` | Pindah bahan ke lab lain | Auth (admin/laboran) |
 | DELETE | `/api/bahan/:id` | Hapus bahan | Auth (admin/laboran) |
 | POST | `/api/bahan/pakai` | Catat penggunaan bahan | Auth (admin/laboran) |
 | GET | `/api/bahan/pakai` | Riwayat penggunaan | Auth |
@@ -265,6 +268,7 @@ Tidak ada perubahan endpoint untuk pengaturan umum. Panel Pengaturan memanggil:
 | GET | `/api/sarana` | Ambil semua sarana (sertakan `dipinjam`) | Auth |
 | POST | `/api/sarana` | Tambah sarana | Auth (admin/laboran) |
 | PUT | `/api/sarana/:id` | Edit sarana | Auth (admin/laboran) |
+| PUT | `/api/sarana/:id/pindah` | Pindah sarana ke lab lain | Auth (admin/laboran) |
 | DELETE | `/api/sarana/:id` | Hapus sarana | Auth (admin/laboran) |
 
 ### Laporan Kerusakan — `/api/laporan-kerusakan`
@@ -971,3 +975,41 @@ Karena data `mata_pelajaran` disimpan di dalam JWT (yang di-cache oleh `localSto
 | `backend/modules/{jadwal,laporan-praktikum}/*.controller.js` | Penerimaan `req.query.mata_pelajaran` |
 | `frontend/.../modules/jadwal/jadwal.js` | Filter request API berdasarkan role |
 | `frontend/.../modules/laprak/laprak.js` | Filter request API berdasarkan role |
+
+---
+
+## 19. Fitur Pindah Lab Inventaris
+
+Fitur ini memungkinkan admin atau laboran untuk memindahkan suatu barang (alat, bahan, atau sarana) dari satu ruang laboratorium ke ruang laboratorium lainnya tanpa perlu menghapus dan membuat ulang data.
+
+### 19.1 Alur
+1. User membuka panel **Inventaris** dan memilih tab (Alat/Bahan/Sarana).
+2. Pada baris tabel, user mengklik tombol **📦** (Pindah).
+3. Muncul modal `#modalPindahLab` yang berisi dropdown pilihan lab tujuan.
+4. User memilih lab, lalu klik **Pindahkan**.
+5. Frontend mengirim request `PUT /api/<jenis>/:id/pindah` dengan body `{ lab_id: <id_lab_baru> }`.
+6. Backend meng-update kolom `lab_id` pada tabel terkait dan merespons sukses.
+7. Frontend me-refresh tabel inventaris.
+
+### 19.2 Endpoint Baru
+| Method | Endpoint | Body | Akses |
+|--------|----------|------|-------|
+| PUT | `/api/alat/:id/pindah` | `lab_id` | admin/laboran |
+| PUT | `/api/bahan/:id/pindah` | `lab_id` | admin/laboran |
+| PUT | `/api/sarana/:id/pindah` | `lab_id` | admin/laboran |
+
+### 19.3 UI & JS Shared
+- Modal `#modalPindahLab` diletakkan sekali di `dashboard.html`.
+- Fungsi `bukaModalPindah(jenis, id, nama)` dan *event listener submit form* diletakkan di `core/utils.js` (shared) agar bisa dipanggil dari modul `alat.js`, `bahan.js`, maupun `sarana.js`.
+- Tombol aksi menggunakan class `.btn-pindah` (warna biru muda, ikon 📦).
+
+### 19.4 File Terkait
+| File | Bagian |
+|------|--------|
+| `backend/modules/{alat,bahan,sarana}/*.service.js` | Penambahan fungsi `pindahLab(id, labId)` |
+| `backend/modules/{alat,bahan,sarana}/*.controller.js` | Penambahan fungsi `pindahLab` |
+| `backend/modules/{alat,bahan,sarana}/*.routes.js` | Endpoint `PUT /:id/pindah` |
+| `frontend/dashboard/dashboard.html` | Modal `#modalPindahLab` |
+| `frontend/dashboard/style.css` | Class `.btn-pindah` |
+| `frontend/.../core/utils.js` | Fungsi `bukaModalPindah` & handler submit |
+| `frontend/.../inventaris/{alat,bahan,sarana}.js` | Render tombol 📦 & pemanggilan `bukaModalPindah` |

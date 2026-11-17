@@ -17,6 +17,7 @@ router.post(
 );
 
 router.post('/', verifyToken, requireRole('admin', 'laboran'), alatController.create);
+router.put('/:id/pindah', verifyToken, requireRole('admin', 'laboran'), alatController.pindahLab);
 router.put('/:id', verifyToken, requireRole('admin', 'laboran'), alatController.update);
 router.delete('/:id', verifyToken, requireRole('admin', 'laboran'), alatController.remove);
 

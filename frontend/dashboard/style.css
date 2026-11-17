@@ -1087,6 +1087,21 @@ body {
     color: #c62828; /* Berubah merah saat di-hover */
 }
 
+.btn-pindah {
+    background-color: #E3F2FD;
+    color: #1565C0;
+    border: 1px solid #90CAF9;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.15s;
+    margin-right: 4px;
+}
+.btn-pindah:hover {
+    background-color: #BBDEFB;
+}
+
 @media (max-width: 640px) {
     .role-permissions-header {
         flex-direction: column;

@@ -153,9 +153,9 @@ function renderBahan(data) {
         const tgl = item.tanggal_kadaluarsa ? item.tanggal_kadaluarsa.substring(0, 10) : '-';
         let aksi = '';
         if (currentRole !== 'guru') {
-            aksi = `<button class="btn-edit" data-edit-bahan="${item.id}">Edit</button>
-                <button class="btn-delete" data-hapus-bahan="${item.id}">Hapus</button>
-                <button class="btn-pakai" data-pakai-bahan='${JSON.stringify({id:item.id,nama:item.nama_bahan,stok:item.stok_akhir,satuan:item.satuan})}'>Pakai</button>`;
+            aksi = `<button class="btn-pindah" data-pindah-bahan="${item.id}" data-nama="${item.nama_bahan}" title="Pindah Lab">Pindah</button>
+                <button class="btn-edit" data-edit-bahan="${item.id}">Edit</button>
+                <button class="btn-delete" data-hapus-bahan="${item.id}">Hapus</button>`;
         } else {
             aksi = '<span style="color:#888;">-</span>';
         }
@@ -182,6 +182,11 @@ function renderBahan(data) {
             btn.addEventListener('click', function() {
                 const d = JSON.parse(this.getAttribute('data-pakai-bahan'));
                 bukaModalPakai(d.id, d.nama, d.stok, d.satuan);
+            });
+        });
+        container.querySelectorAll('[data-pindah-bahan]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                bukaModalPindah('bahan', btn.getAttribute('data-pindah-bahan'), btn.getAttribute('data-nama'));
             });
         });
     }

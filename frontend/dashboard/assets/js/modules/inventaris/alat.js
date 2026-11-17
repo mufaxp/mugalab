@@ -134,7 +134,8 @@ function renderAlat(data) {
         const kondisiEmoji = item.kondisi === 'baik' ? '✅' : item.kondisi === 'rusak' ? '🔴' : '🟡';
         let aksi = '';
         if (currentRole !== 'guru') {
-            aksi = `<button class="btn-edit" data-edit-alat="${item.id}">Edit</button>
+            aksi = `<button class="btn-pindah" data-pindah-alat="${item.id}" data-nama="${item.nama_alat}" title="Pindah Lab">Pindah</button>
+                <button class="btn-edit" data-edit-alat="${item.id}">Edit</button>
                 <button class="btn-delete" data-hapus-alat="${item.id}">Hapus</button>`;
         } else {
             aksi = '<span style="color:#888;">-</span>';
@@ -165,6 +166,11 @@ function renderAlat(data) {
     if (currentRole !== 'guru') {
         container.querySelectorAll('[data-edit-alat]').forEach(btn => btn.addEventListener('click', () => editAlat(parseInt(btn.getAttribute('data-edit-alat')))));
         container.querySelectorAll('[data-hapus-alat]').forEach(btn => btn.addEventListener('click', () => hapusAlat(parseInt(btn.getAttribute('data-hapus-alat')))));
+        container.querySelectorAll('[data-pindah-alat]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                bukaModalPindah('alat', btn.getAttribute('data-pindah-alat'), btn.getAttribute('data-nama'));
+            });
+        });
     }
 }
 

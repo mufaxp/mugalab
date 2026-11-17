@@ -185,4 +185,9 @@ function toInt(v) {
     return n;
 }
 
-module.exports = { getAll, create, update, remove, importFromExcel };
+async function pindahLab(id, labId) {
+    const [result] = await pool.query('UPDATE sarana SET lab_id = ? WHERE id = ?', [labId, id]);
+    return result;
+}
+
+module.exports = { getAll, create, update, remove, importFromExcel, pindahLab };

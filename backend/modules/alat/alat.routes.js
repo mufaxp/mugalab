@@ -17,6 +17,8 @@ router.post(
 );
 
 router.post('/', verifyToken, requireRole('admin', 'laboran'), alatController.create);
+router.post('/bulk-delete', verifyToken, requireRole('admin', 'laboran'), alatController.bulkDelete);
+router.put('/bulk-pindah', verifyToken, requireRole('admin', 'laboran'), alatController.bulkPindah);
 router.put('/:id/pindah', verifyToken, requireRole('admin', 'laboran'), alatController.pindahLab);
 router.put('/:id', verifyToken, requireRole('admin', 'laboran'), alatController.update);
 router.delete('/:id', verifyToken, requireRole('admin', 'laboran'), alatController.remove);

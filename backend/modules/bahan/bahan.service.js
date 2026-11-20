@@ -265,8 +265,18 @@ async function pindahLab(id, labId) {
     return result;
 }
 
+async function bulkDelete(ids) {
+    const placeholders = ids.map(() => '?').join(',');
+    await pool.query(`DELETE FROM bahan WHERE id IN (${placeholders})`, ids);
+}
+
+async function bulkPindah(ids, labId) {
+    const placeholders = ids.map(() => '?').join(',');
+    await pool.query(`UPDATE bahan SET lab_id = ? WHERE id IN (${placeholders})`, [labId, ...ids]);
+}
+
 module.exports = {
     getAll, create, update, remove,
     getStokById, kurangiStok, catatPenggunaan, getRiwayat, hapusRiwayat,
-    importFromExcel, pindahLab
+    importFromExcel, pindahLab, bulkDelete, bulkPindah
 };

@@ -215,4 +215,14 @@ async function pindahLab(id, labId) {
     return result;
 }
 
-module.exports = { getAll, create, update, remove, importFromExcel, pindahLab };
+async function bulkDelete(ids) {
+    const placeholders = ids.map(() => '?').join(',');
+    await pool.query(`DELETE FROM alat WHERE id IN (${placeholders})`, ids);
+}
+
+async function bulkPindah(ids, labId) {
+    const placeholders = ids.map(() => '?').join(',');
+    await pool.query(`UPDATE alat SET lab_id = ? WHERE id IN (${placeholders})`, [labId, ...ids]);
+}
+
+module.exports = { getAll, create, update, remove, importFromExcel, pindahLab, bulkDelete, bulkPindah };

@@ -16,6 +16,10 @@ async function initSarana() {
     if (btnTambahSarana && currentRole === 'guru') {
         btnTambahSarana.style.display = 'none';
     }
+    
+    if (currentRole !== 'guru') {
+        injectBulkSaranaUI();
+    }
 
     document.getElementById('btnTambahSarana').addEventListener('click', () => {
         saranaEditMode = false;
@@ -23,6 +27,28 @@ async function initSarana() {
         document.getElementById('modalSaranaTitle').textContent = 'Tambah Sarana';
         document.getElementById('formSarana').reset();
         openModal('modalSarana');
+    });
+    
+    document.getElementById('btnBulkSaranaApply')?.addEventListener('click', async () => {
+        const action = document.getElementById('bulkSaranaAction').value;
+        const selectedIds = Array.from(document.querySelectorAll('.check-sarana:checked')).map(cb => parseInt(cb.value));
+        
+        if (!action) return alert('Pilih aksi terlebih dahulu');
+        if (selectedIds.length === 0) return alert('Pilih minimal satu data');
+
+        if (action === 'delete') {
+            if (!confirm(`Yakin hapus ${selectedIds.length} sarana terpilih?`)) return;
+            const res = await apiPost('/api/sarana/bulk-delete', { ids: selectedIds });
+            alert(res.message);
+            if (!res.message.includes('Gagal')) {
+                document.getElementById('bulkSaranaAction').value = '';
+                loadSarana();
+            }
+        } else if (action === 'move') {
+            if (typeof bukaModalBulkPindah === 'function') {
+                bukaModalBulkPindah('sarana', selectedIds);
+            }
+        }
     });
 
     document.getElementById('formSarana').addEventListener('submit', async function(e) {
@@ -90,6 +116,39 @@ async function initSarana() {
     console.log('✅ Modul Sarana siap');
 }
 
+function injectBulkSaranaUI() {
+    if (document.getElementById('bulkSaranaBar')) return; // Cegah duplikasi
+
+    const btnTambah = document.getElementById('btnTambahSarana');
+    const headerRow = btnTambah.closest('div').parentElement; // div paling atas
+    const title = headerRow.querySelector('h3');
+
+    // Buat wadah flexbox untuk judul dan bulk bar
+    const titleContainer = document.createElement('div');
+    titleContainer.style.display = 'flex';
+    titleContainer.style.alignItems = 'center';
+    titleContainer.style.gap = '12px';
+    titleContainer.style.flexWrap = 'wrap';
+
+    // Pindahkan h3 ke dalam wadah baru
+    headerRow.insertBefore(titleContainer, title);
+    titleContainer.appendChild(title);
+
+    // Buat HTML Bulk Bar
+    const bulkBarHTML = `
+        <div id="bulkSaranaBar" style="display:none; align-items:center; gap:8px; background:#e8f5e9; padding:4px 10px; border-radius:6px; border:1px solid #c8e6c9;">
+            <span id="bulkSaranaCount" style="font-size:13px; font-weight:600; color:#2e7d32;">0 dipilih</span>
+            <select id="bulkSaranaAction" class="form-input" style="width:auto; padding:4px 8px; font-size:12px; height:auto; border-color:#a5d6a7;">
+                <option value="">-- Aksi Massal --</option>
+                <option value="delete">Hapus Terpilih</option>
+                <option value="move">Pindah Lab</option>
+            </select>
+            <button type="button" class="btn-tambah" id="btnBulkSaranaApply" style="padding:4px 10px; font-size:12px; margin:0; box-shadow:none;">Terapkan</button>
+        </div>
+    `;
+    titleContainer.insertAdjacentHTML('beforeend', bulkBarHTML);
+}
+
 async function loadSarana() {
     const container = document.getElementById('saranaList');
     if (!container) return;
@@ -107,10 +166,12 @@ async function loadSarana() {
 function renderSarana(data) {
     const container = document.getElementById('saranaList');
     const currentRole = localStorage.getItem('role') || 'guru';
+    const isEditable = currentRole !== 'guru';
 
     if (!data.length) { container.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">Belum ada data sarana.</p>'; return; }
     let html = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead><tr style="background:#f0f7f2;">
+            ${isEditable ? `<th style="padding:8px;border:1px solid #d0e6d5; text-align:center; width:30px;"><input type="checkbox" id="checkAllSarana"></th>` : ''}
             <th style="padding:8px;border:1px solid #d0e6d5;">Kode</th>
             <th style="padding:8px;border:1px solid #d0e6d5;">Nama</th>
             <th style="padding:8px;border:1px solid #d0e6d5;">Spek</th>
@@ -122,7 +183,7 @@ function renderSarana(data) {
     data.forEach(item => {
         const emoji = item.kondisi === 'baik' ? '✅' : item.kondisi === 'rusak' ? '🔴' : '🟡';
         let aksi = '';
-        if (currentRole !== 'guru') {
+        if (isEditable) {
             aksi = `<button class="btn-pindah" data-pindah-sarana="${item.id}" data-nama="${item.nama_sarana}" title="Pindah Lab">Pindah</button>
                 <button class="btn-edit" data-edit-sarana="${item.id}">Edit</button>
                 <button class="btn-delete" data-hapus-sarana="${item.id}">Hapus</button>`;
@@ -130,6 +191,7 @@ function renderSarana(data) {
             aksi = '<span style="color:#888;">-</span>';
         }
         html += `<tr>
+            ${isEditable ? `<td style="padding:8px;border:1px solid #d0e6d5; text-align:center;"><input type="checkbox" class="check-sarana" value="${item.id}"></td>` : ''}
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.kode_sarana}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.nama_sarana}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.spek || '-'}</td>
@@ -150,9 +212,42 @@ function renderSarana(data) {
     html += '</tbody></table>';
     container.innerHTML = html;
 
-    if (currentRole !== 'guru') {
-        container.querySelectorAll('[data-edit-sarana]').forEach(b => b.addEventListener('click', () => editSarana(parseInt(b.getAttribute('data-edit-sarana')))));
-        container.querySelectorAll('[data-hapus-sarana]').forEach(b => b.addEventListener('click', () => hapusSarana(parseInt(b.getAttribute('data-hapus-sarana')))));
+    
+    if (isEditable) {
+        const checkAll = document.getElementById('checkAllSarana');
+        const checkItems = container.querySelectorAll('.check-sarana');
+        const bar = document.getElementById('bulkSaranaBar');
+        const count = document.getElementById('bulkSaranaCount');
+
+        function updateBulkBar() {
+            const checked = container.querySelectorAll('.check-sarana:checked').length;
+            if (checked > 0) {
+                bar.style.display = 'flex';
+                count.textContent = `${checked} dipilih`;
+            } else {
+                bar.style.display = 'none';
+                if (checkAll) checkAll.checked = false;
+            }
+        }
+
+        if (checkAll) {
+            checkAll.addEventListener('change', function() {
+                checkItems.forEach(cb => cb.checked = this.checked);
+                updateBulkBar();
+            });
+        }
+
+        checkItems.forEach(cb => {
+            cb.addEventListener('change', function() {
+                if (!this.checked && checkAll) checkAll.checked = false;
+                const allChecked = Array.from(checkItems).every(c => c.checked);
+                if (allChecked && checkAll) checkAll.checked = true;
+                updateBulkBar();
+            });
+        });
+
+        container.querySelectorAll('[data-edit-sarana]').forEach(btn => btn.addEventListener('click', () => editSarana(parseInt(btn.getAttribute('data-edit-sarana')))));
+        container.querySelectorAll('[data-hapus-sarana]').forEach(btn => btn.addEventListener('click', () => hapusSarana(parseInt(btn.getAttribute('data-hapus-sarana')))));
         container.querySelectorAll('[data-pindah-sarana]').forEach(btn => {
             btn.addEventListener('click', () => {
                 bukaModalPindah('sarana', btn.getAttribute('data-pindah-sarana'), btn.getAttribute('data-nama'));

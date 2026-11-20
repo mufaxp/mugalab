@@ -150,13 +150,38 @@ async function pindahLab(req, res) {
     if (!lab_id) return error(res, 'Lab tujuan wajib dipilih', 400);
 
     try {
-        const result = await alatService.pindahLab(id, lab_id);
-        if (result.affectedRows === 0) return error(res, 'Alat tidak ditemukan', 404);
-        return success(res, null, 'Alat berhasil dipindahkan ke lab baru');
+        const result = await bahanService.pindahLab(id, lab_id);
+        if (result.affectedRows === 0) return error(res, 'Bahan tidak ditemukan', 404);
+        return success(res, null, 'Bahan berhasil dipindahkan ke lab baru');
     } catch (err) {
-        console.error('Error pindah alat:', err);
-        return error(res, 'Gagal memindahkan alat');
+        console.error('Error pindah bahan:', err);
+        return error(res, 'Gagal memindahkan bahan');
     }
 }
 
-module.exports = { getAll, create, update, remove, pakai, getRiwayat, hapusRiwayat, importExcel, pindahLab };
+
+async function bulkDelete(req, res) {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) return error(res, 'Tidak ada data yang dipilih', 400);
+    try {
+        await bahanService.bulkDelete(ids);
+        return success(res, null, `${ids.length} data bahan berhasil dihapus`);
+    } catch (err) {
+        console.error('Error bulk delete bahan:', err);
+        return error(res, 'Gagal menghapus data bahan');
+    }
+}
+
+async function bulkPindah(req, res) {
+    const { ids, lab_id } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) return error(res, 'Tidak ada data yang dipilih', 400);
+    if (!lab_id) return error(res, 'Lab tujuan wajib dipilih', 400);
+    try {
+        await bahanService.bulkPindah(ids, lab_id);
+        return success(res, null, `${ids.length} data bahan berhasil dipindahkan`);
+    } catch (err) {
+        console.error('Error bulk pindah bahan:', err);
+        return error(res, 'Gagal memindahkan data bahan');
+    }
+}
+module.exports = { getAll, create, update, remove, pakai, getRiwayat, hapusRiwayat, importExcel, pindahLab, bulkDelete, bulkPindah };

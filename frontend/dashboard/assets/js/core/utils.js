@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
         formPindah.addEventListener('submit', async function(e) {
             e.preventDefault();
             const jenis = document.getElementById('pindah_jenis').value;
-            const id = document.getElementById('pindah_id').value;
+            const idVal = document.getElementById('pindah_id').value;
             const labId = document.getElementById('pindah_lab_id').value;
             
             if (!labId) return alert('Pilih laboratorium tujuan terlebih dahulu');
@@ -110,11 +110,18 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.textContent = 'Memindahkan...';
 
             try {
-                const res = await apiPut(`/api/${jenis}/${id}/pindah`, { lab_id: labId });
+                let res;
+                // Deteksi apakah ini aksi bulk (array) atau tunggal
+                if (idVal.startsWith('[')) {
+                    const ids = JSON.parse(idVal);
+                    res = await apiPut(`/api/${jenis}/bulk-pindah`, { ids, lab_id: labId });
+                } else {
+                    res = await apiPut(`/api/${jenis}/${idVal}/pindah`, { lab_id: labId });
+                }
+                
                 alert(res.message);
                 if (!res.message.includes('Gagal')) {
                     closeModal('modalPindahLab');
-                    // Refresh tabel yang sesuai
                     if (jenis === 'alat' && typeof loadAlat === 'function') loadAlat();
                     if (jenis === 'bahan' && typeof loadBahan === 'function') loadBahan();
                     if (jenis === 'sarana' && typeof loadSarana === 'function') loadSarana();
@@ -129,6 +136,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+async function bukaModalBulkPindah(jenis, ids) {
+    document.getElementById('pindah_jenis').value = jenis;
+    document.getElementById('pindah_id').value = JSON.stringify(ids); // Simpan array as JSON string
+    document.getElementById('pindah_nama_item').textContent = `${ids.length} Item Terpilih`;
+    
+    await loadLabOptions('pindah_lab_id');
+    document.getElementById('pindah_lab_id').value = '';
+    openModal('modalPindahLab');
+}
+window.bukaModalBulkPindah = bukaModalBulkPindah;
 window.bukaModalPindah = bukaModalPindah;
 window.loadLabOptions = loadLabOptions;
 window.fillLabOptions = fillLabOptions;

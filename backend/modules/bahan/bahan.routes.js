@@ -20,6 +20,8 @@ router.post('/', verifyToken, requireRole('admin', 'laboran'), bahanController.c
 router.post('/pakai', verifyToken, requireRole('admin', 'laboran'), bahanController.pakai);
 router.get('/pakai', verifyToken, bahanController.getRiwayat);
 router.delete('/pakai/:id', verifyToken, requireRole('admin', 'laboran'), bahanController.hapusRiwayat);
+router.post('/bulk-delete', verifyToken, requireRole('admin', 'laboran'), bahanController.bulkDelete);
+router.put('/bulk-pindah', verifyToken, requireRole('admin', 'laboran'), bahanController.bulkPindah);
 router.put('/:id/pindah', verifyToken, requireRole('admin', 'laboran'), bahanController.pindahLab);
 router.put('/:id', verifyToken, requireRole('admin', 'laboran'), bahanController.update);
 router.delete('/:id', verifyToken, requireRole('admin', 'laboran'), bahanController.remove);

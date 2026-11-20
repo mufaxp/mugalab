@@ -114,4 +114,29 @@ async function pindahLab(req, res) {
     }
 }
 
-module.exports = { getAll, create, update, remove, importExcel, pindahLab };
+async function bulkDelete(req, res) {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) return error(res, 'Tidak ada data yang dipilih', 400);
+    try {
+        await saranaService.bulkDelete(ids);
+        return success(res, null, `${ids.length} data sarana berhasil dihapus`);
+    } catch (err) {
+        console.error('Error bulk delete sarana:', err);
+        return error(res, 'Gagal menghapus data sarana');
+    }
+}
+
+async function bulkPindah(req, res) {
+    const { ids, lab_id } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) return error(res, 'Tidak ada data yang dipilih', 400);
+    if (!lab_id) return error(res, 'Lab tujuan wajib dipilih', 400);
+    try {
+        await saranaService.bulkPindah(ids, lab_id);
+        return success(res, null, `${ids.length} data sarana berhasil dipindahkan`);
+    } catch (err) {
+        console.error('Error bulk pindah sarana:', err);
+        return error(res, 'Gagal memindahkan data sarana');
+    }
+}
+
+module.exports = { getAll, create, update, remove, importExcel, pindahLab, bulkDelete, bulkPindah };

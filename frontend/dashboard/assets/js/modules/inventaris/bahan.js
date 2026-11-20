@@ -17,6 +17,10 @@ async function initBahan() {
         btnTambahBahan.style.display = 'none';
     }
 
+    if (currentRole !== 'guru') {
+        injectBulkBahanUI();
+    }
+
     document.getElementById('btnTambahBahan').addEventListener('click', function() {
         bahanEditMode = false;
         bahanEditId = null;
@@ -24,6 +28,28 @@ async function initBahan() {
         document.getElementById('formBahan').reset();
         document.getElementById('bahan_stok_akhir').value = '';
         openModal('modalBahan');
+    });
+    
+    document.getElementById('btnBulkBahanApply')?.addEventListener('click', async () => {
+        const action = document.getElementById('bulkBahanAction').value;
+        const selectedIds = Array.from(document.querySelectorAll('.check-bahan:checked')).map(cb => parseInt(cb.value));
+        
+        if (!action) return alert('Pilih aksi terlebih dahulu');
+        if (selectedIds.length === 0) return alert('Pilih minimal satu data');
+
+        if (action === 'delete') {
+            if (!confirm(`Yakin hapus ${selectedIds.length} bahan terpilih?`)) return;
+            const res = await apiPost('/api/bahan/bulk-delete', { ids: selectedIds });
+            alert(res.message);
+            if (!res.message.includes('Gagal')) {
+                document.getElementById('bulkBahanAction').value = '';
+                loadBahan();
+            }
+        } else if (action === 'move') {
+            if (typeof bukaModalBulkPindah === 'function') {
+                bukaModalBulkPindah('bahan', selectedIds);
+            }
+        }
     });
 
     document.getElementById('formBahan').addEventListener('submit', async function(e) {
@@ -114,6 +140,39 @@ async function initBahan() {
     console.log('✅ Modul Bahan siap');
 }
 
+function injectBulkBahanUI() {
+    if (document.getElementById('bulkBahanBar')) return; // Cegah duplikasi
+
+    const btnTambah = document.getElementById('btnTambahBahan');
+    const headerRow = btnTambah.closest('div').parentElement; // div paling atas
+    const title = headerRow.querySelector('h3');
+
+    // Buat wadah flexbox untuk judul dan bulk bar
+    const titleContainer = document.createElement('div');
+    titleContainer.style.display = 'flex';
+    titleContainer.style.alignItems = 'center';
+    titleContainer.style.gap = '12px';
+    titleContainer.style.flexWrap = 'wrap';
+
+    // Pindahkan h3 ke dalam wadah baru
+    headerRow.insertBefore(titleContainer, title);
+    titleContainer.appendChild(title);
+
+    // Buat HTML Bulk Bar
+    const bulkBarHTML = `
+        <div id="bulkBahanBar" style="display:none; align-items:center; gap:8px; background:#e8f5e9; padding:4px 10px; border-radius:6px; border:1px solid #c8e6c9;">
+            <span id="bulkBahanCount" style="font-size:13px; font-weight:600; color:#2e7d32;">0 dipilih</span>
+            <select id="bulkBahanAction" class="form-input" style="width:auto; padding:4px 8px; font-size:12px; height:auto; border-color:#a5d6a7;">
+                <option value="">-- Aksi Massal --</option>
+                <option value="delete">Hapus Terpilih</option>
+                <option value="move">Pindah Lab</option>
+            </select>
+            <button type="button" class="btn-tambah" id="btnBulkBahanApply" style="padding:4px 10px; font-size:12px; margin:0; box-shadow:none;">Terapkan</button>
+        </div>
+    `;
+    titleContainer.insertAdjacentHTML('beforeend', bulkBarHTML);
+}
+
 async function loadBahan() {
     const container = document.getElementById('bahanList');
     if (!container) return;
@@ -131,6 +190,7 @@ async function loadBahan() {
 function renderBahan(data) {
     const container = document.getElementById('bahanList');
     const currentRole = localStorage.getItem('role') || 'guru';
+    const isEditable = currentRole !== 'guru';
 
     if (!data.length) {
         container.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">Belum ada data bahan.</p>';
@@ -139,6 +199,7 @@ function renderBahan(data) {
 
     let html = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead><tr style="background:#f0f7f2;">
+            ${isEditable ? `<th style="padding:8px;border:1px solid #d0e6d5; text-align:center; width:30px;"><input type="checkbox" id="checkAllBahan"></th>` : ''}
             <th style="padding:8px;border:1px solid #d0e6d5;">Kode</th>
             <th style="padding:8px;border:1px solid #d0e6d5;">Nama Bahan</th>
             <th style="padding:8px;border:1px solid #d0e6d5;">Produsen</th>
@@ -152,7 +213,7 @@ function renderBahan(data) {
     data.forEach(item => {
         const tgl = item.tanggal_kadaluarsa ? item.tanggal_kadaluarsa.substring(0, 10) : '-';
         let aksi = '';
-        if (currentRole !== 'guru') {
+        if (isEditable) {
             aksi = `<button class="btn-pindah" data-pindah-bahan="${item.id}" data-nama="${item.nama_bahan}" title="Pindah Lab">Pindah</button>
                 <button class="btn-edit" data-edit-bahan="${item.id}">Edit</button>
                 <button class="btn-delete" data-hapus-bahan="${item.id}">Hapus</button>`;
@@ -161,6 +222,7 @@ function renderBahan(data) {
         }
 
         html += `<tr>
+            ${isEditable ? `<td style="padding:8px;border:1px solid #d0e6d5; text-align:center;"><input type="checkbox" class="check-bahan" value="${item.id}"></td>` : ''}
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.kode_bahan}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.nama_bahan}</td>
             <td style="padding:8px;border:1px solid #d0e6d5;">${item.produsen}</td>
@@ -175,15 +237,41 @@ function renderBahan(data) {
     html += '</tbody></table>';
     container.innerHTML = html;
 
-    if (currentRole !== 'guru') {
-        container.querySelectorAll('[data-edit-bahan]').forEach(btn => btn.addEventListener('click', () => editBahan(parseInt(btn.getAttribute('data-edit-bahan')))));
-        container.querySelectorAll('[data-hapus-bahan]').forEach(btn => btn.addEventListener('click', () => hapusBahan(parseInt(btn.getAttribute('data-hapus-bahan')))));
-        container.querySelectorAll('[data-pakai-bahan]').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const d = JSON.parse(this.getAttribute('data-pakai-bahan'));
-                bukaModalPakai(d.id, d.nama, d.stok, d.satuan);
+    if (isEditable) {
+        const checkAll = document.getElementById('checkAllBahan');
+        const checkItems = container.querySelectorAll('.check-bahan');
+        const bar = document.getElementById('bulkBahanBar');
+        const count = document.getElementById('bulkBahanCount');
+
+        function updateBulkBar() {
+            const checked = container.querySelectorAll('.check-bahan:checked').length;
+            if (checked > 0) {
+                bar.style.display = 'flex';
+                count.textContent = `${checked} dipilih`;
+            } else {
+                bar.style.display = 'none';
+                if (checkAll) checkAll.checked = false;
+            }
+        }
+
+        if (checkAll) {
+            checkAll.addEventListener('change', function() {
+                checkItems.forEach(cb => cb.checked = this.checked);
+                updateBulkBar();
+            });
+        }
+
+        checkItems.forEach(cb => {
+            cb.addEventListener('change', function() {
+                if (!this.checked && checkAll) checkAll.checked = false;
+                const allChecked = Array.from(checkItems).every(c => c.checked);
+                if (allChecked && checkAll) checkAll.checked = true;
+                updateBulkBar();
             });
         });
+
+        container.querySelectorAll('[data-edit-bahan]').forEach(btn => btn.addEventListener('click', () => editBahan(parseInt(btn.getAttribute('data-edit-bahan')))));
+        container.querySelectorAll('[data-hapus-bahan]').forEach(btn => btn.addEventListener('click', () => hapusBahan(parseInt(btn.getAttribute('data-hapus-bahan')))));
         container.querySelectorAll('[data-pindah-bahan]').forEach(btn => {
             btn.addEventListener('click', () => {
                 bukaModalPindah('bahan', btn.getAttribute('data-pindah-bahan'), btn.getAttribute('data-nama'));
